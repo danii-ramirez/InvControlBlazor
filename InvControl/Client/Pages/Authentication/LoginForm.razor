@@ -1,0 +1,40 @@
+﻿@page "/login"
+
+@using InvControl.Client.Provider
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.WebUtilities
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+<h3>Iniciar Sesión</h3>
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <InputText @bind-Value="loginModel.Username" placeholder="Usuario" />
+    <InputText @bind-Value="loginModel.Password" type="password" placeholder="Contraseña" />
+    <button type="submit">Entrar</button>
+</EditForm>
+
+@code {
+    private LoginUser loginModel = new();
+
+    private string _returnUrl = "/";
+
+    protected override void OnInitialized()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("returnUrl", out var returnUrl))
+        {
+            _returnUrl = returnUrl.ToString();
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        var success = await ((CookieAuthenticationStateProvider)AuthenticationStateProvider).SingIn(loginModel);
+        if (!string.IsNullOrEmpty(_returnUrl) && Uri.IsWellFormedUriString(_returnUrl, UriKind.Relative))
+            Navigation.NavigateTo(_returnUrl);
+        else
+            Navigation.NavigateTo("/");
+    }
+}

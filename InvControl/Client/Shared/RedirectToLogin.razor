@@ -1,0 +1,12 @@
+﻿@inject NavigationManager Navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        var currentUri = Navigation.Uri;
+        var baseUri = Navigation.BaseUri;
+        var relativeUri = currentUri.Substring(baseUri.Length - 1);
+        var encodedReturnUrl = Uri.EscapeDataString(relativeUri);
+        Navigation.NavigateTo($"/login?returnUrl={encodedReturnUrl}");
+    }
+}
