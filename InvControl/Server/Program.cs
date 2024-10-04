@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,14 +20,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.Name = "BlazorWasmAuthCookie";
     });
 
-//builder.Services.AddAuthorization(options =>
-//{
-//    options.AddPolicy("Authenticated", policy =>
-//    {
-//        policy.RequireAuthenticatedUser();
-//    });
-//});
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -46,7 +37,13 @@ else
 app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.Append("Cache-Control", "no-store");
+    }
+});
 
 app.UseRouting();
 

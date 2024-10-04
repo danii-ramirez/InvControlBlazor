@@ -3,6 +3,7 @@ using InvControl.Client.Provider;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Radzen;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -13,11 +14,13 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStateProvider>();
 builder.Services.AddAuthorizationCore();
 
+builder.Services.AddRadzenComponents();
+
 Services(builder.Services);
 
 await builder.Build().RunAsync();
 
 static void Services(IServiceCollection services)
 {
-
+    
 }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using InvControl.Shared.Models;
@@ -14,13 +13,11 @@ namespace InvControl.Server.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginUser model)
         {
-            // Validar las credenciales del usuario (esto es solo un ejemplo)
             if (model.Username == "admin" && model.Password == "admin")
             {
                 var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, model.Username)
-                // Agrega otros claims si es necesario
             };
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
