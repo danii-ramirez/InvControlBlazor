@@ -1,4 +1,5 @@
-﻿@page "/login"
+﻿@page "/authentication/login"
+@layout AlternativeMainLayout
 
 @using InvControl.Client.Provider
 @using Microsoft.AspNetCore.Components.Authorization
@@ -7,21 +8,45 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 
-<h3>Iniciar Sesión</h3>
+<RadzenCard class="rz-my-12 rz-mx-auto" Style="max-width: 420px">
+    <EditForm EditContext="editContext" OnValidSubmit="HandleLogin" autocomplete="off">
+        <DataAnnotationsValidator />
+        <CustomValidation @ref="customValidation" />
 
-<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-    <InputText @bind-Value="loginModel.Username" placeholder="Usuario" />
-    <InputText @bind-Value="loginModel.Password" type="password" placeholder="Contraseña" />
-    <button type="submit">Entrar</button>
-</EditForm>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+            <RadzenImage Path="img/logo.webp" Style="width: 15rem;" AlternateText="logo-conurbano" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="height: 4rem; margin-top: 20px;">
+            <RadzenLabel Text="Usuario:" Component="user" />
+            <RadzenTextBox @bind-Value=@LoginModel.Username Name="user" Disabled="isBusy" autofocus />
+            <ValidationMessage For="@(() => LoginModel.Username)" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="height: 4rem; margin-top: 20px;">
+            <RadzenLabel Text="Contraseña:" Component="pass" />
+            <RadzenPassword @bind-Value=@LoginModel.Password Name="pass" Disabled="isBusy" aria-label="enter password" />
+            <ValidationMessage For="@(() => LoginModel.Password)" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Style="margin-top: 30px;">
+            <RadzenButton ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="" Text="Iniciar sesión" IsBusy="isBusy" />
+        </RadzenStack>
+    </EditForm>
+</RadzenCard>
 
 @code {
-    private LoginUser loginModel = new();
+    LoginUser LoginModel { get; set; } = new();
+    EditContext? editContext;
+    CustomValidation? customValidation;
 
-    private string _returnUrl = "/";
+    string _returnUrl = "/";
+    bool isBusy;
 
     protected override void OnInitialized()
     {
+        editContext = new(LoginModel);
+
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("returnUrl", out var returnUrl))
         {
@@ -31,10 +56,28 @@
 
     private async Task HandleLogin()
     {
-        var success = await ((CookieAuthenticationStateProvider)AuthenticationStateProvider).SingIn(loginModel);
-        if (!string.IsNullOrEmpty(_returnUrl) && Uri.IsWellFormedUriString(_returnUrl, UriKind.Relative))
-            Navigation.NavigateTo(_returnUrl);
-        else
-            Navigation.NavigateTo("/");
+        isBusy = true;
+        var loginUserResponse = await ((CookieAuthenticationStateProvider)AuthenticationStateProvider).SingIn(LoginModel);
+        isBusy = false;
+
+        if (loginUserResponse.Status == Status.Success)
+        {
+            if (!string.IsNullOrEmpty(_returnUrl) && Uri.IsWellFormedUriString(_returnUrl, UriKind.Relative))
+                Navigation.NavigateTo(_returnUrl);
+            else
+                Navigation.NavigateTo("/");
+        }
+        else if (loginUserResponse.Status == Status.Failed)
+        {
+            customValidation!.DisplayErrors(loginUserResponse.Errors!);
+        }
+        else if (loginUserResponse.Status == Status.Blocked)
+        {
+            Navigation.NavigateTo("authentication/failedloginattempts");
+        }
+        else if (loginUserResponse.Status == Status.ResetPassword)
+        {
+            Navigation.NavigateTo($"/authentication/resetpassword/{loginUserResponse.IdUsuario}");
+        }
     }
 }

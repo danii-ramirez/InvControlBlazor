@@ -7,6 +7,6 @@
         var baseUri = Navigation.BaseUri;
         var relativeUri = currentUri.Substring(baseUri.Length - 1);
         var encodedReturnUrl = Uri.EscapeDataString(relativeUri);
-        Navigation.NavigateTo($"/login?returnUrl={encodedReturnUrl}");
+        Navigation.NavigateTo($"/authentication/login?returnUrl={encodedReturnUrl}");
     }
 }

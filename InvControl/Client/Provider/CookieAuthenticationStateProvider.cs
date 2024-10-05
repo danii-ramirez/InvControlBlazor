@@ -1,5 +1,7 @@
 ﻿using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Components.Authorization;
+using Radzen;
+using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 
@@ -15,12 +17,18 @@ namespace InvControl.Client.Provider
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var username = await GetCurrentUser();
+            var currentUser = await GetCurrentUser();
             ClaimsIdentity identity;
 
-            if (!string.IsNullOrEmpty(username))
+            if (currentUser != null)
             {
-                identity = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }, "Cookies");
+                var claims = new List<Claim> {
+                    new(ClaimTypes.NameIdentifier, currentUser.IdUsuario.ToString()),
+                    new(ClaimTypes.Name, currentUser.Nombre),
+                    new(ClaimTypes.Surname, currentUser.Apellido)
+                };
+
+                identity = new ClaimsIdentity(claims, "Cookies");
             }
             else
             {
@@ -31,15 +39,15 @@ namespace InvControl.Client.Provider
             return new AuthenticationState(user);
         }
 
-        public async Task<bool> SingIn(LoginUser user)
+        public async Task<LoginUserResponse> SingIn(LoginUser user)
         {
             var response = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/login", user);
-            if (response.IsSuccessStatusCode)
+            if (response.StatusCode == HttpStatusCode.OK)
             {
                 NotifyAuthenticationStateChanged();
-                return true;
             }
-            return false;
+
+            return (await response.Content.ReadFromJsonAsync<LoginUserResponse>())!;
         }
 
         public async Task LogOut()
@@ -48,13 +56,12 @@ namespace InvControl.Client.Provider
             NotifyAuthenticationStateChanged();
         }
 
-        public async Task<string?> GetCurrentUser()
+        public async Task<CurrentUser?> GetCurrentUser()
         {
             var response = await _httpClient.GetAsync($"{BASE_REQUEST_URI}/currentUser");
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<CurrentUserModel>();
-                return result?.Username;
+                return await response.Content.ReadFromJsonAsync<CurrentUser>();
             }
 
             return null;
@@ -64,10 +71,5 @@ namespace InvControl.Client.Provider
         {
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
-    }
-
-    public class CurrentUserModel
-    {
-        public string Username { get; set; } = string.Empty;
     }
 }
