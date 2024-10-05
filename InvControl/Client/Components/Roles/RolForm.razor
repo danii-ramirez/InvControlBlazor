@@ -1,0 +1,102 @@
+﻿@inject RolesService RolesService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+@if (showForm)
+{
+    <EditForm EditContext="editContext" OnSubmit="Submit" autocomplete="off">
+        <DataAnnotationsValidator />
+        <CustomValidation @ref="customValidation" />
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Descripción:" Component="descripcion" />
+            <RadzenTextBox @bind-Value="Rol.Descripcion" Name="descripcion" />
+            <ValidationMessage For="@(() => Rol.Descripcion)" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
+            <RadzenLabel Text="Permisos:" />
+            <RadzenCard>
+                <RadzenTree Data=@Permisos @bind-CheckedValues=@CheckedValues AllowCheckBoxes="true" Style="height: 300px">
+                    <RadzenTreeLevel TextProperty="@nameof(Permiso.Descripcion)"
+                                     ChildrenProperty="@nameof(Permiso.Permisos)"
+                                     HasChildren=@(e => (e as Permiso)!.Permisos.Any()) />
+                </RadzenTree>
+                <ValidationMessage For="@(() => Rol.Permisos)" />
+            </RadzenCard>
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8 rz-mb-4">
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" />
+            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" />
+        </RadzenStack>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Rol Rol { get; set; } = default!;
+    [Parameter] public List<Permiso> Permisos { get; set; } = default!;
+
+    EditContext editContext = default!;
+    CustomValidation customValidation = default!;
+
+    IEnumerable<object> checkedValues = Enumerable.Empty<object>();
+    IEnumerable<object> CheckedValues
+    {
+        get => checkedValues;
+        set => checkedValues = value;
+    }
+
+    bool showForm;
+
+    protected override void OnInitialized()
+    {
+        foreach (var item in Rol.Permisos)
+        {
+            
+        }
+
+        editContext = new(Rol);
+        showForm = true;
+    }
+
+    private async Task Submit()
+    {
+        foreach (var item in checkedValues)
+        {
+            Rol.Permisos.Add((Permiso)item);
+        }
+
+        if (editContext.Validate())
+        {
+            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
+            if ((bool)result)
+            {
+                Response res;
+                if (Rol.IdRol == 0)
+                    res = await RolesService.PostRol(Rol);
+                else
+                    res = await RolesService.PutRol(Rol);
+
+                if (res.Success)
+                {
+                    NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
+                    DialogService.Close(Rol);
+                }
+                else
+                {
+                    customValidation.DisplayErrors(res.Errors!);
+                }
+            }
+        }
+    }
+
+    private async Task Cancelar()
+    {
+        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
+        if ((bool)result)
+        {
+            DialogService.Close();
+        }
+    }
+}

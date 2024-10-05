@@ -1,0 +1,82 @@
+﻿@page "/roles"
+@using InvControl.Client.Components.Roles
+
+@inject RolesService RolesService
+@inject DialogService DialogService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Roles" />
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
+        <RadzenDataGrid @ref="refData" TItem="Rol" Data="roles" AllowSorting="true" Density="Density.Compact" EmptyText="" Style="width: 50rem;">
+            <HeaderTemplate>
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                              Icon="add" Text="Agregar rol" Click="HandleClickAgregarRol" />
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(Rol.Descripcion)" Title="Descripción" />
+                <RadzenDataGridColumn Property="@nameof(Rol.Descripcion)" TextAlign="TextAlign.Center" Width="100px" Sortable="false">
+                    <Template>
+                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickEditarRol(context))" @onclick:stopPropagation="true">
+                        </RadzenButton>
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      @onclick:stopPropagation="true">
+                        </RadzenButton>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<Rol> roles = new();
+    List<Permiso> permisos = new();
+
+    bool showForm;
+    RadzenDataGrid<Rol> refData = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        roles = await RolesService.GetRoles();
+        permisos = await RolesService.GetPermisos();
+        showForm = true;
+    }
+
+    private async Task HandleClickAgregarRol()
+    {
+        Rol rol = new();
+
+        var res = await DialogService.OpenAsync<RolForm>(
+                $"Rol",
+                new() { { "Rol", rol }, { "Permisos", permisos } },
+                new() { ShowClose = false });
+
+        roles.Add(rol);
+        await refData.Reload();
+    }
+
+    private async Task HandleClickEditarRol(Rol rol)
+    {
+        var res = await DialogService.OpenAsync<RolForm>(
+                $"Rol",
+                new() { { "Rol", rol.Clone() }, { "Permisos", permisos } },
+                new() { ShowClose = false });
+
+        if (res != null)
+        {
+            res = (Rol)res;
+
+            var rolOriginal = roles.Find(x => x.IdRol == res.IdRol)!;
+            rolOriginal.Descripcion = res.Descripcion;
+            rolOriginal.Permisos = res.Permisos;
+            await refData.Reload();
+        }
+    }
+}

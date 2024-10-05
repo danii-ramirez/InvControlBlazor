@@ -34,3 +34,7 @@
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+.rz-column-title {
+    justify-content: center;
+}

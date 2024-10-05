@@ -24,4 +24,5 @@ await builder.Build().RunAsync();
 static void Services(IServiceCollection services)
 {
     services.AddScoped<UsuariosService>();
+    services.AddScoped<RolesService>();
 }
