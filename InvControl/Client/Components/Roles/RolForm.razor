@@ -64,7 +64,7 @@
 
         if (editContext.Validate())
         {
-            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
+            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
             if ((bool)result)
             {
                 Response res;

@@ -1,0 +1,102 @@
+﻿@inject UsuariosService UsuariosService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+@if (editContext != null)
+{
+    <EditForm EditContext="editContext" OnSubmit="Submit" autocomplete="off">
+        <DataAnnotationsValidator />
+        <CustomValidation @ref="customValidation" />
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Usuario:" Component="user" />
+            <RadzenTextBox @bind-Value="Usuario.User" Name="user" />
+            <ValidationMessage For="@(() => Usuario.User)" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" class="rz-mt-3">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 50%;">
+                <RadzenLabel Text="Nombre:" Component="nombre" />
+                <RadzenTextBox @bind-Value="Usuario.Nombre" Name="nombre" />
+                <ValidationMessage For="@(() => Usuario.Nombre)" />
+            </RadzenStack>
+
+            <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 50%;">
+                <RadzenLabel Text="Apellido:" Component="apellido" />
+                <RadzenTextBox @bind-Value="Usuario.Apellido" Name="apellido" />
+                <ValidationMessage For="@(() => Usuario.Apellido)" />
+            </RadzenStack>
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" class="rz-mt-3">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 50%;">
+                <RadzenLabel Text="Rol:" Component="rol" />
+                <RadzenDropDown @bind-Value=@Usuario.IdRol Data=@Roles
+                                TextProperty="@nameof(Rol.Descripcion)" ValueProperty="@nameof(Rol.IdRol)"
+                                AllowFiltering="true" Name="rol" Style="width: 100%;" />
+                <ValidationMessage For="@(() => Usuario.IdRol)" />
+            </RadzenStack>
+
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="5px" Style="width: 50%;">
+                <RadzenLabel Text="Activo:" Component="activo" />
+                <RadzenCheckBox @bind-Value=@Usuario.Activo Name="activo" />
+            </RadzenStack>
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8 rz-mb-4">
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" />
+            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" />
+        </RadzenStack>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Usuario Usuario { get; set; } = default!;
+    [Parameter] public List<Rol> Roles { get; set; } = default!;
+
+    EditContext editContext = default!;
+    CustomValidation customValidation = default!;
+
+    protected override void OnInitialized()
+    {
+        if (Usuario.IdUsuario == 0)
+            Usuario.Activo = true;
+
+        editContext = new(Usuario);
+    }
+
+    private async Task Submit()
+    {
+        if (editContext.Validate())
+        {
+            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+            if ((bool)result)
+            {
+                Response res;
+                if (Usuario.IdUsuario == 0)
+                    res = await UsuariosService.PostUsuario(Usuario);
+                else
+                    res = await UsuariosService.PutUsuario(Usuario);
+
+                if (res.Success)
+                {
+                    NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
+                    DialogService.Close(Usuario);
+                }
+                else
+                {
+                    customValidation.DisplayErrors(res.Errors!);
+                }
+            }
+        }
+    }
+
+    private async Task Cancelar()
+    {
+        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
+        if ((bool)result)
+        {
+            DialogService.Close();
+        }
+    }
+}

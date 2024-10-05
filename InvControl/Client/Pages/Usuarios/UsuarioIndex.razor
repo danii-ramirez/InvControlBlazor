@@ -1,0 +1,124 @@
+﻿@page "/usuarios"
+@attribute [Authorize]
+
+@using InvControl.Client.Components.Usuarios
+
+@inject UsuariosService UsuariosService
+@inject RolesService RolesService
+@inject DialogService DialogService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Usuarios" />
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
+        <RadzenDataGrid @ref="refData" TItem="Usuario" Data="usuarios" Density="Density.Compact" AllowSorting="true"
+                        AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterMode="FilterMode.Simple"
+                        EmptyText="" Style="width: 75rem;">
+            <HeaderTemplate>
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                              Icon="add" Text="Agregar usuario" Click="HandleClickAgregar" />
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(Usuario.User)" Title="Usuario" />
+                <RadzenDataGridColumn Property="@nameof(Usuario.Nombre)" Title="Nombre" />
+                <RadzenDataGridColumn Property="@nameof(Usuario.Apellido)" Title="Apellido" />
+                <RadzenDataGridColumn Property="@nameof(Usuario.DescripcionRol)" Title="Rol" />
+                <RadzenDataGridColumn Property="@nameof(Usuario.Activo)" Title="Activo" Filterable="false">
+                    <Template>
+                        @if (context.Activo)
+                        {
+                            <text>Sí</text>
+                        }
+                        else
+                        {
+                            <text>No</text>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(Usuario.Bloqueado)" Title="Bloqueado" Filterable="false">
+                    <Template>
+                        @if (context.Bloqueado)
+                        {
+                            <text>Sí</text>
+                        }
+                        else
+                        {
+                            <text>No</text>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="100px" Sortable="false">
+                    <Template>
+                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true" />
+
+                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true" />
+
+                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<Usuario> usuarios = new();
+    List<Rol> roles = new();
+
+    bool showForm;
+    RadzenDataGrid<Usuario> refData = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuarios = await UsuariosService.GetUsuarios();
+        roles = await RolesService.GetRoles();
+        showForm = true;
+    }
+
+    private async Task HandleClickAgregar()
+    {
+        Usuario usuario = new();
+
+        var res = await DialogService.OpenAsync<UsuarioForm>(
+                $"Formulario de usuario",
+                new() { { "Usuario", usuario }, { "Roles", roles } },
+                new() { ShowClose = false });
+
+        if (res != null)
+        {
+            usuarios.Add(usuario);
+            await refData.Reload();
+        }
+    }
+
+    private async Task HandleClickEditar(Usuario usuario)
+    {
+        var res = await DialogService.OpenAsync<UsuarioForm>(
+                $"Formulario de usuario",
+                new() { { "Usuario", usuario.Clone() }, { "Roles", roles } },
+                new() { ShowClose = false });
+
+        if (res != null)
+        {
+            var u = (Usuario)res;
+
+            var userOriginal = usuarios.Find(x => x.IdUsuario == u.IdUsuario)!;
+            userOriginal.User = u.User;
+            userOriginal.Nombre = u.Nombre;
+            userOriginal.Apellido = u.Apellido;
+            userOriginal.Activo = u.Activo;
+            userOriginal.IdRol = u.IdRol;
+            userOriginal.DescripcionRol = roles.Find(x => x.IdRol == u.IdRol)!.Descripcion;
+
+            await refData.Reload();
+        }
+    }
+}

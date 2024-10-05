@@ -30,7 +30,7 @@ namespace InvControl.Server.Controllers
                 DA_Usuario da = new(connectionString);
                 Hashing hashing = new();
 
-                user.Username = user.Username.Trim();
+                user.Username = user.Username.ToLower().Trim();
                 user.Password = user.Password.Trim();
 
                 var dtUser = da.Login(user.Username);
