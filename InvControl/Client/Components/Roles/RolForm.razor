@@ -2,7 +2,7 @@
 @inject DialogService DialogService
 @inject NotificationService NotificationService
 
-@if (showForm)
+@if (editContext != null)
 {
     <EditForm EditContext="editContext" OnSubmit="Submit" autocomplete="off">
         <DataAnnotationsValidator />
@@ -17,7 +17,7 @@
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
             <RadzenLabel Text="Permisos:" />
             <RadzenCard>
-                <RadzenTree Data=@Permisos @bind-CheckedValues=@CheckedValues AllowCheckBoxes="true" Style="height: 300px">
+                <RadzenTree Data=@Permisos @bind-CheckedValues=@checkedValues AllowCheckBoxes="true" Style="height: 300px">
                     <RadzenTreeLevel TextProperty="@nameof(Permiso.Descripcion)"
                                      ChildrenProperty="@nameof(Permiso.Permisos)"
                                      HasChildren=@(e => (e as Permiso)!.Permisos.Any()) />
@@ -41,23 +41,16 @@
     CustomValidation customValidation = default!;
 
     IEnumerable<object> checkedValues = Enumerable.Empty<object>();
-    IEnumerable<object> CheckedValues
-    {
-        get => checkedValues;
-        set => checkedValues = value;
-    }
-
-    bool showForm;
 
     protected override void OnInitialized()
     {
-        foreach (var item in Rol.Permisos)
+        List<Permiso> permisos = new();
+        foreach (var rp in Rol.Permisos)
         {
-            
+            permisos.Add(Permisos.Find(x => x.IdPermiso == rp.IdPermiso)!);
         }
-
+        checkedValues = permisos;
         editContext = new(Rol);
-        showForm = true;
     }
 
     private async Task Submit()
