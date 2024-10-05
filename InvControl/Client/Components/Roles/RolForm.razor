@@ -55,9 +55,11 @@
 
     private async Task Submit()
     {
+        Rol.Permisos.Clear();
         foreach (var item in checkedValues)
         {
-            Rol.Permisos.Add((Permiso)item);
+            if (item != null)
+                Rol.Permisos.Add((Permiso)item);
         }
 
         if (editContext.Validate())

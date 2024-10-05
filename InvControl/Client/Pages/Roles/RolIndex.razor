@@ -1,4 +1,5 @@
 ﻿@page "/roles"
+@attribute [Authorize]
 @using InvControl.Client.Components.Roles
 
 @inject RolesService RolesService
@@ -16,13 +17,10 @@
             </HeaderTemplate>
             <Columns>
                 <RadzenDataGridColumn Property="@nameof(Rol.Descripcion)" Title="Descripción" />
-                <RadzenDataGridColumn Property="@nameof(Rol.Descripcion)" TextAlign="TextAlign.Center" Width="100px" Sortable="false">
+                <RadzenDataGridColumn Property="@nameof(Rol.Descripcion)" TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
                                       Click="@(() => HandleClickEditarRol(context))" @onclick:stopPropagation="true">
-                        </RadzenButton>
-                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
-                                      @onclick:stopPropagation="true">
                         </RadzenButton>
                     </Template>
                 </RadzenDataGridColumn>
@@ -58,8 +56,11 @@ else
                 new() { { "Rol", rol }, { "Permisos", permisos } },
                 new() { ShowClose = false });
 
-        roles.Add(rol);
-        await refData.Reload();
+        if (res != null)
+        {
+            roles.Add(rol);
+            await refData.Reload();
+        }
     }
 
     private async Task HandleClickEditarRol(Rol rol)
