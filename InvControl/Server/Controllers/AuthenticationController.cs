@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using InvControl.Server.Data;
+using InvControl.Server.Helpers;
+using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using InvControl.Shared.Models;
-using InvControl.Server.Data;
-using InvControl.Server.Helpers;
 using System.Text;
 
 namespace InvControl.Server.Controllers
