@@ -1,5 +1,6 @@
 ﻿@page "/roles"
 @attribute [Authorize]
+
 @using InvControl.Client.Components.Roles
 
 @inject RolesService RolesService
@@ -17,7 +18,7 @@
             </HeaderTemplate>
             <Columns>
                 <RadzenDataGridColumn Property="@nameof(Rol.Descripcion)" Title="Descripción" />
-                <RadzenDataGridColumn Property="@nameof(Rol.Descripcion)" TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
                                       Click="@(() => HandleClickEditarRol(context))" @onclick:stopPropagation="true">
@@ -52,7 +53,7 @@ else
         Rol rol = new();
 
         var res = await DialogService.OpenAsync<RolForm>(
-                $"Rol",
+                $"Formulario de roles",
                 new() { { "Rol", rol }, { "Permisos", permisos } },
                 new() { ShowClose = false });
 

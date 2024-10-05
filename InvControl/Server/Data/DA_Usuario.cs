@@ -59,7 +59,7 @@ namespace InvControl.Server.Data
             cnn.Close();
         }
 
-        public DataTable ObtenerUsuario(int idUsuario)
+        public DataTable ObtenerUsuario(int? idUsuario, string? user)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))
@@ -67,11 +67,62 @@ namespace InvControl.Server.Data
                 var cmd = cnn.CreateCommand();
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.CommandText = "prc_get_Usuarios";
-                cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+                if (idUsuario != null) cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+                if (user != null) cmd.Parameters.AddWithValue("@pUser", user);
                 SqlDataAdapter da = new(cmd);
                 da.Fill(dt);
             }
             return dt;
+        }
+
+        public int InsertarUsuario(string user, string pass, string nombre, string apellido, bool activo, int idRol, SqlTransaction transaction)
+        {
+            int result = 0;
+            var cnn = transaction.Connection;
+            var cmd = cnn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_ins_Usuario";
+            cmd.Parameters.AddWithValue("@pUser", user);
+            cmd.Parameters.AddWithValue("@pPass", pass);
+            cmd.Parameters.AddWithValue("@pNombre", nombre);
+            cmd.Parameters.AddWithValue("@pApellido", apellido);
+            cmd.Parameters.AddWithValue("@pActivo", activo);
+            cmd.Parameters.AddWithValue("@pIdRol", idRol);
+            SqlParameter returnValue = new("@returnValue", result)
+            {
+                Direction = ParameterDirection.ReturnValue,
+            };
+            cmd.Parameters.Add(returnValue);
+            cmd.ExecuteNonQuery();
+            result = (int)returnValue.Value;
+            return result;
+        }
+
+        public void ModificarUsuario(int idUsuario, string user, string nombre, string apellido, bool activo, int idRol, SqlTransaction transaction)
+        {
+            var cnn = transaction.Connection;
+            var cmd = cnn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_upd_Usuario";
+            cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+            cmd.Parameters.AddWithValue("@pUser", user);
+            cmd.Parameters.AddWithValue("@pNombre", nombre);
+            cmd.Parameters.AddWithValue("@pApellido", apellido);
+            cmd.Parameters.AddWithValue("@pActivo", activo);
+            cmd.Parameters.AddWithValue("@pIdRol", idRol);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void EliminarUsuario(int idUsuario, SqlTransaction transaction)
+        {
+            var cnn = transaction.Connection;
+            var cmd = cnn.CreateCommand();
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_del_Usuario";
+            cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+            cmd.ExecuteNonQuery();
         }
 
         public void ResetearPass(int idUsuario, string pass)
