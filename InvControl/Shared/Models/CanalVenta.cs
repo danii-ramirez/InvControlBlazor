@@ -2,13 +2,13 @@
 
 namespace InvControl.Shared.Models
 {
-    public class CanalVenta
+    public class CanalVenta : ICloneable
     {
         public int IdCanalVenta { get; set; }
 
         [Required(ErrorMessage = "Debe ingresar un código"),
             Range(1, int.MaxValue, ErrorMessage = "Debe ingresar un código")]
-        public int Codigo { get; set; }
+        public int? Codigo { get; set; }
 
         [Required(ErrorMessage = "Debe ingresar un nombre"),
             StringLength(25, ErrorMessage = "El nombre no puede superar los 25 caracteres")]
@@ -16,5 +16,7 @@ namespace InvControl.Shared.Models
 
         [StringLength(50, ErrorMessage = "La descripción no puede superar los 50 caracteres")]
         public string Descripcion { get; set; } = string.Empty;
+
+        public object Clone() => MemberwiseClone();
     }
 }

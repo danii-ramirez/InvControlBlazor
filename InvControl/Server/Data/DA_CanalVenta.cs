@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_CanalVenta(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerCanalesVentas(int? codigo, string? descripcion)
+        public DataTable ObtenerCanalesVentas(int? codigo, string? nombre)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))
@@ -18,7 +18,7 @@ namespace InvControl.Server.Data
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.CommandText = "prc_get_CanalesVentas";
                 if (codigo != null) cmd.Parameters.AddWithValue("@pCodigo", codigo);
-                if (descripcion != null) cmd.Parameters.AddWithValue("@pDescripcion", descripcion);
+                if (nombre != null) cmd.Parameters.AddWithValue("@pNombre", nombre);
                 SqlDataAdapter da = new(cmd);
                 da.Fill(dt);
             }

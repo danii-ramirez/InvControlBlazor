@@ -67,7 +67,7 @@ namespace InvControl.Server.Controllers
                         cnn.Open();
                         transaction = cnn.BeginTransaction();
 
-                        canalVenta.IdCanalVenta = daC.InsertarCanalesVentas(canalVenta.Codigo, canalVenta.Nombre.Trim(), canalVenta.Descripcion?.Trim(), transaction);
+                        canalVenta.IdCanalVenta = daC.InsertarCanalesVentas((int)canalVenta.Codigo!, canalVenta.Nombre.Trim(), canalVenta.Descripcion?.Trim(), transaction);
 
                         daAu.Insertar($"Se creó el canal de venta {canalVenta.Codigo}", DateTime.Now, (int)TipoEntidad.CanalVenta, (int)TipoOperacion.Creacion,
                             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
@@ -118,7 +118,7 @@ namespace InvControl.Server.Controllers
                         cnn.Open();
                         transaction = cnn.BeginTransaction();
 
-                        daC.ModificarCanalesVentas(canalVenta.IdCanalVenta, canalVenta.Codigo, canalVenta.Nombre.Trim(), canalVenta.Descripcion?.Trim(), transaction);
+                        daC.ModificarCanalesVentas(canalVenta.IdCanalVenta, (int)canalVenta.Codigo!, canalVenta.Nombre.Trim(), canalVenta.Descripcion?.Trim(), transaction);
 
                         daAu.Insertar($"Se editó el canal de venta {canalVenta.Codigo}", DateTime.Now, (int)TipoEntidad.CanalVenta, (int)TipoOperacion.Edicion,
                             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);

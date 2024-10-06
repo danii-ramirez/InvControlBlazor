@@ -358,10 +358,14 @@ END;
 GO
 
 CREATE PROCEDURE [dbo].[prc_get_CanalesVentas]
+    @pCodigo        INT = NULL,
+    @pNombre        NVARCHAR(25) = NULL
 AS
 BEGIN
     SELECT IdCanalVenta, Nombre, Descripcion, Codigo
     FROM CanalesVentas
+    WHERE (@pCodigo is null or Codigo = @pCodigo)
+    AND (@pNombre is null or Nombre = @pNombre)
 END
 GO
 
