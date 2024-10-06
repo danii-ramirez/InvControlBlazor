@@ -5,35 +5,32 @@
 @if (editContext != null)
 {
     <EditForm EditContext="editContext" OnSubmit="Submit" autocomplete="off">
-    <DataAnnotationsValidator />
-    <CustomValidation @ref="customValidation" />
+        <DataAnnotationsValidator />
+        <CustomValidation @ref="customValidation" />
 
-    <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-        <RadzenLabel Text="Código:" Component="codigo" />
-        <RadzenNumeric @bind-Value="CanalVenta.Codigo" TextAlign="TextAlign.Right" Name="codigo" Min="0"
-            ShowUpDown="false" />
-        <ValidationMessage For="@(() => CanalVenta.Codigo)" />
-    </RadzenStack>
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Código:" Component="codigo" />
+            <RadzenNumeric @bind-Value="CanalVenta.Codigo" TextAlign="TextAlign.Right" Name="codigo" Min="0" ShowUpDown="false" />
+            <ValidationMessage For="@(() => CanalVenta.Codigo)" />
+        </RadzenStack>
 
-    <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-        <RadzenLabel Text="Nombre:" Component="nombre" />
-        <RadzenTextBox @bind-Value="CanalVenta.Nombre" Name="nombre" />
-        <ValidationMessage For="@(() => CanalVenta.Nombre)" />
-    </RadzenStack>
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
+            <RadzenLabel Text="Nombre:" Component="nombre" />
+            <RadzenTextBox @bind-Value="CanalVenta.Nombre" Name="nombre" />
+            <ValidationMessage For="@(() => CanalVenta.Nombre)" />
+        </RadzenStack>
 
-    <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-        <RadzenLabel Text="Descripción:" Component="descripcion" />
-        <RadzenTextBox @bind-Value="CanalVenta.Descripcion" Name="descripcion" />
-        <ValidationMessage For="@(() => CanalVenta.Descripcion)" />
-    </RadzenStack>
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
+            <RadzenLabel Text="Descripción:" Component="descripcion" />
+            <RadzenTextBox @bind-Value="CanalVenta.Descripcion" Name="descripcion" />
+            <ValidationMessage For="@(() => CanalVenta.Descripcion)" />
+        </RadzenStack>
 
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem"
-        class="rz-mt-8 rz-mb-4">
-        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" />
-        <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save"
-            Text="Guardar" />
-    </RadzenStack>
-</EditForm>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" />
+            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" />
+        </RadzenStack>
+    </EditForm>
 }
 
 @code {
@@ -51,14 +48,8 @@
     {
         if (editContext.Validate())
         {
-            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new()
-                {
-                    OkButtonText = "Sí",
-                    CancelButtonText =
-                "No",
-                    ShowClose = false
-                });
-                
+            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
             if ((bool)result)
             {
                 Response res;
@@ -82,12 +73,7 @@
 
     private async Task Cancelar()
     {
-        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new()
-            {
-                OkButtonText = "Sí",
-                CancelButtonText =
-            "No"
-            });
+        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
         if ((bool)result)
         {
             DialogService.Close();

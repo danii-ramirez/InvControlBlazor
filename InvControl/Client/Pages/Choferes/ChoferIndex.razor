@@ -1,0 +1,95 @@
+﻿@page "/choferes"
+@attribute [Authorize]
+
+@using InvControl.Client.Components.Choferes
+
+@inject ChoferesService ChoferesService
+@inject DialogService DialogService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Choferes" />
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
+        <RadzenDataGrid @ref="refData" TItem="Chofer" Data="choferes" AllowSorting="true" Density="Density.Compact" EmptyText="" Style="width: 50rem;">
+            <HeaderTemplate>
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                              Icon="add" Text="Agregar chofer" Click="HandleClickAgregar" />
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(Chofer.Nombre)" Title="Nombre" />
+                <RadzenDataGridColumn Property="@nameof(Chofer.Apellido)" Title="Apellido" />
+                <RadzenDataGridColumn Title="Activo" Width="100px" TextAlign="TextAlign.Center">
+                    <Template>
+                        @if (context.Activo)
+                        {
+                            <text>Sí</text>
+                        }
+                        else
+                        {
+                            <text>No</text>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                    <Template>
+                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true">
+                        </RadzenButton>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<Chofer> choferes = new();
+    bool showForm;
+    RadzenDataGrid<Chofer> refData = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        choferes = await ChoferesService.GetChoferes();
+        showForm = true;
+    }
+
+    private async Task HandleClickAgregar()
+    {
+        Chofer chofer = new();
+
+        var res = await DialogService.OpenAsync<ChoferForm>(
+                "Formulario de choferes",
+                new() { { "Chofer", chofer } },
+                new() { ShowClose = false });
+
+        if (res != null)
+        {
+            choferes.Add(res);
+            await refData.Reload();
+        }
+    }
+
+    private async Task HandleClickEditar(Chofer chofer)
+    {
+        var res = await DialogService.OpenAsync<ChoferForm>(
+                "Formulario de choferes",
+                new() { { "Chofer", chofer } },
+                new() { ShowClose = false });
+
+        if (res != null)
+        {
+            var c = (Chofer)res;
+
+            var choferOriginal = choferes.Find(x => x.IdChofer == c.IdChofer)!;
+            choferOriginal.Nombre = c.Nombre;
+            choferOriginal.Apellido = c.Apellido;
+            choferOriginal.Activo = c.Activo;
+            await refData.Reload();
+        }
+    }
+}

@@ -24,7 +24,7 @@
                 <RadzenDataGridColumn Property="@nameof(Usuario.Nombre)" Title="Nombre" />
                 <RadzenDataGridColumn Property="@nameof(Usuario.Apellido)" Title="Apellido" />
                 <RadzenDataGridColumn Property="@nameof(Usuario.DescripcionRol)" Title="Rol" />
-                <RadzenDataGridColumn Property="@nameof(Usuario.Activo)" Title="Activo" Filterable="false">
+                <RadzenDataGridColumn Property="@nameof(Usuario.Activo)" Title="Activo" TextAlign="TextAlign.Center" Filterable="false">
                     <Template>
                         @if (context.Activo)
                         {
@@ -36,7 +36,7 @@
                         }
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Property="@nameof(Usuario.Bloqueado)" Title="Bloqueado" Filterable="false">
+                <RadzenDataGridColumn Property="@nameof(Usuario.Bloqueado)" Title="Bloqueado" TextAlign="TextAlign.Center" Filterable="false">
                     <Template>
                         @if (context.Bloqueado)
                         {
@@ -88,7 +88,7 @@ else
         Usuario usuario = new();
 
         var res = await DialogService.OpenAsync<UsuarioForm>(
-                $"Formulario de usuario",
+                $"Formulario de usuarios",
                 new() { { "Usuario", usuario }, { "Roles", roles } },
                 new() { ShowClose = false });
 
@@ -102,7 +102,7 @@ else
     private async Task HandleClickEditar(Usuario usuario)
     {
         var res = await DialogService.OpenAsync<UsuarioForm>(
-                $"Formulario de usuario",
+                $"Formulario de usuarios",
                 new() { { "Usuario", usuario.Clone() }, { "Roles", roles } },
                 new() { ShowClose = false });
 

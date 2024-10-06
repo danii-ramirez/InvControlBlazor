@@ -37,7 +37,6 @@ else
 @code {
     List<Rol> roles = new();
     List<Permiso> permisos = new();
-
     bool showForm;
     RadzenDataGrid<Rol> refData = default!;
 
@@ -53,7 +52,7 @@ else
         Rol rol = new();
 
         var res = await DialogService.OpenAsync<RolForm>(
-                $"Formulario de roles",
+                "Formulario de roles",
                 new() { { "Rol", rol }, { "Permisos", permisos } },
                 new() { ShowClose = false });
 
@@ -67,7 +66,7 @@ else
     private async Task HandleClickEditarRol(Rol rol)
     {
         var res = await DialogService.OpenAsync<RolForm>(
-                $"Rol",
+                "Formulario de roles",
                 new() { { "Rol", rol.Clone() }, { "Permisos", permisos } },
                 new() { ShowClose = false });
 
