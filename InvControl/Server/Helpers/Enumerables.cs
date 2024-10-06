@@ -4,7 +4,8 @@
     {
         Usuario = 1,
         Rol = 2,
-        SKU = 3
+        SKU = 3,
+        CanalVenta = 4
     }
 
     public enum TipoOperacion

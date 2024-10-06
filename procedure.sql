@@ -11,31 +11,31 @@ GO
 CREATE PROCEDURE prc_upd_UsuariosIncrementarIntentosFallidos
     @pIdUsuario INT
 AS
-    DECLARE @intentosFallidos INT
+DECLARE @intentosFallidos INT
 
-    SELECT @intentosFallidos = intentosfallidos + 1
-    FROM Usuarios
-    WHERE [IdUsuario] = @pIdUsuario
+SELECT @intentosFallidos = intentosfallidos + 1
+FROM Usuarios
+WHERE [IdUsuario] = @pIdUsuario
 
-    UPDATE Usuarios SET
+UPDATE Usuarios SET
         IntentosFallidos = @intentosFallidos,
         Bloqueado = IIF(@intentosFallidos < 3, Bloqueado, 1)
     WHERE [IdUsuario] = @pIdUsuario
 
-    RETURN @intentosFallidos
+RETURN @intentosFallidos
 GO
 
 CREATE PROCEDURE prc_upd_UsuariosResetearIntentosFallidos
     @pIdUsuario INT
 AS
-    UPDATE Usuarios SET IntentosFallidos = 0 WHERE [IdUsuario] = @pIdUsuario
+UPDATE Usuarios SET IntentosFallidos = 0 WHERE [IdUsuario] = @pIdUsuario
 GO
 
 CREATE PROCEDURE prc_upd_UsuariosResetearPass
     @pIdUsuario INT,
     @pPass      NVARCHAR(255)
 AS
-    UPDATE Usuarios SET
+UPDATE Usuarios SET
         Pass = @pPass,
         ResetearPass = 0
     WHERE IdUsuario = @pIdUsuario
@@ -83,7 +83,7 @@ BEGIN
     SELECT IdUsuario, [User], Pass, Nombre, Apellido, Activo, Bloqueado, ResetearPass, u.IdRol, r.Descripcion [DescripcionRol]
     FROM Usuarios u INNER JOIN Roles r on u.IdRol = r.IdRol
     WHERE (@pIdUsuario IS NULL OR IdUsuario = @pIdUsuario)
-    and (@pUser is null or [User] = @pUser)
+        and (@pUser is null or [User] = @pUser)
 END
 GO
 
@@ -140,7 +140,7 @@ BEGIN
     select IdRol, Descripcion
     from Roles
     where (@pIdRol IS NULL OR IdRol = @pIdRol)
-    and (@pDescripcion IS NULL OR Descripcion = @pDescripcion)
+        and (@pDescripcion IS NULL OR Descripcion = @pDescripcion)
 END
 GO
 
@@ -200,8 +200,9 @@ GO
 
 CREATE PROCEDURE prc_get_Permisos
 AS
-    select IdPermiso, Nombre, IdPadre from Permisos
-    ORDER BY IdPermiso
+select IdPermiso, Nombre, IdPadre
+from Permisos
+ORDER BY IdPermiso
 Go
 
 CREATE PROCEDURE prc_ins_Bitacora
@@ -259,12 +260,12 @@ CREATE PROCEDURE prc_ins_SKU
     @pIdUsuario             INT,
     @pAltaRegistro          DATETIME
 AS
-    INSERT into SKU
-        (Codigo, Nombre, Descripcion, Activo, Especial, UnidadesPorBandeja, IdMarca, IdUsuario, AltaRegistro)
-    VALUES
-        (@pCodigo, @pNombre, @pDescripcion, @pActivo, @pEspecial, @pUnidadesPorBandeja, @pIdMarca, @pIdUsuario, @pAltaRegistro)
+INSERT into SKU
+    (Codigo, Nombre, Descripcion, Activo, Especial, UnidadesPorBandeja, IdMarca, IdUsuario, AltaRegistro)
+VALUES
+    (@pCodigo, @pNombre, @pDescripcion, @pActivo, @pEspecial, @pUnidadesPorBandeja, @pIdMarca, @pIdUsuario, @pAltaRegistro)
 
-    RETURN @@IDENTITY
+RETURN @@IDENTITY
 GO
 
 CREATE PROCEDURE prc_upd_SKU
@@ -277,7 +278,7 @@ CREATE PROCEDURE prc_upd_SKU
     @pUnidadesPorBandeja    INT,
     @pIdMarca               INT
 AS
-    UPDATE SKU SET
+UPDATE SKU SET
         Codigo = @pCodigo,
         Nombre = @pNombre,
         Descripcion = @pDescripcion,
@@ -291,11 +292,13 @@ GO
 CREATE PROCEDURE prc_get_SKUSugerencia
     @pSugerencia  NVARCHAR(50)
 AS
-    SELECT TOP 10 IdSKU, Codigo, Nombre FROM SKU
-    WHERE
+SELECT TOP 10
+    IdSKU, Codigo, Nombre
+FROM SKU
+WHERE
         CAST(codigo AS NVARCHAR(50)) = @pSugerencia
-        OR
-        Nombre LIKE '%' + @pSugerencia + '%'
+    OR
+    Nombre LIKE '%' + @pSugerencia + '%'
 GO
 
 SET ANSI_NULLS ON
@@ -320,22 +323,28 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- Verificar si el transporte ya existe
-        IF EXISTS (SELECT 1 FROM Transportes WHERE Patente = @Patente)
+        IF EXISTS (SELECT 1
+    FROM Transportes
+    WHERE Patente = @Patente)
         BEGIN
-            -- Si existe, devolver mensaje y resultado
-            SET @Resultado = -1;  -- C�digo de error para indicar que ya existe
-            SET @Mensaje = 'El transporte con la patente ya existe.';
-        END
+        -- Si existe, devolver mensaje y resultado
+        SET @Resultado = -1;
+        -- C�digo de error para indicar que ya existe
+        SET @Mensaje = 'El transporte con la patente ya existe.';
+    END
         ELSE
         BEGIN
-            -- Insertar nuevo transporte
-            INSERT INTO Transportes (Patente, Nombre, Activo)
-            VALUES (@Patente, @Nombre, @Activo);
+        -- Insertar nuevo transporte
+        INSERT INTO Transportes
+            (Patente, Nombre, Activo)
+        VALUES
+            (@Patente, @Nombre, @Activo);
 
-            -- Obtener el Id del nuevo transporte
-            SET @Resultado = SCOPE_IDENTITY();  -- Devuelve el ID del nuevo transporte
-            SET @Mensaje = 'Transporte registrado exitosamente.';
-        END
+        -- Obtener el Id del nuevo transporte
+        SET @Resultado = SCOPE_IDENTITY();
+        -- Devuelve el ID del nuevo transporte
+        SET @Mensaje = 'Transporte registrado exitosamente.';
+    END
 
         COMMIT TRANSACTION;
     END TRY
@@ -348,19 +357,38 @@ BEGIN
 END;
 GO
 
-
-
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 CREATE PROCEDURE [dbo].[prc_get_CanalesVentas]
 AS
 BEGIN
-    SELECT IdCanalVenta, Nombre, Descripcion,Codigo
+    SELECT IdCanalVenta, Nombre, Descripcion, Codigo
     FROM CanalesVentas
 END
+GO
+
+create PROCEDURE prc_ins_CanalesVentas
+    @pCodigo        int,
+    @pNombre        NVARCHAR(25),
+    @pDescripcion   NVARCHAR(50) = null
+AS
+insert into CanalesVentas
+    (Codigo, Nombre, Descripcion)
+VALUES
+    (@pCodigo, @pNombre, @pDescripcion)
+
+RETURN @@IDENTITY
+GO
+
+create PROCEDURE prc_upd_CanalesVentas
+    @pIdCanalVenta  int,
+    @pCodigo        int,
+    @pNombre        NVARCHAR(25),
+    @pDescripcion   NVARCHAR(50) = null
+AS
+UPDATE CanalesVentas SET
+        Codigo = @pCodigo,
+        Nombre = @pNombre,
+        @pDescripcion = @pDescripcion
+        where IdCanalVenta = @pIdCanalVenta
 GO
 
 SET ANSI_NULLS ON
@@ -401,22 +429,28 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- Verificar si el transporte ya existe
-        IF EXISTS (SELECT 1 FROM Choferes WHERE Nombre = @Nombre  AND Apellido = @Apellido)
+        IF EXISTS (SELECT 1
+    FROM Choferes
+    WHERE Nombre = @Nombre AND Apellido = @Apellido)
         BEGIN
-            -- Si existe, devolver mensaje y resultado
-            SET @Resultado = -1;  -- C�digo de error para indicar que ya existe
-            SET @Mensaje = 'El chofer con la nombre y apoellido ya existe.';
-        END
+        -- Si existe, devolver mensaje y resultado
+        SET @Resultado = -1;
+        -- C�digo de error para indicar que ya existe
+        SET @Mensaje = 'El chofer con la nombre y apoellido ya existe.';
+    END
         ELSE
         BEGIN
-            -- Insertar nuevo transporte
-            INSERT INTO Choferes (Apellido, Nombre, Activo)
-            VALUES (@Apellido, @Nombre, @Activo);
+        -- Insertar nuevo transporte
+        INSERT INTO Choferes
+            (Apellido, Nombre, Activo)
+        VALUES
+            (@Apellido, @Nombre, @Activo);
 
-            -- Obtener el Id del nuevo transporte
-            SET @Resultado = SCOPE_IDENTITY();  -- Devuelve el ID del nuevo transporte
-            SET @Mensaje = 'chofer registrado exitosamente.';
-        END
+        -- Obtener el Id del nuevo transporte
+        SET @Resultado = SCOPE_IDENTITY();
+        -- Devuelve el ID del nuevo transporte
+        SET @Mensaje = 'chofer registrado exitosamente.';
+    END
 
         COMMIT TRANSACTION;
     END TRY
@@ -441,7 +475,8 @@ CREATE PROCEDURE [dbo].[prc_upd_Choferes]
     @Activo BIT,
     @Mensaje VARCHAR(500) OUTPUT,
     @Resultado INT OUTPUT,
-    @IdChofer INT  -- Mantenerlo como par�metro de entrada
+    @IdChofer INT
+-- Mantenerlo como par�metro de entrada
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -452,32 +487,37 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- Verificar si el transportista ya existe
-        SELECT @IdChofer = IdChofer  
-        FROM Choferes
+        SELECT @IdChofer = IdChofer
+    FROM Choferes
 
 
         IF @IdChofer IS NOT NULL
         BEGIN
-            -- Actualizar el transportista existente
-            UPDATE Choferes
+        -- Actualizar el transportista existente
+        UPDATE Choferes
             SET Nombre = @Nombre,
                 Activo = @Activo
              -- Usar el nombre correcto aqu�
           WHERE IdChofer = @IdChofer;
-            SET @Resultado = @IdChofer;  -- ID del transportista actualizado
-            SET @Mensaje = 'chofer actualizado exitosamente.';
-        END
+        SET @Resultado = @IdChofer;
+        -- ID del transportista actualizado
+        SET @Mensaje = 'chofer actualizado exitosamente.';
+    END
         ELSE
         BEGIN
-            -- Insertar nuevo transportista
-            INSERT INTO Choferes (Apellido, Nombre, Activo)
-            VALUES (@Apellido, @Nombre, @Activo);
+        -- Insertar nuevo transportista
+        INSERT INTO Choferes
+            (Apellido, Nombre, Activo)
+        VALUES
+            (@Apellido, @Nombre, @Activo);
 
-            -- Obtener el ID del nuevo transportista
-            SET @IdChofer = SCOPE_IDENTITY();  -- Devuelve el ID del nuevo transportista
-            SET @Resultado = @IdChofer;  -- Establecer resultado
-            SET @Mensaje = 'chofer registrado exitosamente.';
-        END
+        -- Obtener el ID del nuevo transportista
+        SET @IdChofer = SCOPE_IDENTITY();
+        -- Devuelve el ID del nuevo transportista
+        SET @Resultado = @IdChofer;
+        -- Establecer resultado
+        SET @Mensaje = 'chofer registrado exitosamente.';
+    END
 
         COMMIT TRANSACTION;
     END TRY
@@ -506,7 +546,8 @@ CREATE PROCEDURE [dbo].[prc_upd_Transportista]
     @Activo BIT,
     @Mensaje VARCHAR(500) OUTPUT,
     @Resultado INT OUTPUT,
-    @IdTransporte INT  -- Mantenerlo como par�metro de entrada
+    @IdTransporte INT
+-- Mantenerlo como par�metro de entrada
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -517,32 +558,38 @@ BEGIN
         BEGIN TRANSACTION;
 
         -- Verificar si el transportista ya existe
-        SELECT @IdTransporte = IdTransporte  -- Cambiar 'Id' por 'TransportistaId' (o el nombre correcto)
-        FROM Transportes
-        WHERE Patente = @Patente;
+        SELECT @IdTransporte = IdTransporte
+    -- Cambiar 'Id' por 'TransportistaId' (o el nombre correcto)
+    FROM Transportes
+    WHERE Patente = @Patente;
 
         IF @IdTransporte IS NOT NULL
         BEGIN
-            -- Actualizar el transportista existente
-            UPDATE Transportes
+        -- Actualizar el transportista existente
+        UPDATE Transportes
             SET Nombre = @Nombre,
                 Activo = @Activo
              -- Usar el nombre correcto aqu�
           WHERE IdTransporte = @IdTransporte;
-            SET @Resultado = @IdTransporte;  -- ID del transportista actualizado
-            SET @Mensaje = 'Transportista actualizado exitosamente.';
-        END
+        SET @Resultado = @IdTransporte;
+        -- ID del transportista actualizado
+        SET @Mensaje = 'Transportista actualizado exitosamente.';
+    END
         ELSE
         BEGIN
-            -- Insertar nuevo transportista
-            INSERT INTO Transportes (Patente, Nombre, Activo)
-            VALUES (@Patente, @Nombre, @Activo);
+        -- Insertar nuevo transportista
+        INSERT INTO Transportes
+            (Patente, Nombre, Activo)
+        VALUES
+            (@Patente, @Nombre, @Activo);
 
-            -- Obtener el ID del nuevo transportista
-            SET @IdTransporte = SCOPE_IDENTITY();  -- Devuelve el ID del nuevo transportista
-            SET @Resultado = @IdTransporte;  -- Establecer resultado
-            SET @Mensaje = 'Transportista registrado exitosamente.';
-        END
+        -- Obtener el ID del nuevo transportista
+        SET @IdTransporte = SCOPE_IDENTITY();
+        -- Devuelve el ID del nuevo transportista
+        SET @Resultado = @IdTransporte;
+        -- Establecer resultado
+        SET @Mensaje = 'Transportista registrado exitosamente.';
+    END
 
         COMMIT TRANSACTION;
     END TRY

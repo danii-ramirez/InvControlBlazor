@@ -1,0 +1,58 @@
+﻿@page "/canalesventas"
+@attribute [Authorize]
+
+@inject CanalesVentasService CanalesVentasService
+@inject DialogService DialogService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Canales de ventas" />
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
+        <RadzenDataGrid @ref="refData" TItem="CanalVenta" Data="canales" AllowSorting="true" Density="Density.Compact" EmptyText="" Style="width: 55rem;">
+            <HeaderTemplate>
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                              Icon="add" Text="Agregar canal de venta" Click="HandleClickAgregar" />
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(CanalVenta.Codigo)" Title="Código" TextAlign="TextAlign.Right" Width="100px" />
+                <RadzenDataGridColumn Property="@nameof(CanalVenta.Nombre)" Title="Nombre" Width="200px" />
+                <RadzenDataGridColumn Property="@nameof(CanalVenta.Descripcion)" Title="Descripción" />
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                    <Template>
+                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true">
+                        </RadzenButton>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<CanalVenta> canales = new();
+
+    bool showForm;
+    RadzenDataGrid<CanalVenta> refData = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        canales = await CanalesVentasService.GetCanalesVentas();
+        showForm = true;
+    }
+
+    private void HandleClickAgregar()
+    {
+
+    }
+
+    private void HandleClickEditar(CanalVenta canal)
+    {
+
+    }
+}

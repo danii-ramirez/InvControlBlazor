@@ -19,6 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Pages\Choferes\" />
+    <Folder Include="Pages\Transporte\" />
     <Folder Include="wwwroot\img\" />
   </ItemGroup>
 
