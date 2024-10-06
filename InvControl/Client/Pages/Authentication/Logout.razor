@@ -1,17 +1,17 @@
-﻿@using InvControl.Client.Provider
+﻿@page "/authentication/logout"
+
+@using InvControl.Client.Provider
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 
-<button @onclick="HandleLogout">Cerrar Sesión</button>
-
 @code {
-    private async Task HandleLogout()
+    protected override async Task OnInitializedAsync()
     {
         var authenticationState = (CookieAuthenticationStateProvider)AuthenticationStateProvider;
         await authenticationState.LogOut();
         authenticationState.NotifyAuthenticationStateChanged();
-        Navigation.NavigateTo("/login");
+        Navigation.NavigateTo("/authentication/login");
     }
 }

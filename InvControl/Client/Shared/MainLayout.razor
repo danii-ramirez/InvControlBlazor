@@ -1,11 +1,24 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 @inherits LayoutComponentBase
 
 <RadzenLayout style="position: relative;grid-template-areas: 'rz-sidebar rz-header' 'rz-sidebar rz-body'">
     <RadzenHeader>
-        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
-            <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-            <RadzenLabel Text="Header" />
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween"
+            AlignItems="AlignItems.Center">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+                <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+                <RadzenImage Path="img/logo.webp" AlternateText="logo-conurbano" />
+            </RadzenStack>
+
+            <RadzenProfileMenu class="rz-mr-3">
+                <Template>
+                    @user?.FindFirst(ClaimTypes.Name)?.Value @user?.FindFirst(ClaimTypes.Surname)?.Value
+                </Template>
+                <ChildContent>
+                    <RadzenProfileMenuItem Text="Cerrar sesión" Path="authentication/logout" Icon="logout" />
+                </ChildContent>
+            </RadzenProfileMenu>
         </RadzenStack>
     </RadzenHeader>
 
@@ -40,13 +53,14 @@
     [CascadingParameter] private Task<AuthenticationState>? authenticationState { get; set; }
 
     bool sidebarExpanded = false, isAuthenticated;
+    ClaimsPrincipal? user;
 
     protected override async Task OnInitializedAsync()
     {
         if (authenticationState is not null)
         {
             var authState = await authenticationState;
-            var user = authState?.User;
+            user = authState?.User;
 
             if (user?.Identity is not null)
             {
@@ -55,3 +69,8 @@
         }
     }
 }
+using System.Security.Claims;
+
+#line default
+#line hidden
+#nullable disable
