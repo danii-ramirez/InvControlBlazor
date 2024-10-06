@@ -66,5 +66,10 @@ namespace InvControl.Client.Services
         {
             await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/resetpassword", user);
         }
+
+        public async ValueTask<List<Permiso>> GetMenu()
+        {
+            return (await _httpClient.GetFromJsonAsync<List<Permiso>>($"{BASE_REQUEST_URI}/menu"))!;
+        }
     }
 }

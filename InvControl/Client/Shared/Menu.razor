@@ -1,0 +1,17 @@
+@if (Permiso.Permisos.Any())
+{
+    <RadzenPanelMenuItem Text="@Permiso.Descripcion">
+    @foreach (var menu in Permiso.Permisos)
+        {
+            <Menu Permiso="menu" />
+        }
+        </RadzenPanelMenuItem>
+}
+else
+{
+    <RadzenPanelMenuItem Text="@Permiso.Descripcion" Path="@Permiso.Url" />
+}
+
+@code {
+    [Parameter] public Permiso Permiso { get; set; } = default!;
+}

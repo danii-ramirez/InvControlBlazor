@@ -1,6 +1,5 @@
-﻿@inherits LayoutComponentBase
-
-<RadzenComponents />
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inherits LayoutComponentBase
 
 <RadzenLayout style="position: relative;grid-template-areas: 'rz-sidebar rz-header' 'rz-sidebar rz-body'">
     <RadzenHeader>
@@ -12,12 +11,14 @@
 
     <RadzenSidebar Responsive="false" @bind-Expanded="@sidebarExpanded" style="position: absolute; z-index: 3">
         <RadzenStack AlignItems="AlignItems.End" class="rz-p-2">
-            <RadzenButton Icon="west" Variant="Variant.Text" ButtonStyle="ButtonStyle.Secondary" Click="@(() => sidebarExpanded = false)" />
+            <RadzenButton Icon="west" Variant="Variant.Text" ButtonStyle="ButtonStyle.Secondary"
+                Click="@(() => sidebarExpanded = false)" />
         </RadzenStack>
-        <RadzenPanelMenu>
-            <RadzenPanelMenuItem Text="Home" Icon="home" />
-            <RadzenPanelMenuItem Text="Users" Icon="account_box" />
-        </RadzenPanelMenu>
+
+        @if (isAuthenticated)
+        {
+            <NavMenu />
+        }
     </RadzenSidebar>
 
     <RadzenBody>
@@ -28,10 +29,29 @@
 
     @if (sidebarExpanded)
     {
-        <div @onclick="@(() => sidebarExpanded = false)" class="rz-dialog-mask" style="position: absolute; z-index: 2"></div>
+        <div class="rz-dialog-mask" style="position: absolute; z-index: 2" @onclick="@(() => sidebarExpanded = false)">
+        </div>
     }
-</RadzenLayout>
+    </RadzenLayout>
 
-@code {
-    bool sidebarExpanded = false;
+    <RadzenComponents />
+
+    @code {
+    [CascadingParameter] private Task<AuthenticationState>? authenticationState { get; set; }
+
+    bool sidebarExpanded = false, isAuthenticated;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user?.Identity is not null)
+            {
+                isAuthenticated = user.Identity.IsAuthenticated;
+            }
+        }
+    }
 }

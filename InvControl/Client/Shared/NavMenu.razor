@@ -1,1 +1,17 @@
-﻿
+﻿@inject UsuariosService UsuariosService
+
+<RadzenPanelMenu Multiple="@true" Style="width:300px">
+    @foreach (var menu in lst)
+    {
+        <Menu Permiso="menu" />
+    }
+    </RadzenPanelMenu>
+
+    @code {
+    List<Permiso> lst = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        lst = await UsuariosService.GetMenu();
+    }
+}

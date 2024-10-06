@@ -170,5 +170,42 @@ namespace InvControl.Server.Controllers
                 return StatusCode(500, ex);
             }
         }
+
+        [HttpGet("menu")]
+        public IActionResult GetMenu()
+        {
+            List<Permiso> menu = new();
+            DA_Usuario da = new(connectionString);
+
+            using (DataTable dt = da.ObtenerMenu(int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier))))
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    Permiso permiso = new()
+                    {
+                        IdPermiso = (int)dr["IdPermiso"],
+                        Descripcion = (string)dr["Nombre"],
+                        Url = (string)dr["Controller"]
+                    };
+                    if (dr["Icon"] != DBNull.Value) permiso.Icon = (string?)dr["Icon"];
+
+                    menu.Add(permiso);
+                }
+            }
+            var pmenuJerarquicos = ConstruirArbolMenu(menu);
+            return Ok(pmenuJerarquicos);
+        }
+
+        private static List<Permiso> ConstruirArbolMenu(List<Permiso> permisos, int? idpadre = null)
+        {
+            var permisosHijos = permisos.Where(p => p.IdPadre == idpadre).ToList();
+
+            foreach (var permiso in permisosHijos)
+            {
+                permiso.Permisos = ConstruirArbolMenu(permisos, permiso.IdPermiso);
+            }
+
+            return permisosHijos;
+        }
     }
 }

@@ -137,5 +137,20 @@ namespace InvControl.Server.Data
             cmd.ExecuteNonQuery();
             cnn.Close();
         }
+
+        public DataTable ObtenerMenu(int idUsuario)
+        {
+            DataTable dt = new();
+            using (SqlConnection cnn = new(connectionString))
+            {
+                var cmd = cnn.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "prc_get_Menu";
+                cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+                SqlDataAdapter da = new(cmd);
+                da.Fill(dt);
+            }
+            return dt;
+        }
     }
 }
