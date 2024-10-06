@@ -3,7 +3,6 @@ using InvControl.Server.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Security.Claims;
 

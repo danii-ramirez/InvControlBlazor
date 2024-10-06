@@ -124,7 +124,7 @@ namespace InvControl.Server.Controllers
                             da.InsertarRolesPorPermiso(rol.IdRol, p.IdPermiso, transaction);
                         }
 
-                        daAu.Insertar($"Se editó el usuario {rol.Descripcion.ToLower().Trim()}", DateTime.Now, (int)TipoEntidad.Usuario, (int)TipoOperacion.Edicion,
+                        daAu.Insertar($"Se editó el usuario {rol.Descripcion.ToLower().Trim()}", DateTime.Now, (int)TipoEntidad.Rol, (int)TipoOperacion.Edicion,
                             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
                         transaction.Commit();

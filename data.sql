@@ -35,7 +35,9 @@ values
     ('Usuario'),
     ('Rol'),
     ('SKU'),
-    ('Canal de venta')
+    ('Canal de venta'),
+    ('Chofer'),
+    ('Transporte')
 
 insert into TipoOperacion
     (Descripcion)

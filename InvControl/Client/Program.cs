@@ -26,4 +26,6 @@ static void Services(IServiceCollection services)
     services.AddScoped<UsuariosService>();
     services.AddScoped<RolesService>();
     services.AddScoped<CanalesVentasService>();
+    services.AddScoped<ChoferesService>();
+    services.AddScoped<TransportesService>();
 }

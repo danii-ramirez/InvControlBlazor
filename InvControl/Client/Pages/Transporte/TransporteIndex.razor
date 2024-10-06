@@ -1,0 +1,95 @@
+﻿@page "/transportes"
+@using InvControl.Client.Components.Transportes
+@attribute [Authorize]
+
+@inject TransportesService TransportesService
+@inject DialogService DialogService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Transportes" />
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
+        <RadzenDataGrid @ref="refData" TItem="Transporte" Data="transportes" AllowSorting="true" Density="Density.Compact" EmptyText="" Style="width: 50rem;">
+            <HeaderTemplate>
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                              Icon="add" Text="Agregar transporte" Click="HandleClickAgregar" />
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(Transporte.Nombre)" Title="Nombre" />
+                <RadzenDataGridColumn Property="@nameof(Transporte.Patente)" Title="Patente" />
+                <RadzenDataGridColumn Title="Activo" Width="100px" TextAlign="TextAlign.Center">
+                    <Template>
+                        @if (context.Activo)
+                        {
+                            <text>Sí</text>
+                        }
+                        else
+                        {
+                            <text>No</text>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                    <Template>
+                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true">
+                        </RadzenButton>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<Transporte> transportes = new();
+    bool showForm;
+    RadzenDataGrid<Transporte> refData = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        transportes = await TransportesService.GetTransportes();
+        showForm = true;
+    }
+
+
+    private async Task HandleClickAgregar()
+    {
+        Transporte transporte = new();
+
+        var res = await DialogService.OpenAsync<TransporteForm>(
+                "Formulario de transportes",
+                new() { { "Transporte", transporte } },
+                new() { ShowClose = false });
+
+        if (res != null)
+        {
+            transportes.Add(res);
+            await refData.Reload();
+        }
+    }
+
+    private async Task HandleClickEditar(Transporte transporte)
+    {
+        var res = await DialogService.OpenAsync<TransporteForm>(
+                "Formulario de choferes",
+                new() { { "Transporte", transporte } },
+                new() { ShowClose = false });
+
+        if (res != null)
+        {
+            var t = (Transporte)res;
+
+            var transporteOriginal = transportes.Find(x => x.IdTransporte == t.IdTransporte)!;
+            transporteOriginal.Nombre = t.Nombre;
+            transporteOriginal.Patente = t.Patente;
+            transporteOriginal.Activo = t.Activo;
+            await refData.Reload();
+        }
+    }
+}

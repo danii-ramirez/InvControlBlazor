@@ -11,22 +11,22 @@
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
         <RadzenDataGrid @ref="refData" TItem="CanalVenta" Data="canales" AllowSorting="true" Density="Density.Compact"
-            AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-            FilterMode="FilterMode.Simple" EmptyText="" Style="width: 55rem;">
+                        AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        FilterMode="FilterMode.Simple" EmptyText="" Style="width: 55rem;">
             <HeaderTemplate>
                 <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
-                    Icon="add" Text="Agregar canal de venta" Click="HandleClickAgregar" />
+                              Icon="add" Text="Agregar canal de venta" Click="HandleClickAgregar" />
             </HeaderTemplate>
             <Columns>
                 <RadzenDataGridColumn Property="@nameof(CanalVenta.Codigo)" Title="Código" TextAlign="TextAlign.Right"
-                    Width="100px" />
+                                      Width="100px" />
                 <RadzenDataGridColumn Property="@nameof(CanalVenta.Nombre)" Title="Nombre" Width="200px" />
                 <RadzenDataGridColumn Property="@nameof(CanalVenta.Descripcion)" Title="Descripción" />
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
-                            Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
-                            @onclick:stopPropagation="true">
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
+                                      @onclick:stopPropagation="true">
                         </RadzenButton>
                     </Template>
                 </RadzenDataGridColumn>
@@ -56,9 +56,9 @@ else
         CanalVenta canal = new();
 
         var res = await DialogService.OpenAsync<CanalVentaForm>(
-        "Formulario de canal de venta",
-        new() { { "CanalVenta", canal } },
-        new() { ShowClose = false });
+            "Formulario de canales de ventas",
+            new() { { "CanalVenta", canal } },
+            new() { ShowClose = false });
 
         if (res != null)
         {
@@ -70,9 +70,9 @@ else
     private async Task HandleClickEditar(CanalVenta canal)
     {
         var res = await DialogService.OpenAsync<CanalVentaForm>(
-        "Formulario de canal de venta",
-        new() { { "CanalVenta", canal.Clone() } },
-        new() { ShowClose = false });
+            "Formulario de canales de ventas",
+            new() { { "CanalVenta", canal.Clone() } },
+            new() { ShowClose = false });
 
         if (res != null)
         {
