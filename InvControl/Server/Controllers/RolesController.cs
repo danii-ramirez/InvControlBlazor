@@ -1,9 +1,10 @@
 ﻿using InvControl.Server.Data;
+using InvControl.Server.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using System.Transactions;
+using System.Security.Claims;
 
 namespace InvControl.Server.Controllers
 {
@@ -53,6 +54,7 @@ namespace InvControl.Server.Controllers
             try
             {
                 DA_Rol da = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
 
                 if (da.ObtenerRoles(null, rol.Descripcion.Trim()).Rows.Count > 0)
                     ModelState.AddModelError(nameof(Rol.Descripcion), "Ya existe un rol con la misma descripción");
@@ -71,7 +73,8 @@ namespace InvControl.Server.Controllers
                             da.InsertarRolesPorPermiso(rol.IdRol, p.IdPermiso, transaction);
                         }
 
-                        //TOOD: falta auditoria
+                        daAu.Insertar($"Se editó el rol {rol.Descripcion.ToLower().Trim()}", DateTime.Now, (int)TipoEntidad.Rol, (int)TipoOperacion.Creacion,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
                         transaction.Commit();
                         cnn.Close();
@@ -98,6 +101,7 @@ namespace InvControl.Server.Controllers
             try
             {
                 DA_Rol da = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
 
                 using (DataTable dt = da.ObtenerRoles(null, rol.Descripcion.Trim()))
                 {
@@ -120,7 +124,8 @@ namespace InvControl.Server.Controllers
                             da.InsertarRolesPorPermiso(rol.IdRol, p.IdPermiso, transaction);
                         }
 
-                        //TOOD: falta auditoria
+                        daAu.Insertar($"Se editó el usuario {rol.Descripcion.ToLower().Trim()}", DateTime.Now, (int)TipoEntidad.Usuario, (int)TipoOperacion.Edicion,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
                         transaction.Commit();
                         cnn.Close();
