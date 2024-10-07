@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Security.Claims;
 using System.Text;
+using System.Transactions;
 
 namespace InvControl.Server.Controllers
 {
@@ -131,6 +132,28 @@ namespace InvControl.Server.Controllers
                 }
 
                 return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpDelete("{idUsuario:int}")]
+        public IActionResult DeleteUsuario(int idUsuario)
+        {
+            SqlTransaction transaction = default!;
+            try
+            {
+                using (SqlConnection cnn = new(connectionString))
+                {
+
+                }
+
+                return Ok();
             }
             catch (Exception ex)
             {

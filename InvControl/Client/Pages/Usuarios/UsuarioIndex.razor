@@ -147,8 +147,13 @@ else
     private async Task HandleClickBorrar(Usuario usuario)
     {
         var res = await DialogService.Confirm(
-            $"Desea reestablecer la contraseña de {usuario.User}?",
+            $"Desea borrar el usaurio {usuario.User.ToUpper()}?",
             Message.Title,
             new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+        if ((bool)res)
+        {
+
+        }
     }
 }

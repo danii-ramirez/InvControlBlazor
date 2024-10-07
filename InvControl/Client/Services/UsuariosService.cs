@@ -62,6 +62,12 @@ namespace InvControl.Client.Services
             }
         }
 
+        public async ValueTask<bool> DeleteUsuario(int idUsuario)
+        {
+            var response = await _httpClient.DeleteAsync($"{BASE_REQUEST_URI}/{idUsuario}");
+            return response.StatusCode == HttpStatusCode.OK;
+        }
+
         public async ValueTask PostResetPassword(LoginUserResetPassword user)
         {
             await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/resetpassword", user);
