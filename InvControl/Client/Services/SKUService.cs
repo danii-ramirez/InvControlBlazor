@@ -5,25 +5,25 @@ using System.Net.Http.Json;
 
 namespace InvControl.Client.Services
 {
-    public class TransportesService
+    public class SKUService
     {
         readonly HttpClient _httpClient;
-        const string BASE_REQUEST_URI = "api/transportes";
+        const string BASE_REQUEST_URI = "api/sku";
 
-        public TransportesService(HttpClient httpClient) => _httpClient = httpClient;
+        public SKUService(HttpClient httpClient) => _httpClient = httpClient;
 
-        public async ValueTask<List<Transporte>> GetTransportes()
+        public async ValueTask<List<SKU>> GetSKU()
         {
-            return (await _httpClient.GetFromJsonAsync<List<Transporte>>(BASE_REQUEST_URI))!;
+            return (await _httpClient.GetFromJsonAsync<List<SKU>>(BASE_REQUEST_URI))!;
         }
 
-        public async ValueTask<Response> PostTransportes(Transporte transporte)
+        public async ValueTask<Response> PostSKU(SKU sku)
         {
-            var res = await _httpClient.PostAsJsonAsync(BASE_REQUEST_URI, transporte);
+            var res = await _httpClient.PostAsJsonAsync(BASE_REQUEST_URI, sku);
             if (res.StatusCode == HttpStatusCode.OK)
             {
-                var newT = await res.Content.ReadFromJsonAsync<Transporte>();
-                transporte.IdTransporte = newT!.IdTransporte;
+                var newSku = await res.Content.ReadFromJsonAsync<SKU>();
+                sku.IdSKU = newSku!.IdSKU;
                 return new(true);
             }
             else if (res.StatusCode == HttpStatusCode.BadRequest)
@@ -32,15 +32,20 @@ namespace InvControl.Client.Services
                 return new(false);
         }
 
-        public async ValueTask<Response> PutTransportes(Transporte transporte)
+        public async ValueTask<Response> PutSKU(SKU sku)
         {
-            var res = await _httpClient.PutAsJsonAsync(BASE_REQUEST_URI, transporte);
+            var res = await _httpClient.PutAsJsonAsync(BASE_REQUEST_URI, sku);
             if (res.StatusCode == HttpStatusCode.OK)
                 return new(true);
             else if (res.StatusCode == HttpStatusCode.BadRequest)
                 return new(false, (await res.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>())!);
             else
                 return new(false);
+        }
+
+        public async ValueTask<List<Marca>> GetMarcas()
+        {
+            return (await _httpClient.GetFromJsonAsync<List<Marca>>($"{BASE_REQUEST_URI}/marcas"))!;
         }
     }
 }

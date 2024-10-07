@@ -15,6 +15,7 @@ namespace InvControl.Server.Controllers
     {
         private readonly ILogger<UsuariosController> _logger;
         private readonly string connectionString;
+        private const string password = "12345";
 
         public UsuariosController(ILogger<UsuariosController> logger, IConfiguration configuration)
         {
@@ -65,8 +66,7 @@ namespace InvControl.Server.Controllers
                 if (ModelState.IsValid)
                 {
                     Hashing hashing = new();
-                    string pass = "12345";
-                    string passHash = hashing.HashPassword(usuario.User.ToLower().Trim(), Convert.ToBase64String(Encoding.UTF8.GetBytes(pass)));
+                    string passHash = hashing.HashPassword(usuario.User.ToLower().Trim(), Convert.ToBase64String(Encoding.UTF8.GetBytes(password)));
 
                     using (SqlConnection cnn = new(connectionString))
                     {
@@ -171,6 +171,29 @@ namespace InvControl.Server.Controllers
             }
         }
 
+        [HttpGet("resetpassword/{idUsuario:int}")]
+        public IActionResult GetResetPass(int idUsuario)
+        {
+            try
+            {
+                DA_Usuario da = new(connectionString);
+                Hashing hashing = new();
+
+                using (DataTable dt = da.ObtenerUsuario(idUsuario, null))
+                {
+                    var hash = hashing.HashPassword((string)dt.Rows[0]["User"], Convert.ToBase64String(Encoding.UTF8.GetBytes(password)));
+                    da.RestablecerPass(idUsuario, hash);
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpGet("menu")]
         public IActionResult GetMenu()
         {
@@ -187,11 +210,13 @@ namespace InvControl.Server.Controllers
                         Descripcion = (string)dr["Nombre"],
                         Url = (string)dr["Controller"]
                     };
+                    if (dr["IdPadre"] != DBNull.Value) permiso.IdPadre = (int?)dr["IdPadre"];
                     if (dr["Icon"] != DBNull.Value) permiso.Icon = (string?)dr["Icon"];
 
                     menu.Add(permiso);
                 }
             }
+
             var pmenuJerarquicos = ConstruirArbolMenu(menu);
             return Ok(pmenuJerarquicos);
         }
@@ -199,12 +224,10 @@ namespace InvControl.Server.Controllers
         private static List<Permiso> ConstruirArbolMenu(List<Permiso> permisos, int? idpadre = null)
         {
             var permisosHijos = permisos.Where(p => p.IdPadre == idpadre).ToList();
-
             foreach (var permiso in permisosHijos)
             {
                 permiso.Permisos = ConstruirArbolMenu(permisos, permiso.IdPermiso);
             }
-
             return permisosHijos;
         }
     }

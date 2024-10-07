@@ -125,6 +125,19 @@ namespace InvControl.Server.Data
             cmd.ExecuteNonQuery();
         }
 
+        public void RestablecerPass(int idUsuario, string pass)
+        {
+            SqlConnection cnn = new(connectionString);
+            var cmd = cnn.CreateCommand();
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_upd_UsuariosRestablecerPass";
+            cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+            cmd.Parameters.AddWithValue("@pPass", pass);
+            cnn.Open();
+            cmd.ExecuteNonQuery();
+            cnn.Close();
+        }
+
         public void ResetearPass(int idUsuario, string pass)
         {
             SqlConnection cnn = new(connectionString);

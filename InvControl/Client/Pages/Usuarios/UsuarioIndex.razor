@@ -6,6 +6,7 @@
 @inject UsuariosService UsuariosService
 @inject RolesService RolesService
 @inject DialogService DialogService
+@inject NotificationService NotificationService
 
 @if (showForm)
 {
@@ -51,13 +52,13 @@
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="100px" Sortable="false">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
-                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true" />
+                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true" title="Editar" />
 
-                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
-                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true" />
+                        <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="lock_reset" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickResetPass(context))" @onclick:stopPropagation="true" title="Restablecer contraseña" />
 
-                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
-                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true" />
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickBorrar(context))" @onclick:stopPropagation="true" title="Borrar" />
                     </Template>
                 </RadzenDataGridColumn>
             </Columns>
@@ -120,5 +121,34 @@ else
 
             await refData.Reload();
         }
+    }
+
+    private async Task HandleClickResetPass(Usuario usuario)
+    {
+        var res = await DialogService.Confirm(
+            $"Desea restablecer la contraseña de {usuario.User.ToUpper()}?",
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+        if ((bool)res)
+        {
+            var result = await UsuariosService.GetResetPassword(usuario.IdUsuario);
+            if (result)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "La contraseña se restablecio correctamente");
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "No se pudo restablecer la contraseña");
+            }
+        }
+    }
+
+    private async Task HandleClickBorrar(Usuario usuario)
+    {
+        var res = await DialogService.Confirm(
+            $"Desea reestablecer la contraseña de {usuario.User}?",
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
     }
 }
