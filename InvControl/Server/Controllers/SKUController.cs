@@ -26,7 +26,7 @@ namespace InvControl.Server.Controllers
         {
             List<SKU> lst = new();
             DA_SKU da = new(connectionString);
-            using (DataTable dt = da.ObtenerSKU(null, codigo, nombre))
+            using (DataTable dt = da.ObtenerSKU(null, codigo, nombre?.Trim(), activo, idMarca))
             {
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -60,10 +60,10 @@ namespace InvControl.Server.Controllers
                 DA_SKU daSKU = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
-                if (daSKU.ObtenerSKU(null, sku.Codigo, null).Rows.Count > 0)
+                if (daSKU.ObtenerSKU(null, sku.Codigo, null, null, null).Rows.Count > 0)
                     ModelState.AddModelError(nameof(SKU.Codigo), "Ya existe un SKU con el mismo código");
 
-                if (daSKU.ObtenerSKU(null, null, sku.Nombre.Trim()).Rows.Count > 0)
+                if (daSKU.ObtenerSKU(null, null, sku.Nombre.Trim(), null, null).Rows.Count > 0)
                     ModelState.AddModelError(nameof(SKU.Nombre), "Ya existe un SKU con el mismo nombre");
 
                 if (ModelState.IsValid)
@@ -106,13 +106,13 @@ namespace InvControl.Server.Controllers
                 DA_SKU daSKU = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
-                using (DataTable dt = daSKU.ObtenerSKU(null, sku.Codigo, null))
+                using (DataTable dt = daSKU.ObtenerSKU(null, sku.Codigo, null, null, null))
                 {
                     if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdSKU"] != sku.IdSKU)
                         ModelState.AddModelError(nameof(SKU.Codigo), "Ya existe un SKU con el mismo código");
                 }
 
-                using (DataTable dt = daSKU.ObtenerSKU(null, null, sku.Nombre.Trim()))
+                using (DataTable dt = daSKU.ObtenerSKU(null, null, sku.Nombre.Trim(), null, null))
                 {
                     if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdSKU"] != sku.IdSKU)
                         ModelState.AddModelError(nameof(SKU.Nombre), "Ya existe un SKU con el mismo nombre");
