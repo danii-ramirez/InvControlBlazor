@@ -17,7 +17,7 @@
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
             <RadzenLabel Text="Permisos:" />
             <RadzenCard>
-                <RadzenTree Data=@Permisos @bind-CheckedValues=@checkedValues AllowCheckBoxes="true" Style="height: 300px">
+                <RadzenTree Data=@Permisos @bind-CheckedValues=@checkedValues AllowCheckBoxes="true" Style="height: 300px; width: 100%;">
                     <RadzenTreeLevel TextProperty="@nameof(Permiso.Descripcion)"
                                      ChildrenProperty="@nameof(Permiso.Permisos)"
                                      HasChildren=@(e => (e as Permiso)!.Permisos.Any()) />
@@ -85,7 +85,7 @@
             }
         }
     }
-    
+
     private async Task Cancelar()
     {
         var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });

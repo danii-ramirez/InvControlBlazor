@@ -230,7 +230,7 @@ namespace InvControl.Server.Controllers
                     {
                         IdPermiso = (int)dr["IdPermiso"],
                         Descripcion = (string)dr["Nombre"],
-                        Url = (string)dr["Controller"]
+                        Url = (string)dr["Url"]
                     };
                     if (dr["IdPadre"] != DBNull.Value) permiso.IdPadre = (int?)dr["IdPadre"];
                     if (dr["Icon"] != DBNull.Value) permiso.Icon = (string?)dr["Icon"];

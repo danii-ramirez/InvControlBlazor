@@ -26,7 +26,7 @@ namespace InvControl.Client.Services
             if (descripcion != null) query["descripcion"] = descripcion;
 
             if (query.Any())
-                uri = "?" + string.Join("&", query.Select(x => $"{x.Key}={x.Value}"));
+                uri += "?" + string.Join("&", query.Select(x => $"{x.Key}={x.Value}"));
 
             return (await _httpClient.GetFromJsonAsync<List<Rol>>(uri))!;
         }

@@ -63,5 +63,5 @@
 }
 
 .rz-column-title {
-    justify-content: center;
+    justify-content: center !important;
 }
