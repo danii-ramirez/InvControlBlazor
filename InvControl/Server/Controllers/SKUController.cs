@@ -22,11 +22,11 @@ namespace InvControl.Server.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetSKU()
+        public IActionResult GetSKU(int? codigo, string? nombre, bool? activo, int? idMarca)
         {
             List<SKU> lst = new();
             DA_SKU da = new(connectionString);
-            using (DataTable dt = da.ObtenerSKU(null, null, null))
+            using (DataTable dt = da.ObtenerSKU(null, codigo, nombre))
             {
                 foreach (DataRow dr in dt.Rows)
                 {

@@ -37,13 +37,13 @@
 
     <RadzenDataGrid @ref="refData" TItem="SKU" Data="skus" Density="Density.Compact" AllowSorting="true"
                     AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterMode="FilterMode.Simple"
-                    EmptyText="" Style="height: 40rem;">
+                    Responsive="true" EmptyText="" Style="height: 40rem;">
         <HeaderTemplate>
             <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
                           Icon="add" Text="Agregar SKU" Click="HandleClickAgregar" />
         </HeaderTemplate>
         <Columns>
-            <RadzenDataGridColumn Property="@nameof(SKU.Codigo)" Title="Código" />
+            <RadzenDataGridColumn Property="@nameof(SKU.Codigo)" Title="Código" TextAlign="TextAlign.Right" />
             <RadzenDataGridColumn Property="@nameof(SKU.Nombre)" Title="Nombre" />
             <RadzenDataGridColumn Property="@nameof(SKU.Descripcion)" Title="Descripción" />
             <RadzenDataGridColumn Property="@nameof(SKU.Activo)" Title="Activo" TextAlign="TextAlign.Center" Filterable="false">
@@ -122,7 +122,8 @@ else
 
     }
 
-    private void Buscar()
+    private async Task Buscar()
     {
+        skus = await SKUService.GetSKU(filterCodigo, filterNombre, filterActivo, filterIdMarca);
     }
 }

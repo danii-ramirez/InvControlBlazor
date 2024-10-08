@@ -15,7 +15,7 @@
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
         <RadzenDataGrid @ref="refData" TItem="Usuario" Data="usuarios" Density="Density.Compact" AllowSorting="true"
                         AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterMode="FilterMode.Simple"
-                        EmptyText="" Style="width: 75rem;">
+                        Responsive="true" EmptyText="" Style="width: 75rem;">
             <HeaderTemplate>
                 <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
                               Icon="add" Text="Agregar usuario" Click="HandleClickAgregar" />

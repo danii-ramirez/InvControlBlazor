@@ -166,20 +166,8 @@ namespace InvControl.Server.Controllers
                 }
             }
 
-            var permisosJerarquicos = ConstruirArbolPermisos(permisos);
+            var permisosJerarquicos = Functions.ConstruirArbolPermiso(permisos);
             return Ok(permisosJerarquicos);
-        }
-
-        private static List<Permiso> ConstruirArbolPermisos(List<Permiso> permisos, int? idpadre = null)
-        {
-            var permisosHijos = permisos.Where(p => p.IdPadre == idpadre).ToList();
-
-            foreach (var permiso in permisosHijos)
-            {
-                permiso.Permisos = ConstruirArbolPermisos(permisos, permiso.IdPermiso);
-            }
-
-            return permisosHijos;
         }
     }
 }

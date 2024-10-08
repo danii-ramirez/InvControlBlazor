@@ -12,9 +12,20 @@ namespace InvControl.Client.Services
 
         public SKUService(HttpClient httpClient) => _httpClient = httpClient;
 
-        public async ValueTask<List<SKU>> GetSKU()
+        public async ValueTask<List<SKU>> GetSKU(int? codigo, string? nombre, bool? activo, int? idMarca)
         {
-            return (await _httpClient.GetFromJsonAsync<List<SKU>>(BASE_REQUEST_URI))!;
+            string uri = $"{BASE_REQUEST_URI}";
+
+            Dictionary<string, object> query = new();
+            if (codigo != null) query["codigo"] = codigo;
+            if (nombre != null) query["nombre"] = WebUtility.UrlEncode(nombre);
+            if (activo != null) query["activo"] = activo;
+            if (idMarca != null) query["idMarca"] = idMarca;
+
+            if (query.Any())
+                uri += "?" + string.Join("&", query.Select(x => $"{x.Key}={x.Value}"));
+
+            return (await _httpClient.GetFromJsonAsync<List<SKU>>(uri))!;
         }
 
         public async ValueTask<Response> PostSKU(SKU sku)

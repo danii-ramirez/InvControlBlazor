@@ -6,7 +6,6 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Security.Claims;
 using System.Text;
-using System.Transactions;
 
 namespace InvControl.Server.Controllers
 {
@@ -240,18 +239,8 @@ namespace InvControl.Server.Controllers
                 }
             }
 
-            var pmenuJerarquicos = ConstruirArbolMenu(menu);
+            var pmenuJerarquicos = Functions.ConstruirArbolPermiso(menu);
             return Ok(pmenuJerarquicos);
-        }
-
-        private static List<Permiso> ConstruirArbolMenu(List<Permiso> permisos, int? idpadre = null)
-        {
-            var permisosHijos = permisos.Where(p => p.IdPadre == idpadre).ToList();
-            foreach (var permiso in permisosHijos)
-            {
-                permiso.Permisos = ConstruirArbolMenu(permisos, permiso.IdPermiso);
-            }
-            return permisosHijos;
         }
     }
 }
