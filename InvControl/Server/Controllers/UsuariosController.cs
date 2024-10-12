@@ -15,6 +15,7 @@ namespace InvControl.Server.Controllers
     {
         private readonly ILogger<UsuariosController> _logger;
         private readonly string connectionString;
+        private const string password = "12345";
 
         public UsuariosController(ILogger<UsuariosController> logger, IConfiguration configuration)
         {
@@ -65,8 +66,7 @@ namespace InvControl.Server.Controllers
                 if (ModelState.IsValid)
                 {
                     Hashing hashing = new();
-                    string pass = "12345";
-                    string passHash = hashing.HashPassword(usuario.User.ToLower().Trim(), Convert.ToBase64String(Encoding.UTF8.GetBytes(pass)));
+                    string passHash = hashing.HashPassword(usuario.User.ToLower().Trim(), Convert.ToBase64String(Encoding.UTF8.GetBytes(password)));
 
                     using (SqlConnection cnn = new(connectionString))
                     {
@@ -141,6 +141,28 @@ namespace InvControl.Server.Controllers
             }
         }
 
+        [HttpDelete("{idUsuario:int}")]
+        public IActionResult DeleteUsuario(int idUsuario)
+        {
+            SqlTransaction transaction = default!;
+            try
+            {
+                using (SqlConnection cnn = new(connectionString))
+                {
+
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpPost("resetpassword")]
         public IActionResult PostResetPassword(LoginUserResetPassword user)
         {
@@ -171,6 +193,29 @@ namespace InvControl.Server.Controllers
             }
         }
 
+        [HttpGet("resetpassword/{idUsuario:int}")]
+        public IActionResult GetResetPass(int idUsuario)
+        {
+            try
+            {
+                DA_Usuario da = new(connectionString);
+                Hashing hashing = new();
+
+                using (DataTable dt = da.ObtenerUsuario(idUsuario, null))
+                {
+                    var hash = hashing.HashPassword((string)dt.Rows[0]["User"], Convert.ToBase64String(Encoding.UTF8.GetBytes(password)));
+                    da.RestablecerPass(idUsuario, hash);
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpGet("menu")]
         public IActionResult GetMenu()
         {
@@ -185,27 +230,50 @@ namespace InvControl.Server.Controllers
                     {
                         IdPermiso = (int)dr["IdPermiso"],
                         Descripcion = (string)dr["Nombre"],
-                        Url = (string)dr["Controller"]
+                        Url = (string)dr["Url"]
                     };
+                    if (dr["IdPadre"] != DBNull.Value) permiso.IdPadre = (int?)dr["IdPadre"];
                     if (dr["Icon"] != DBNull.Value) permiso.Icon = (string?)dr["Icon"];
 
                     menu.Add(permiso);
                 }
             }
-            var pmenuJerarquicos = ConstruirArbolMenu(menu);
+
+            var pmenuJerarquicos = Functions.ConstruirArbolPermiso(menu);
             return Ok(pmenuJerarquicos);
         }
 
-        private static List<Permiso> ConstruirArbolMenu(List<Permiso> permisos, int? idpadre = null)
+        [HttpGet("validar/acceso")]
+        public IActionResult GetValidarAcceso([FromQuery] string url)
         {
-            var permisosHijos = permisos.Where(p => p.IdPadre == idpadre).ToList();
-
-            foreach (var permiso in permisosHijos)
+            try
             {
-                permiso.Permisos = ConstruirArbolMenu(permisos, permiso.IdPermiso);
-            }
+                int idUsuario = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            return permisosHijos;
+                DA_Usuario da = new(connectionString);
+                var result = da.ValidarAcceso(idUsuario, url);
+
+                if (result)
+                {
+                    List<string> acciones = new();
+
+                    using (DataTable dt = da.ValidarAccion(idUsuario, url))
+                    {
+                        foreach (DataRow dr in dt.Rows)
+                        {
+                            acciones.Add((string)dr["Nombre"]);
+                        }
+                    }
+
+                    return Ok(acciones);
+                }
+                else
+                    return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
         }
     }
 }

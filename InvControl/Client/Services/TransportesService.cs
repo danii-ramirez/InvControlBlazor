@@ -10,10 +10,7 @@ namespace InvControl.Client.Services
         readonly HttpClient _httpClient;
         const string BASE_REQUEST_URI = "api/transportes";
 
-        public TransportesService(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-        }
+        public TransportesService(HttpClient httpClient) => _httpClient = httpClient;
 
         public async ValueTask<List<Transporte>> GetTransportes()
         {

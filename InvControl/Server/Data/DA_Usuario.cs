@@ -125,6 +125,19 @@ namespace InvControl.Server.Data
             cmd.ExecuteNonQuery();
         }
 
+        public void RestablecerPass(int idUsuario, string pass)
+        {
+            SqlConnection cnn = new(connectionString);
+            var cmd = cnn.CreateCommand();
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_upd_UsuariosRestablecerPass";
+            cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+            cmd.Parameters.AddWithValue("@pPass", pass);
+            cnn.Open();
+            cmd.ExecuteNonQuery();
+            cnn.Close();
+        }
+
         public void ResetearPass(int idUsuario, string pass)
         {
             SqlConnection cnn = new(connectionString);
@@ -147,6 +160,41 @@ namespace InvControl.Server.Data
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.CommandText = "prc_get_Menu";
                 cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+                SqlDataAdapter da = new(cmd);
+                da.Fill(dt);
+            }
+            return dt;
+        }
+
+        public bool ValidarAcceso(int idUsuario, string url)
+        {
+            bool result = false;
+            using (var cnn = new SqlConnection(connectionString))
+            {
+                var cmd = cnn.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "prc_get_ValidarAcceso";
+                cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+                cmd.Parameters.AddWithValue("@pUrl", url);
+                cnn.Open();
+                result = (bool)cmd.ExecuteScalar();
+                cnn.Close();
+            }
+
+            return result;
+        }
+
+        public DataTable ValidarAccion(int idUsuario, string url)
+        {
+            DataTable dt = new();
+            using (SqlConnection connection = new(connectionString))
+            {
+                var cmd = connection.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "prc_get_ValidarAccion";
+                cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+                cmd.Parameters.AddWithValue("@pUrl", url);
+                cmd.CommandTimeout = 30;
                 SqlDataAdapter da = new(cmd);
                 da.Fill(dt);
             }

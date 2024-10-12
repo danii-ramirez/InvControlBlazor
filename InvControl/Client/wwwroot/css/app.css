@@ -35,6 +35,33 @@
         content: "An error has occurred."
     }
 
-.rz-column-title {
+.loader-main {
+    height: 100vh;
+    display: flex;
+    align-items: center;
     justify-content: center;
+}
+
+.icon-main {
+    height: 1.5rem;
+    width: 1.5rem;
+    animation: spin 1s linear infinite;
+    stroke: rgba(107, 114, 128, 1);
+}
+
+.loading-text-main {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    color: rgba(107, 114, 128, 1);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.rz-column-title {
+    justify-content: center !important;
 }

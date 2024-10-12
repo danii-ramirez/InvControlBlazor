@@ -31,13 +31,27 @@ AS
 UPDATE Usuarios SET IntentosFallidos = 0 WHERE [IdUsuario] = @pIdUsuario
 GO
 
+CREATE PROCEDURE [dbo].[prc_upd_UsuariosRestablecerPass]
+    @pIdUsuario INT,
+    @pPass      NVARCHAR(255)
+AS
+    UPDATE Usuarios SET
+        Pass = @pPass,
+        ResetearPass = 1,
+        Bloqueado = 0,
+        IntentosFallidos = 0
+    WHERE IdUsuario = @pIdUsuario
+GO
+
 CREATE PROCEDURE prc_upd_UsuariosResetearPass
     @pIdUsuario INT,
     @pPass      NVARCHAR(255)
 AS
 UPDATE Usuarios SET
         Pass = @pPass,
-        ResetearPass = 0
+        ResetearPass = 0,
+        Bloqueado = 0,
+        IntentosFallidos = 0
     WHERE IdUsuario = @pIdUsuario
 GO
 
@@ -420,7 +434,7 @@ BEGIN
     SELECT IdTransporte, Nombre, Patente, Activo
     FROM Transportes
     WHERE (@pNombre is null or Nombre = @pNombre)
-    and (@pPatente is null or Patente = @pPatente)
-    and (@pActivo is null or Activo = @pActivo)
+        and (@pPatente is null or Patente = @pPatente)
+        and (@pActivo is null or Activo = @pActivo)
 END
 GO

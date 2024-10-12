@@ -1,5 +1,6 @@
 ﻿using InvControl.Client.Helpers;
 using InvControl.Shared.Models;
+using Microsoft.AspNetCore.Components;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -9,12 +10,14 @@ namespace InvControl.Client.Services
     {
         readonly HttpClient _httpClient;
         readonly ILogger<UsuariosService> _logger;
+        readonly NavigationManager _navigationManager;
         const string BASE_REQUEST_URI = "api/usuarios";
 
-        public UsuariosService(HttpClient httpClient, ILogger<UsuariosService> logger)
+        public UsuariosService(HttpClient httpClient, ILogger<UsuariosService> logger, NavigationManager navigationManager)
         {
             _httpClient = httpClient;
             _logger = logger;
+            _navigationManager = navigationManager;
         }
 
         public async ValueTask<List<Usuario>> GetUsuarios(int? idUsuario = null)
@@ -62,14 +65,39 @@ namespace InvControl.Client.Services
             }
         }
 
+        public async ValueTask<bool> DeleteUsuario(int idUsuario)
+        {
+            var response = await _httpClient.DeleteAsync($"{BASE_REQUEST_URI}/{idUsuario}");
+            return response.StatusCode == HttpStatusCode.OK;
+        }
+
         public async ValueTask PostResetPassword(LoginUserResetPassword user)
         {
             await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/resetpassword", user);
         }
 
+        public async ValueTask<bool> GetResetPassword(int idUsuario)
+        {
+            var response = await _httpClient.GetAsync($"{BASE_REQUEST_URI}/resetpassword/{idUsuario}");
+            return response.StatusCode == HttpStatusCode.OK;
+        }
+
         public async ValueTask<List<Permiso>> GetMenu()
         {
             return (await _httpClient.GetFromJsonAsync<List<Permiso>>($"{BASE_REQUEST_URI}/menu"))!;
+        }
+
+        public async ValueTask<(bool, List<string>?)> GetValidarAcceso()
+        {
+            var url = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
+            var response = await _httpClient.GetAsync($"{BASE_REQUEST_URI}/validar/acceso?url={url}");
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var acciones = await response.Content.ReadFromJsonAsync<List<string>>();
+                return (true, acciones);
+            }
+            else
+                return (false, null);
         }
     }
 }

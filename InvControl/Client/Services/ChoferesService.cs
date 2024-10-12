@@ -10,10 +10,7 @@ namespace InvControl.Client.Services
         readonly HttpClient _httpClient;
         const string BASE_REQUEST_URI = "api/choferes";
 
-        public ChoferesService(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-        }
+        public ChoferesService(HttpClient httpClient) => _httpClient = httpClient;
 
         public async ValueTask<List<Chofer>> GetChoferes()
         {

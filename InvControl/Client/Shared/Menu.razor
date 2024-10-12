@@ -1,15 +1,15 @@
 @if (Permiso.Permisos.Any())
 {
-    <RadzenPanelMenuItem Text="@Permiso.Descripcion">
-    @foreach (var menu in Permiso.Permisos)
+    <RadzenPanelMenuItem Text="@Permiso.Descripcion" Icon="@(Permiso.Icon ?? string.Empty)">
+        @foreach (var menu in Permiso.Permisos)
         {
             <Menu Permiso="menu" />
         }
-        </RadzenPanelMenuItem>
+    </RadzenPanelMenuItem>
 }
 else
 {
-    <RadzenPanelMenuItem Text="@Permiso.Descripcion" Path="@Permiso.Url" />
+    <RadzenPanelMenuItem Text="@Permiso.Descripcion" Path="@Permiso.Url" Icon="@(Permiso.Icon ?? string.Empty)" />
 }
 
 @code {
