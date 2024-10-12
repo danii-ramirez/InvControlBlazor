@@ -8,5 +8,6 @@
         public string? Icon { get; set; }
         public string? Url { get; set; }
         public List<Permiso> Permisos { get; set; } = new();
+        public bool Checked { get; set; }
     }
 }

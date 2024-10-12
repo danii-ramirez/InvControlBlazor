@@ -146,7 +146,7 @@ namespace InvControl.Server.Controllers
         }
 
         [HttpGet("permisos")]
-        public IActionResult GetPermisos()
+        public IActionResult GetPermisos(bool jerarquico)
         {
             List<Permiso> permisos = new();
             DA_Rol da = new(connectionString);
@@ -165,9 +165,16 @@ namespace InvControl.Server.Controllers
                     permisos.Add(permiso);
                 }
             }
-
-            var permisosJerarquicos = Functions.ConstruirArbolPermiso(permisos);
-            return Ok(permisosJerarquicos);
+            
+            if (jerarquico)
+            {
+                var permisosJerarquicos = Functions.ConstruirArbolPermiso(permisos);
+                return Ok(permisosJerarquicos);
+            }
+            else
+            {
+                return Ok(permisos);
+            }
         }
     }
 }

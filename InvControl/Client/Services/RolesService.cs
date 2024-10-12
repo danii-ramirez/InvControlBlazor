@@ -31,9 +31,10 @@ namespace InvControl.Client.Services
             return (await _httpClient.GetFromJsonAsync<List<Rol>>(uri))!;
         }
 
-        public async ValueTask<List<Permiso>> GetPermisos()
+        public async ValueTask<List<Permiso>> GetPermisos(bool jerarquico = false)
         {
-            return (await _httpClient.GetFromJsonAsync<List<Permiso>>($"{BASE_REQUEST_URI}/permisos"))!;
+            string uri = $"{BASE_REQUEST_URI}/permisos?jerarquico={jerarquico}";
+            return (await _httpClient.GetFromJsonAsync<List<Permiso>>(uri))!;
         }
 
         public async ValueTask<Response> PostRol(Rol rol)

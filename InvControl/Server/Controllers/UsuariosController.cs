@@ -242,5 +242,38 @@ namespace InvControl.Server.Controllers
             var pmenuJerarquicos = Functions.ConstruirArbolPermiso(menu);
             return Ok(pmenuJerarquicos);
         }
+
+        [HttpGet("validar/acceso")]
+        public IActionResult GetValidarAcceso([FromQuery] string url)
+        {
+            try
+            {
+                int idUsuario = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+                DA_Usuario da = new(connectionString);
+                var result = da.ValidarAcceso(idUsuario, url);
+
+                if (result)
+                {
+                    List<string> acciones = new();
+
+                    using (DataTable dt = da.ValidarAccion(idUsuario, url))
+                    {
+                        foreach (DataRow dr in dt.Rows)
+                        {
+                            acciones.Add((string)dr["Nombre"]);
+                        }
+                    }
+
+                    return Ok(acciones);
+                }
+                else
+                    return Forbid();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
     }
 }

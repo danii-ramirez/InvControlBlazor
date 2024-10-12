@@ -5,32 +5,42 @@
 @if (editContext != null)
 {
     <EditForm EditContext="editContext" OnSubmit="Submit" autocomplete="off">
-        <DataAnnotationsValidator />
-        <CustomValidation @ref="customValidation" />
+    <DataAnnotationsValidator />
+    <CustomValidation @ref="customValidation" />
 
-        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-            <RadzenLabel Text="Descripción:" Component="descripcion" />
-            <RadzenTextBox @bind-Value="Rol.Descripcion" Name="descripcion" />
-            <ValidationMessage For="@(() => Rol.Descripcion)" />
-        </RadzenStack>
+    <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+        <RadzenLabel Text="Descripción:" Component="descripcion" />
+        <RadzenTextBox @bind-Value="Rol.Descripcion" Name="descripcion" />
+        <ValidationMessage For="@(() => Rol.Descripcion)" />
+    </RadzenStack>
 
-        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
-            <RadzenLabel Text="Permisos:" />
-            <RadzenCard>
-                <RadzenTree Data=@Permisos @bind-CheckedValues=@checkedValues AllowCheckBoxes="true" Style="height: 300px; width: 100%;">
-                    <RadzenTreeLevel TextProperty="@nameof(Permiso.Descripcion)"
-                                     ChildrenProperty="@nameof(Permiso.Permisos)"
-                                     HasChildren=@(e => (e as Permiso)!.Permisos.Any()) />
-                </RadzenTree>
-                <ValidationMessage For="@(() => Rol.Permisos)" />
-            </RadzenCard>
-        </RadzenStack>
+    <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
+        <RadzenLabel Text="Permisos:" />
+        <RadzenDataGrid @ref="grid" TItem="Permiso" Data="@permisosPadre" RowRender="@RowRender"
+            LoadChildData="@LoadChildData"
+            RowCollapse="@(args => grid.ColumnsCollection.ToList().ForEach(c => c.ClearFilters()))"
+            Density="Density.Compact" Style="height: 20rem;">
+            <Columns>
+                <RadzenDataGridColumn TextAlign="Radzen.TextAlign.Center" Width="80px">
+                    <Template Context="data">
+                        <RadzenCheckBox TValue="bool" Value="data.Checked"
+                            Change="((args) => HandleChangeChecked(data, args))"
+                            Disabled="@(data.Descripcion == "Home")" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(Permiso.Descripcion)" Title="Descripción" />
+            </Columns>
+        </RadzenDataGrid>
 
-        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" />
-            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" />
-        </RadzenStack>
-    </EditForm>
+        <ValidationMessage For="@(() => Rol.Permisos)" />
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" />
+        <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save"
+            Text="Guardar" />
+    </RadzenStack>
+</EditForm>
 }
 
 @code {
@@ -40,31 +50,45 @@
     EditContext editContext = default!;
     CustomValidation customValidation = default!;
 
-    IEnumerable<object> checkedValues = Enumerable.Empty<object>();
+    RadzenDataGrid<Permiso> grid = default!;
+    List<Permiso> permisosPadre = new();
 
     protected override void OnInitialized()
     {
-        List<Permiso> permisos = new();
-        foreach (var rp in Rol.Permisos)
+        Permisos.ForEach(x => x.Checked = false);
+
+        if (Rol.IdRol == 0)
         {
-            permisos.Add(Permisos.Find(x => x.IdPermiso == rp.IdPermiso)!);
+            Permisos.Find(x => x.Descripcion == "Home")!.Checked = true;
         }
-        checkedValues = permisos;
+        else
+        {
+            foreach (var rp in Rol.Permisos)
+            {
+                var p = Permisos.Find(x => x.IdPermiso == rp.IdPermiso)!;
+                p.Checked = true;
+            }
+        }
+
+        permisosPadre = Permisos.FindAll(x => x.IdPadre == null);
+
         editContext = new(Rol);
     }
 
     private async Task Submit()
     {
         Rol.Permisos.Clear();
-        foreach (var item in checkedValues)
-        {
-            if (item != null)
-                Rol.Permisos.Add((Permiso)item);
-        }
+        Rol.Permisos = Permisos.FindAll(x => x.Checked);
 
         if (editContext.Validate())
         {
-            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new()
+                {
+                    OkButtonText = "Sí",
+                    CancelButtonText =
+                "No",
+                    ShowClose = false
+                });
             if ((bool)result)
             {
                 Response res;
@@ -88,10 +112,62 @@
 
     private async Task Cancelar()
     {
-        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
+        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new()
+            {
+                OkButtonText = "Sí",
+                CancelButtonText =
+            "No"
+            });
         if ((bool)result)
         {
             DialogService.Close();
+        }
+    }
+
+    private void RowRender(RowRenderEventArgs<Permiso> args)
+    {
+        args.Expandable = Permisos.Where(e => e.IdPadre == args.Data.IdPermiso).Any();
+    }
+
+    private void LoadChildData(DataGridLoadChildDataEventArgs<Permiso> args)
+    {
+        args.Data = Permisos.Where(e => e.IdPadre == args.Item.IdPermiso);
+    }
+
+    private void HandleChangeChecked(Permiso permiso, bool value)
+    {
+        permiso.Checked = value;
+
+        if (permiso.Checked)
+        {
+            if (permiso.IdPadre.HasValue)
+            {
+                SeleccionarPadres(permiso);
+            }
+        }
+        else
+        {
+            DeseleccionarHijos(permiso);
+        }
+    }
+
+    private void SeleccionarPadres(Permiso permiso)
+    {
+        var padre = Permisos.FirstOrDefault(p => p.IdPermiso == permiso.IdPadre!);
+        if (padre != null)
+        {
+            padre.Checked = true;
+            SeleccionarPadres(padre);
+        }
+    }
+
+    private void DeseleccionarHijos(Permiso permiso)
+    {
+        var hijos = Permisos.Where(p => p.IdPadre == permiso.IdPermiso).ToList();
+        foreach (var hijo in hijos)
+        {
+            hijo.Checked = false;
+            DeseleccionarHijos(hijo);
         }
     }
 }

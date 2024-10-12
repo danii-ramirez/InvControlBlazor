@@ -11,7 +11,7 @@ namespace InvControl.Shared.Models
         public string Descripcion { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Debe seleccionar al menos un permiso"),
-            MinLength(1, ErrorMessage = "Debe seleccionar al menos un permiso")]
+            MinLength(2, ErrorMessage = "Debe seleccionar al menos un permiso")]
         public List<Permiso> Permisos { get; set; } = new();
 
         public object Clone()
