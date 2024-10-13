@@ -10,7 +10,7 @@
 
     <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
         <RadzenLabel Text="Descripción:" Component="descripcion" />
-        <RadzenTextBox @bind-Value="Rol.Descripcion" Name="descripcion" />
+        <RadzenTextBox @bind-Value="Rol.Descripcion" Name="descripcion" Disabled=isBusy />
         <ValidationMessage For="@(() => Rol.Descripcion)" />
     </RadzenStack>
 
@@ -21,7 +21,8 @@
             <Columns>
                 <RadzenDataGridColumn TextAlign="Radzen.TextAlign.Center" Width="80px">
                     <Template Context="data">
-                        <RadzenCheckBox TValue="bool" Value="data.Checked" Disabled="@(data.Descripcion == "Home")" />
+                        <RadzenCheckBox TValue="bool" Value="data.Checked"
+                            Disabled="@(data.Descripcion == "Home" || isBusy)" />
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Property="@nameof(Permiso.Descripcion)" Title="Descripción" />
@@ -31,9 +32,10 @@
     </RadzenStack>
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" />
-        <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save"
-            Text="Guardar" />
+        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
+            Disabled="isBusy" />
+        <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
+            IsBusy="isBusy" BusyText="Guardando" />
     </RadzenStack>
 </EditForm>
 }
@@ -47,6 +49,7 @@
 
     RadzenDataGrid<Permiso> grid = default!;
     List<Permiso> permisosPadre = new();
+    bool isBusy;
 
     protected override void OnInitialized()
     {
@@ -86,11 +89,15 @@
                 });
             if ((bool)result)
             {
+                isBusy = true;
+
                 Response res;
                 if (Rol.IdRol == 0)
                     res = await RolesService.PostRol(Rol);
                 else
                     res = await RolesService.PutRol(Rol);
+
+                isBusy = false;
 
                 if (res.Success)
                 {
@@ -131,20 +138,23 @@
 
     private void RowClick(DataGridRowMouseEventArgs<Permiso> args)
     {
-        if (args.Data.Descripcion != "Home")
+        if (!isBusy)
         {
-            args.Data.Checked = !args.Data.Checked;
+            if (args.Data.Descripcion != "Home")
+            {
+                args.Data.Checked = !args.Data.Checked;
 
-            if (args.Data.Checked)
-            {
-                if (args.Data.IdPadre.HasValue)
+                if (args.Data.Checked)
                 {
-                    SeleccionarPadres(args.Data);
+                    if (args.Data.IdPadre.HasValue)
+                    {
+                        SeleccionarPadres(args.Data);
+                    }
                 }
-            }
-            else
-            {
-                DeseleccionarHijos(args.Data);
+                else
+                {
+                    DeseleccionarHijos(args.Data);
+                }
             }
         }
     }
