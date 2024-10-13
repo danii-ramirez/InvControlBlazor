@@ -17,21 +17,16 @@
     <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
         <RadzenLabel Text="Permisos:" />
         <RadzenDataGrid @ref="grid" TItem="Permiso" Data="@permisosPadre" RowRender="@RowRender"
-            LoadChildData="@LoadChildData"
-            RowCollapse="@(args => grid.ColumnsCollection.ToList().ForEach(c => c.ClearFilters()))"
-            Density="Density.Compact" Style="height: 20rem;">
+            LoadChildData="@LoadChildData" RowClick="RowClick" Density="Density.Compact" Style="height: 20rem;">
             <Columns>
                 <RadzenDataGridColumn TextAlign="Radzen.TextAlign.Center" Width="80px">
                     <Template Context="data">
-                        <RadzenCheckBox TValue="bool" Value="data.Checked"
-                            Change="((args) => HandleChangeChecked(data, args))"
-                            Disabled="@(data.Descripcion == "Home")" />
+                        <RadzenCheckBox TValue="bool" Value="data.Checked" Disabled="@(data.Descripcion == "Home")" />
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Property="@nameof(Permiso.Descripcion)" Title="Descripción" />
             </Columns>
         </RadzenDataGrid>
-
         <ValidationMessage For="@(() => Rol.Permisos)" />
     </RadzenStack>
 
@@ -134,20 +129,23 @@
         args.Data = Permisos.Where(e => e.IdPadre == args.Item.IdPermiso);
     }
 
-    private void HandleChangeChecked(Permiso permiso, bool value)
+    private void RowClick(DataGridRowMouseEventArgs<Permiso> args)
     {
-        permiso.Checked = value;
+        if (args.Data.Descripcion != "Home")
+        {
+            args.Data.Checked = !args.Data.Checked;
 
-        if (permiso.Checked)
-        {
-            if (permiso.IdPadre.HasValue)
+            if (args.Data.Checked)
             {
-                SeleccionarPadres(permiso);
+                if (args.Data.IdPadre.HasValue)
+                {
+                    SeleccionarPadres(args.Data);
+                }
             }
-        }
-        else
-        {
-            DeseleccionarHijos(permiso);
+            else
+            {
+                DeseleccionarHijos(args.Data);
+            }
         }
     }
 
