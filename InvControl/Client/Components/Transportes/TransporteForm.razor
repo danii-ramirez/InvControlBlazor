@@ -8,24 +8,26 @@
 
     <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
         <RadzenLabel Text="Nombre:" Component="nombre" />
-        <RadzenTextBox @bind-Value="Transporte.Nombre" Name="nombre" />
+        <RadzenTextBox @bind-Value="Transporte.Nombre" Name="nombre" Disabled="isBusy" />
         <ValidationMessage For="@(() => Transporte.Nombre)" />
     </RadzenStack>
 
     <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
         <RadzenLabel Text="Patente:" Component="patente" />
-        <RadzenTextBox @bind-Value="Transporte.Patente" Name="patente" />
+        <RadzenTextBox @bind-Value="Transporte.Patente" Name="patente" Disabled="isBusy" />
         <ValidationMessage For="@(() => Transporte.Patente)" />
     </RadzenStack>
 
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="5px" class="rz-mt-3">
         <RadzenLabel Text="Activo:" Component="activo" />
-        <RadzenCheckBox @bind-Value=@Transporte.Activo Name="activo" />
+        <RadzenCheckBox @bind-Value=@Transporte.Activo Name="activo" Disabled="isBusy" />
     </RadzenStack>
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" />
-        <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" />
+        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
+            Disabled="isBusy" />
+        <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
+            IsBusy="isBusy" BusyText="Guardando" />
     </RadzenStack>
 </EditForm>
 
@@ -34,6 +36,8 @@
 
     EditContext editContext = default!;
     CustomValidation customValidation = default!;
+
+    bool isBusy;
 
     protected override void OnInitialized()
     {
@@ -47,14 +51,24 @@
     {
         if (editContext.Validate())
         {
-            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new()
+                {
+                    OkButtonText = "Sí",
+                    CancelButtonText =
+                "No",
+                    ShowClose = false
+                });
             if ((bool)result)
             {
+                isBusy = true;
+
                 Response res;
                 if (Transporte.IdTransporte == 0)
                     res = await TransportesService.PostTransportes(Transporte);
                 else
                     res = await TransportesService.PutTransportes(Transporte);
+
+                isBusy = false;
 
                 if (res.Success)
                 {
@@ -69,10 +83,14 @@
         }
     }
 
-
     private async Task Cancelar()
     {
-        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
+        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new()
+            {
+                OkButtonText = "Sí",
+                CancelButtonText =
+            "No"
+            });
         if ((bool)result)
         {
             DialogService.Close();
