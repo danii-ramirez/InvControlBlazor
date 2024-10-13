@@ -268,7 +268,7 @@ namespace InvControl.Server.Controllers
                     return Ok(acciones);
                 }
                 else
-                    return Forbid();
+                    return BadRequest();
             }
             catch (Exception ex)
             {
