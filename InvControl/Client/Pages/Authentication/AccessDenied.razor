@@ -1,0 +1,30 @@
+@page "/authentication/accessdenied"
+@layout AlternativeMainLayout
+
+@inject NavigationManager Navigation
+
+<RadzenCard class="rz-my-12 rz-mx-auto" Style="max-width: 42rem">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+        <RadzenImage Path="img/user-lock-icon.png" Style="width: 130px;" AlternateText="user-lock" />
+    </RadzenStack>
+    <RadzenText TagName="TagName.H1" TextStyle="TextStyle.H1" TextAlign="TextAlign.Center" Text="Acceso denegado"
+        Style="color: var(--rz-danger);" class="rz-my-5" />
+    <RadzenText TagName="TagName.H1" TextStyle="TextStyle.DisplayH6" class="rz-my-5">
+        <strong>No posee los suficientes permiso para realizar esta acción.</strong>
+    </RadzenText>
+    <RadzenText TagName="TagName.H1" TextStyle="TextStyle.DisplayH6" class="rz-my-5">
+        <strong>Póngase en contacto con el administrador para obtener ayuda.</strong>
+    </RadzenText>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Text="Volver al home"
+            Click="HandleClick" />
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private void HandleClick()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

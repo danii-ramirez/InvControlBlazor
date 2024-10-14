@@ -4,6 +4,7 @@
 @using InvControl.Client.Components.Choferes
 
 @inject ChoferesService ChoferesService
+@inject UsuariosService UsuariosService
 @inject DialogService DialogService
 
 @if (showForm)
@@ -11,10 +12,11 @@
     <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Choferes" />
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
-        <RadzenDataGrid @ref="refData" TItem="Chofer" Data="choferes" AllowSorting="true" Density="Density.Compact" EmptyText="" Style="width: 50rem;">
+        <RadzenDataGrid @ref="refData" TItem="Chofer" Data="choferes" AllowSorting="true" Density="Density.Compact"
+            EmptyText="" Style="width: 50rem;">
             <HeaderTemplate>
                 <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
-                              Icon="add" Text="Agregar chofer" Click="HandleClickAgregar" />
+                    Icon="add" Text="Agregar chofer" Click="HandleClickAgregar" />
             </HeaderTemplate>
             <Columns>
                 <RadzenDataGridColumn Property="@nameof(Chofer.Nombre)" Title="Nombre" />
@@ -33,8 +35,9 @@
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
-                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
-                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true">
+                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
+                            Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
+                            @onclick:stopPropagation="true">
                         </RadzenButton>
                     </Template>
                 </RadzenDataGridColumn>
@@ -54,8 +57,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        choferes = await ChoferesService.GetChoferes();
-        showForm = true;
+        if ((await UsuariosService.GetValidarAcceso()).Item1)
+        {
+            choferes = await ChoferesService.GetChoferes();
+            showForm = true;
+        }
     }
 
     private async Task HandleClickAgregar()
@@ -63,9 +69,9 @@ else
         Chofer chofer = new();
 
         var res = await DialogService.OpenAsync<ChoferForm>(
-                "Formulario de choferes",
-                new() { { "Chofer", chofer } },
-                new() { ShowClose = false });
+        "Formulario de choferes",
+        new() { { "Chofer", chofer } },
+        new() { ShowClose = false });
 
         if (res != null)
         {
@@ -77,9 +83,9 @@ else
     private async Task HandleClickEditar(Chofer chofer)
     {
         var res = await DialogService.OpenAsync<ChoferForm>(
-                "Formulario de choferes",
-                new() { { "Chofer", chofer } },
-                new() { ShowClose = false });
+        "Formulario de choferes",
+        new() { { "Chofer", chofer } },
+        new() { ShowClose = false });
 
         if (res != null)
         {

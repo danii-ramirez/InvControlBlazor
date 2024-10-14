@@ -97,7 +97,10 @@ namespace InvControl.Client.Services
                 return (true, acciones);
             }
             else
+            {
+                _navigationManager.NavigateTo("/authentication/accessdenied");
                 return (false, null);
+            }
         }
     }
 }

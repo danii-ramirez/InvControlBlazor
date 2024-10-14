@@ -1,0 +1,40 @@
+﻿@inject SKUService SKUService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+@if (Sku != null)
+{
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
+                      Disabled="isBusy" />
+        <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
+                      IsBusy="isBusy" BusyText="Guardando" />
+    </RadzenStack>
+}
+
+@code {
+    [Parameter] public SKU Sku { get; set; } = default!;
+
+    EditContext editContext = default!;
+    CustomValidation customValidation = default!;
+
+    bool isBusy;
+
+    protected override void OnInitialized()
+    {
+        editContext = new(Sku);
+    }
+
+    private async Task Cancelar()
+    {
+        var result = await DialogService.Confirm(
+            Message.Cancel,
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No" });
+
+        if ((bool)result)
+        {
+            DialogService.Close();
+        }
+    }
+}
