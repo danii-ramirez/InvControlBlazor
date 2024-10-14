@@ -11,45 +11,48 @@
     <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="SKU" />
 
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" Gap="5px" Wrap="FlexWrap.Wrap"
-        class="rz-my-5">
+                 class="rz-my-5">
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
             <RadzenLabel Text="Código:" Component="codigo" />
-            <RadzenNumeric @bind-Value=filterCodigo Name="codigo" TextAlign="TextAlign.Right" ShowUpDown="false" />
+            <RadzenNumeric @bind-Value=filterCodigo Name="codigo" TextAlign="TextAlign.Right" ShowUpDown="false" Disabled="isLoading" />
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
             <RadzenLabel Text="Nombre:" Component="nombre" />
-            <RadzenTextBox @bind-Value="filterNombre" Name="nombre" autocomplete="off" />
+            <RadzenTextBox @bind-Value="filterNombre" Name="nombre" Disabled="isLoading" autocomplete="off" />
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
             <RadzenLabel Text="Activo:" Component="activo" />
-            <RadzenDropDown Data=@estados @bind-Value=@filterActivo Placeholder="Todos" Name="activo"
-                TextProperty="@nameof(Estado.Description)" ValueProperty="@nameof(Estado.Value)" />
+            <RadzenDropDown Data=@estados @bind-Value=@filterActivo Placeholder="Todos" Name="activo" Disabled="isLoading"
+                            TextProperty="@nameof(Estado.Description)" ValueProperty="@nameof(Estado.Value)" />
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
             <RadzenLabel Text="Marca:" Component="marca" />
-            <RadzenDropDown Data=@marcas @bind-Value=@filterIdMarca AllowClear="true" Name="marca"
-                TextProperty="@nameof(Marca.Descripcion)" ValueProperty="@nameof(Marca.IdMarca)" />
+            <RadzenDropDown Data=@marcas @bind-Value=@filterIdMarca AllowClear="true" Name="marca" Disabled="isLoading"
+                            TextProperty="@nameof(Marca.Descripcion)" ValueProperty="@nameof(Marca.IdMarca)" />
         </RadzenStack>
 
-        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="search" Click="Buscar" />
+        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="search" Click="Buscar" IsBusy="isLoading" />
     </RadzenStack>
 
     <RadzenDataGrid @ref="refData" TItem="SKU" Data="skus" Density="Density.Compact" AllowSorting="true"
-        AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterMode="FilterMode.Simple"
-        Responsive="true" EmptyText="" Style="height: 40rem;">
+                    AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterMode="FilterMode.Simple"
+                    IsLoading="isLoading" Responsive="true" EmptyText="" Style="height: 40rem;">
         <HeaderTemplate>
-            <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
-                Icon="add" Text="Agregar SKU" Click="HandleClickAgregar" />
+            @if (acciones.Exists(x => x == Accion.Crear))
+            {
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                              Icon="add" Text="Agregar SKU" Click="HandleClickAgregar" />
+            }
         </HeaderTemplate>
         <Columns>
             <RadzenDataGridColumn Property="@nameof(SKU.Codigo)" Title="Código" TextAlign="TextAlign.Right" />
             <RadzenDataGridColumn Property="@nameof(SKU.Nombre)" Title="Nombre" />
             <RadzenDataGridColumn Property="@nameof(SKU.Descripcion)" Title="Descripción" />
             <RadzenDataGridColumn Property="@nameof(SKU.Activo)" Title="Activo" TextAlign="TextAlign.Center"
-                Filterable="false">
+                                  Filterable="false">
                 <Template>
                     @if (context.Activo)
                     {
@@ -62,7 +65,7 @@
                 </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Property="@nameof(SKU.Especial)" Title="Especial" TextAlign="TextAlign.Center"
-                Filterable="false">
+                                  Filterable="false">
                 <Template>
                     @if (context.Especial)
                     {
@@ -76,11 +79,11 @@
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Property="@nameof(SKU.DescripcionMarca)" Title="Marca" />
             <RadzenDataGridColumn Property="@nameof(SKU.Stock)" Title="Stock" />
-            <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="100px" Sortable="false">
+            <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="100px" Sortable="false" Visible="@(acciones.Exists(x => x == Accion.Editar))">
                 <Template>
                     <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter"
-                        Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
-                        @onclick:stopPropagation="true" />
+                                  Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
+                                  @onclick:stopPropagation="true" />
                 </Template>
             </RadzenDataGridColumn>
         </Columns>
@@ -94,7 +97,7 @@ else
 @code {
     List<SKU> skus = new();
     RadzenDataGrid<SKU> refData = default!;
-    bool showForm;
+    bool showForm, isLoading;
 
     // FILTROS
     int? filterCodigo, filterIdMarca;
@@ -103,17 +106,23 @@ else
     List<Estado> estados = new();
     List<Marca> marcas = new();
 
+    // Permisos
+    List<string> acciones = new();
+
     protected override async Task OnInitializedAsync()
     {
         var success = await UsuariosService.GetValidarAcceso();
         if (success.Item1)
         {
+            acciones = success.Item2!;
             marcas = await SKUService.GetMarcas();
 
-            estados = new() {
-new(null, "Todos"),
-new(true, "Activo"),
-new(false, "Pasivo") };
+            estados = new()
+            {
+                new(null, "Todos"),
+                new(true, "Activo"),
+                new(false, "Pasivo")
+            };
 
             showForm = true;
         }
@@ -131,6 +140,8 @@ new(false, "Pasivo") };
 
     private async Task Buscar()
     {
+        isLoading = true;
         skus = await SKUService.GetSKU(filterCodigo, filterNombre, filterActivo, filterIdMarca);
+        isLoading = false;
     }
 }
