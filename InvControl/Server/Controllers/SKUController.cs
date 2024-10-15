@@ -37,10 +37,10 @@ namespace InvControl.Server.Controllers
                         Nombre = (string)dr["Nombre"],
                         Activo = (bool)dr["Activo"],
                         Especial = (bool)dr["Especial"],
-                        UnidadesPorBandeja = (int?)dr["UnidadesPorBandeja"],
+                        UnidadesPorContenedor = (int?)dr["UnidadesPorBandeja"],
                         Stock = (int)dr["Stock"],
                         IdMarca = (int)dr["IdMarca"],
-                        DescripcionMarca = (string)dr["DescripcionMarca"]
+                        NombreMarca = (string)dr["DescripcionMarca"]
                     };
                     if (dr["Descripcion"] != DBNull.Value) s.Descripcion = (string)dr["Descripcion"];
 
@@ -73,7 +73,7 @@ namespace InvControl.Server.Controllers
                         cnn.Open();
                         transaction = cnn.BeginTransaction();
 
-                        sku.IdSKU = daSKU.InsertarSKU((int)sku.Codigo!, sku.Nombre.Trim(), sku.Descripcion?.Trim()!, sku.Activo, sku.Especial, (int)sku.UnidadesPorBandeja!,
+                        sku.IdSKU = daSKU.InsertarSKU((int)sku.Codigo!, sku.Nombre.Trim(), sku.Descripcion?.Trim()!, sku.Activo, sku.Especial, (int)sku.UnidadesPorContenedor!,
                             sku.IdMarca, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), DateTime.Now, transaction);
 
                         daAu.Insertar($"Se creó el SKU: {sku.Codigo}", DateTime.Now, (int)TipoEntidad.SKU, (int)TipoOperacion.Creacion,
@@ -125,7 +125,7 @@ namespace InvControl.Server.Controllers
                         cnn.Open();
                         transaction = cnn.BeginTransaction();
 
-                        daSKU.ActualizarSKU(sku.IdSKU, (int)sku.Codigo!, sku.Nombre.Trim(), sku.Descripcion?.Trim()!, sku.Activo, sku.Especial, (int)sku.UnidadesPorBandeja!,
+                        daSKU.ActualizarSKU(sku.IdSKU, (int)sku.Codigo!, sku.Nombre.Trim(), sku.Descripcion?.Trim()!, sku.Activo, sku.Especial, (int)sku.UnidadesPorContenedor!,
                            sku.IdMarca, transaction);
 
                         daAu.Insertar($"Se editó el SKU: {sku.Codigo}", DateTime.Now, (int)TipoEntidad.SKU, (int)TipoOperacion.Edicion,

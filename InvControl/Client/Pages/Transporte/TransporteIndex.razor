@@ -69,9 +69,9 @@ else
         Transporte transporte = new();
 
         var res = await DialogService.OpenAsync<TransporteForm>(
-        "Formulario de transportes",
-        new() { { "Transporte", transporte } },
-        new() { ShowClose = false });
+            "Formulario de transportes",
+            new() { { "Transporte", transporte } },
+            new() { ShowClose = false, CloseDialogOnEsc = false });
 
         if (res != null)
         {
@@ -83,9 +83,9 @@ else
     private async Task HandleClickEditar(Transporte transporte)
     {
         var res = await DialogService.OpenAsync<TransporteForm>(
-        "Formulario de choferes",
-        new() { { "Transporte", transporte } },
-        new() { ShowClose = false });
+            "Formulario de choferes",
+            new() { { "Transporte", transporte } },
+            new() { ShowClose = false, CloseDialogOnEsc = false });
 
         if (res != null)
         {

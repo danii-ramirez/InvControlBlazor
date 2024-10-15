@@ -13,18 +13,18 @@
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
         <RadzenDataGrid @ref="refData" TItem="Rol" Data="roles" AllowSorting="true" Density="Density.Compact" EmptyText=""
-            Style="width: 50rem;">
+                        Style="width: 50rem;">
             <HeaderTemplate>
                 <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
-                    Icon="add" Text="Agregar rol" Click="HandleClickAgregarRol" />
+                              Icon="add" Text="Agregar rol" Click="HandleClickAgregarRol" />
             </HeaderTemplate>
             <Columns>
                 <RadzenDataGridColumn Property="@nameof(Rol.Descripcion)" Title="Descripción" />
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
-                            Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditarRol(context))"
-                            @onclick:stopPropagation="true">
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditarRol(context))"
+                                      @onclick:stopPropagation="true">
                         </RadzenButton>
                     </Template>
                 </RadzenDataGridColumn>
@@ -58,9 +58,9 @@ else
         Rol rol = new();
 
         var res = await DialogService.OpenAsync<RolForm>(
-        "Formulario de roles",
-        new() { { "Rol", rol }, { "Permisos", permisos } },
-        new() { ShowClose = false });
+            "Formulario de roles",
+            new() { { "Rol", rol }, { "Permisos", permisos } },
+            new() { ShowClose = false, CloseDialogOnEsc = false });
 
         if (res != null)
         {
@@ -72,9 +72,9 @@ else
     private async Task HandleClickEditarRol(Rol rol)
     {
         var res = await DialogService.OpenAsync<RolForm>(
-        "Formulario de roles",
-        new() { { "Rol", rol.Clone() }, { "Permisos", permisos } },
-        new() { ShowClose = false });
+            "Formulario de roles",
+            new() { { "Rol", rol.Clone() }, { "Permisos", permisos } },
+            new() { ShowClose = false, CloseDialogOnEsc = false });
 
         if (res != null)
         {

@@ -2,7 +2,7 @@
 
 namespace InvControl.Shared.Models
 {
-    public class SKU
+    public class SKU : ICloneable
     {
         public int IdSKU { get; set; }
 
@@ -21,14 +21,20 @@ namespace InvControl.Shared.Models
 
         public bool Especial { get; set; }
 
-        [Required(ErrorMessage = "Debe completar este campo"),
-            Range(1, int.MaxValue, ErrorMessage = "Debe ingresar un número valido")]
-        public int? UnidadesPorBandeja { get; set; }
-
         [Required]
         public int IdMarca { get; set; }
-        public string DescripcionMarca { get; set; } = string.Empty;
+        public string NombreMarca { get; set; } = string.Empty;
+
+        [Required]
+        public int IdTipoContenedor { get; set; }
+        public string NombreTipoContenedor { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Debe completar este campo"),
+            Range(1, int.MaxValue, ErrorMessage = "Debe ingresar un número valido")]
+        public int? UnidadesPorContenedor { get; set; }
 
         public int Stock { get; set; }
+
+        public object Clone() => MemberwiseClone();
     }
 }

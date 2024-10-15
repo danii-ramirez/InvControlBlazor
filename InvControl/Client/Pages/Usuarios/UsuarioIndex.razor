@@ -14,13 +14,13 @@
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
         <RadzenDataGrid @ref="refData" TItem="Usuario" Data="usuarios" Density="Density.Compact" AllowSorting="true"
-            AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-            FilterMode="FilterMode.Simple" Responsive="true" EmptyText="" Style="width: 75rem;">
+                        AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        FilterMode="FilterMode.Simple" Responsive="true" EmptyText="" Style="width: 75rem;">
             <HeaderTemplate>
                 @if (acciones.Exists(x => x == Accion.Crear))
                 {
                     <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
-                        Icon="add" Text="Agregar usuario" Click="HandleClickAgregar" />
+                                  Icon="add" Text="Agregar usuario" Click="HandleClickAgregar" />
                 }
             </HeaderTemplate>
             <Columns>
@@ -29,7 +29,7 @@
                 <RadzenDataGridColumn Property="@nameof(Usuario.Apellido)" Title="Apellido" />
                 <RadzenDataGridColumn Property="@nameof(Usuario.DescripcionRol)" Title="Rol" />
                 <RadzenDataGridColumn Property="@nameof(Usuario.Activo)" Title="Activo" TextAlign="TextAlign.Center"
-                    Filterable="false">
+                                      Filterable="false">
                     <Template>
                         @if (context.Activo)
                         {
@@ -42,7 +42,7 @@
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Property="@nameof(Usuario.Bloqueado)" Title="Bloqueado" TextAlign="TextAlign.Center"
-                    Filterable="false">
+                                      Filterable="false">
                     <Template>
                         @if (context.Bloqueado)
                         {
@@ -55,27 +55,27 @@
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false"
-                    Visible="acciones.Exists(x => x == Accion.Editar)">
+                                      Visible="acciones.Exists(x => x == Accion.Editar)">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
-                            Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
-                            @onclick:stopPropagation="true" title="Editar" />
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
+                                      @onclick:stopPropagation="true" title="Editar" />
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false"
-                    Visible="acciones.Exists(x => x == Accion.ResetPass)">
+                                      Visible="acciones.Exists(x => x == Accion.ResetPass)">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="lock_reset" Variant="Variant.Flat"
-                            Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickResetPass(context))"
-                            @onclick:stopPropagation="true" title="Restablecer contraseña" />
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickResetPass(context))"
+                                      @onclick:stopPropagation="true" title="Restablecer contraseña" />
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false"
-                    Visible="acciones.Exists(x => x == Accion.Borrar)">
+                                      Visible="acciones.Exists(x => x == Accion.Borrar)">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat"
-                            Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickBorrar(context))"
-                            @onclick:stopPropagation="true" title="Borrar" />
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickBorrar(context))"
+                                      @onclick:stopPropagation="true" title="Borrar" />
                     </Template>
                 </RadzenDataGridColumn>
             </Columns>
@@ -111,9 +111,9 @@ else
         Usuario usuario = new();
 
         var res = await DialogService.OpenAsync<UsuarioForm>(
-        $"Formulario de usuarios",
-        new() { { "Usuario", usuario }, { "Roles", roles } },
-        new() { ShowClose = false });
+            "Formulario de usuarios",
+            new() { { "Usuario", usuario }, { "Roles", roles } },
+            new() { ShowClose = false, CloseDialogOnEsc = false });
 
         if (res != null)
         {
@@ -125,9 +125,9 @@ else
     private async Task HandleClickEditar(Usuario usuario)
     {
         var res = await DialogService.OpenAsync<UsuarioForm>(
-        $"Formulario de usuarios",
-        new() { { "Usuario", usuario.Clone() }, { "Roles", roles } },
-        new() { ShowClose = false });
+            $"Formulario de usuarios",
+            new() { { "Usuario", usuario.Clone() }, { "Roles", roles } },
+            new() { ShowClose = false, CloseDialogOnEsc = false });
 
         if (res != null)
         {
