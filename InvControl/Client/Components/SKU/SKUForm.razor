@@ -2,18 +2,99 @@
 @inject DialogService DialogService
 @inject NotificationService NotificationService
 
-@if (Sku != null)
+@if (SKU != null)
 {
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
-                      Disabled="isBusy" />
-        <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
-                      IsBusy="isBusy" BusyText="Guardando" />
-    </RadzenStack>
+    <EditForm EditContext="editContext" OnSubmit="Submit" autocomplete="off">
+        <DataAnnotationsValidator />
+        <CustomValidation @ref="customValidation" />
+
+        <RadzenRow class="rz-mb-3">
+            <RadzenColumn Size="12">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                    <RadzenLabel Text="Código:" Component="codigoModal" />
+                    <RadzenNumeric @bind-Value="SKU.Codigo" TextAlign="TextAlign.Right" ShowUpDown="false" Min="0" Name="codigoModal" Disabled="isBusy" />
+                    <ValidationMessage For="(() => SKU.Codigo)" />
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenRow class="rz-mb-3">
+            <RadzenColumn Size="12">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                    <RadzenLabel Text="Nombre:" Component="nombreModal" />
+                    <RadzenTextBox @bind-Value="SKU.Nombre" Name="nombreModal" Disabled="isBusy" />
+                    <ValidationMessage For="(() => SKU.Nombre)" />
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenRow class="rz-mb-3">
+            <RadzenColumn Size="12">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                    <RadzenLabel Text="Descripción:" Component="descripcioModaln" />
+                    <RadzenTextArea @bind-Value="SKU.Descripcion" Name="descripcionModal" Style="min-height: 50px;max-height: 100px;" Disabled="isBusy" />
+                    <ValidationMessage For="(() => SKU.Descripcion)" />
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenRow Gap="5px" RowGap="5px" class="rz-mb-3">
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                    <RadzenLabel Text="Marca:" Component="marcaModal" />
+                    <RadzenDropDown @bind-Value="SKU.IdMarca" Data="Marcas" Name="marcaModal" Disabled="isBusy"
+                                    TextProperty="@nameof(Marca.Descripcion)" ValueProperty="@nameof(Marca.IdMarca)" />
+                    <ValidationMessage For="(() => SKU.IdMarca)" />
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="3">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Gap="5px" Style="height: 100%;">
+                    <RadzenLabel Text="Activo:" Component="activoModal" />
+                    <RadzenCheckBox @bind-Value=@SKU.Activo Name="activoModal" Disabled="isBusy" />
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="3">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Gap="5px" Style="height: 100%;">
+                    <RadzenLabel Text="Especial:" Component="especialModal" />
+                    <RadzenCheckBox @bind-Value=@SKU.Especial Name="especialModal" Disabled="isBusy" />
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenRow Gap="5px" RowGap="5px" class="rz-mb-3">
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                    <RadzenLabel Text="Tipo contenedor:" Component="tipoModal" />
+                    <RadzenDropDown @bind-Value="SKU.IdTipoContenedor" Data="TiposContenedores" Name="tipoModal" Disabled="isBusy"
+                                    TextProperty="@nameof(TipoContenedor.Nombre)" ValueProperty="@nameof(TipoContenedor.IdTipoContenedor)" />
+                    <ValidationMessage For="(() => SKU.IdTipoContenedor)" />
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                    <RadzenLabel Text="Unidades:" Component="unidadesModal" />
+                    <RadzenNumeric @bind-Value="SKU.UnidadesPorContenedor" TextAlign="TextAlign.Right" ShowUpDown="false" Min="0" Name="unidadesModal" Disabled="isBusy" />
+                    <ValidationMessage For="(() => SKU.UnidadesPorContenedor)" />
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
+                          Disabled="isBusy" />
+            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
+                          IsBusy="isBusy" BusyText="Guardando" />
+        </RadzenStack>
+    </EditForm>
 }
 
 @code {
-    [Parameter] public SKU Sku { get; set; } = default!;
+    [Parameter] public SKU SKU { get; set; } = default!;
+    [Parameter] public List<Marca> Marcas { get; set; } = default!;
+    [Parameter] public List<TipoContenedor> TiposContenedores { get; set; } = default!;
 
     EditContext editContext = default!;
     CustomValidation customValidation = default!;
@@ -22,7 +103,50 @@
 
     protected override void OnInitialized()
     {
-        editContext = new(Sku);
+        if (SKU.IdSKU == 0)
+        {
+            SKU.IdMarca = 1;
+            SKU.Activo = true;
+        }
+
+        editContext = new(SKU);
+    }
+
+    private async Task Submit()
+    {
+        await Task.Delay(1);
+
+        if (editContext.Validate())
+        {
+            var result = await DialogService.Confirm(
+                Message.Confirm,
+                Message.Title,
+                new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+            if (result != null && (bool)result)
+            {
+                isBusy = true;
+
+                Response res;
+
+                if (SKU.IdSKU == 0)
+                    res = await SKUService.PostSKU(SKU);
+                else
+                    res = await SKUService.PutSKU(SKU);
+
+                isBusy = false;
+
+                if (res.Success)
+                {
+                    NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
+                    DialogService.Close(SKU);
+                }
+                else
+                {
+                    customValidation.DisplayErrors(res.Errors!);
+                }
+            }
+        }
     }
 
     private async Task Cancelar()
@@ -32,7 +156,7 @@
             Message.Title,
             new() { OkButtonText = "Sí", CancelButtonText = "No" });
 
-        if ((bool)result)
+        if (result != null && (bool)result)
         {
             DialogService.Close();
         }

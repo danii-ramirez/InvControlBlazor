@@ -25,9 +25,9 @@
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
         <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
-            Disabled="isBusy" />
+                      Disabled="isBusy" />
         <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
-            IsBusy="isBusy" BusyText="Guardando" />
+                      IsBusy="isBusy" BusyText="Guardando" />
     </RadzenStack>
 </EditForm>
 
@@ -48,14 +48,12 @@
     {
         if (editContext.Validate())
         {
-            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new()
-                {
-                    OkButtonText = "Sí",
-                    CancelButtonText =
-                "No",
-                    ShowClose = false
-                });
-            if ((bool)result)
+            var result = await DialogService.Confirm(
+                Message.Confirm,
+                Message.Title,
+                new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+            if (result != null && (bool)result)
             {
                 isBusy = true;
 
@@ -83,13 +81,12 @@
 
     private async Task Cancelar()
     {
-        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new()
-            {
-                OkButtonText = "Sí",
-                CancelButtonText =
-            "No"
-            });
-        if ((bool)result)
+        var result = await DialogService.Confirm(
+            Message.Cancel,
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No" });
+
+        if (result != null && (bool)result)
         {
             DialogService.Close();
         }

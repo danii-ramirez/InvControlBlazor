@@ -5,51 +5,51 @@
 @if (editContext != null)
 {
     <EditForm EditContext="editContext" OnSubmit="Submit" autocomplete="off">
-    <DataAnnotationsValidator />
-    <CustomValidation @ref="customValidation" />
+        <DataAnnotationsValidator />
+        <CustomValidation @ref="customValidation" />
 
-    <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-        <RadzenLabel Text="Usuario:" Component="user" />
-        <RadzenTextBox @bind-Value="Usuario.User" Name="user" Disabled="isBusy" />
-        <ValidationMessage For="@(() => Usuario.User)" />
-    </RadzenStack>
-
-    <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" class="rz-mt-3">
-        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 50%;">
-            <RadzenLabel Text="Nombre:" Component="nombre" />
-            <RadzenTextBox @bind-Value="Usuario.Nombre" Name="nombre" Disabled="isBusy" />
-            <ValidationMessage For="@(() => Usuario.Nombre)" />
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Usuario:" Component="user" />
+            <RadzenTextBox @bind-Value="Usuario.User" Name="user" Disabled="isBusy" />
+            <ValidationMessage For="@(() => Usuario.User)" />
         </RadzenStack>
 
-        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 50%;">
-            <RadzenLabel Text="Apellido:" Component="apellido" />
-            <RadzenTextBox @bind-Value="Usuario.Apellido" Name="apellido" Disabled="isBusy" />
-            <ValidationMessage For="@(() => Usuario.Apellido)" />
-        </RadzenStack>
-    </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" class="rz-mt-3">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 50%;">
+                <RadzenLabel Text="Nombre:" Component="nombre" />
+                <RadzenTextBox @bind-Value="Usuario.Nombre" Name="nombre" Disabled="isBusy" />
+                <ValidationMessage For="@(() => Usuario.Nombre)" />
+            </RadzenStack>
 
-    <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" class="rz-mt-3">
-        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 50%;">
-            <RadzenLabel Text="Rol:" Component="rol" />
-            <RadzenDropDown @bind-Value=@Usuario.IdRol Data=@Roles TextProperty="@nameof(Rol.Descripcion)"
-                ValueProperty="@nameof(Rol.IdRol)" AllowFiltering="true" Name="rol" Style="width: 100%;"
-                Disabled="isBusy" />
-            <ValidationMessage For="@(() => Usuario.IdRol)" />
+            <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 50%;">
+                <RadzenLabel Text="Apellido:" Component="apellido" />
+                <RadzenTextBox @bind-Value="Usuario.Apellido" Name="apellido" Disabled="isBusy" />
+                <ValidationMessage For="@(() => Usuario.Apellido)" />
+            </RadzenStack>
         </RadzenStack>
 
-        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="5px" Style="width: 50%;">
-            <RadzenLabel Text="Activo:" Component="activo" />
-            <RadzenCheckBox @bind-Value=@Usuario.Activo Name="activo" Disabled="isBusy" />
-        </RadzenStack>
-    </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" class="rz-mt-3">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 50%;">
+                <RadzenLabel Text="Rol:" Component="rol" />
+                <RadzenDropDown @bind-Value=@Usuario.IdRol Data=@Roles TextProperty="@nameof(Rol.Descripcion)"
+                                ValueProperty="@nameof(Rol.IdRol)" AllowFiltering="true" Name="rol" Style="width: 100%;"
+                                Disabled="isBusy" />
+                <ValidationMessage For="@(() => Usuario.IdRol)" />
+            </RadzenStack>
 
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
-            Disabled="isBusy" />
-        <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
-            IsBusy="isBusy" BusyText="Guardando" />
-    </RadzenStack>
-</EditForm>
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="5px" Style="width: 50%;">
+                <RadzenLabel Text="Activo:" Component="activo" />
+                <RadzenCheckBox @bind-Value=@Usuario.Activo Name="activo" Disabled="isBusy" />
+            </RadzenStack>
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
+                          Disabled="isBusy" />
+            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
+                          IsBusy="isBusy" BusyText="Guardando" />
+        </RadzenStack>
+    </EditForm>
 }
 
 @code {
@@ -73,14 +73,12 @@
     {
         if (editContext.Validate())
         {
-            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new()
-                {
-                    OkButtonText = "Sí",
-                    CancelButtonText =
-                "No",
-                    ShowClose = false
-                });
-            if ((bool)result)
+            var result = await DialogService.Confirm(
+                Message.Confirm,
+                Message.Title,
+                new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+            if (result != null && (bool)result)
             {
                 isBusy = true;
                 Response res;
@@ -106,13 +104,12 @@
 
     private async Task Cancelar()
     {
-        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new()
-            {
-                OkButtonText = "Sí",
-                CancelButtonText =
-            "No"
-            });
-        if ((bool)result)
+        var result = await DialogService.Confirm(
+            Message.Cancel,
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+        if (result != null && (bool)result)
         {
             DialogService.Close();
         }
