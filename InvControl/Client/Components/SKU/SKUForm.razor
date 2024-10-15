@@ -6,12 +6,13 @@
 {
     <EditForm EditContext="editContext" OnSubmit="Submit" autocomplete="off">
         <DataAnnotationsValidator />
+        <CustomValidation @ref="customValidation" />
 
         <RadzenRow class="rz-mb-3">
             <RadzenColumn Size="12">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Código:" Component="codigoModal" />
-                    <RadzenNumeric @bind-Value="SKU.Codigo" TextAlign="TextAlign.Right" ShowUpDown="false" Min="0" Name="codigoModal" />
+                    <RadzenNumeric @bind-Value="SKU.Codigo" TextAlign="TextAlign.Right" ShowUpDown="false" Min="0" Name="codigoModal" Disabled="isBusy" />
                     <ValidationMessage For="(() => SKU.Codigo)" />
                 </RadzenStack>
             </RadzenColumn>
@@ -21,7 +22,7 @@
             <RadzenColumn Size="12">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Nombre:" Component="nombreModal" />
-                    <RadzenTextBox @bind-Value="SKU.Nombre" Name="nombreModal" />
+                    <RadzenTextBox @bind-Value="SKU.Nombre" Name="nombreModal" Disabled="isBusy" />
                     <ValidationMessage For="(() => SKU.Nombre)" />
                 </RadzenStack>
             </RadzenColumn>
@@ -31,7 +32,7 @@
             <RadzenColumn Size="12">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Descripción:" Component="descripcioModaln" />
-                    <RadzenTextArea @bind-Value="SKU.Descripcion" Name="descripcionModal" Style="min-height: 50px;max-height: 100px;" />
+                    <RadzenTextArea @bind-Value="SKU.Descripcion" Name="descripcionModal" Style="min-height: 50px;max-height: 100px;" Disabled="isBusy" />
                     <ValidationMessage For="(() => SKU.Descripcion)" />
                 </RadzenStack>
             </RadzenColumn>
@@ -41,7 +42,7 @@
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Marca:" Component="marcaModal" />
-                    <RadzenDropDown @bind-Value="SKU.IdMarca" Data="Marcas" Name="marcaModal"
+                    <RadzenDropDown @bind-Value="SKU.IdMarca" Data="Marcas" Name="marcaModal" Disabled="isBusy"
                                     TextProperty="@nameof(Marca.Descripcion)" ValueProperty="@nameof(Marca.IdMarca)" />
                     <ValidationMessage For="(() => SKU.IdMarca)" />
                 </RadzenStack>
@@ -50,14 +51,14 @@
             <RadzenColumn Size="12" SizeMD="3">
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Gap="5px" Style="height: 100%;">
                     <RadzenLabel Text="Activo:" Component="activoModal" />
-                    <RadzenCheckBox @bind-Value=@SKU.Activo Name="activoModal" />
+                    <RadzenCheckBox @bind-Value=@SKU.Activo Name="activoModal" Disabled="isBusy" />
                 </RadzenStack>
             </RadzenColumn>
 
             <RadzenColumn Size="12" SizeMD="3">
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Gap="5px" Style="height: 100%;">
                     <RadzenLabel Text="Especial:" Component="especialModal" />
-                    <RadzenCheckBox @bind-Value=@SKU.Especial Name="especialModal" />
+                    <RadzenCheckBox @bind-Value=@SKU.Especial Name="especialModal" Disabled="isBusy" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
@@ -66,7 +67,7 @@
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Tipo contenedor:" Component="tipoModal" />
-                    <RadzenDropDown @bind-Value="SKU.IdTipoContenedor" Data="TiposContenedores" Name="tipoModal"
+                    <RadzenDropDown @bind-Value="SKU.IdTipoContenedor" Data="TiposContenedores" Name="tipoModal" Disabled="isBusy"
                                     TextProperty="@nameof(TipoContenedor.Nombre)" ValueProperty="@nameof(TipoContenedor.IdTipoContenedor)" />
                     <ValidationMessage For="(() => SKU.IdTipoContenedor)" />
                 </RadzenStack>
@@ -75,7 +76,7 @@
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Unidades:" Component="unidadesModal" />
-                    <RadzenNumeric @bind-Value="SKU.UnidadesPorContenedor" TextAlign="TextAlign.Right" ShowUpDown="false" Min="0" Name="unidadesModal" />
+                    <RadzenNumeric @bind-Value="SKU.UnidadesPorContenedor" TextAlign="TextAlign.Right" ShowUpDown="false" Min="0" Name="unidadesModal" Disabled="isBusy" />
                     <ValidationMessage For="(() => SKU.UnidadesPorContenedor)" />
                 </RadzenStack>
             </RadzenColumn>
@@ -117,7 +118,34 @@
 
         if (editContext.Validate())
         {
+            var result = await DialogService.Confirm(
+                Message.Confirm,
+                Message.Title,
+                new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
+            if (result != null && (bool)result)
+            {
+                isBusy = true;
+
+                Response res;
+
+                if (SKU.IdSKU == 0)
+                    res = await SKUService.PostSKU(SKU);
+                else
+                    res = await SKUService.PutSKU(SKU);
+
+                isBusy = false;
+
+                if (res.Success)
+                {
+                    NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
+                    DialogService.Close(SKU);
+                }
+                else
+                {
+                    customValidation.DisplayErrors(res.Errors!);
+                }
+            }
         }
     }
 
@@ -128,7 +156,7 @@
             Message.Title,
             new() { OkButtonText = "Sí", CancelButtonText = "No" });
 
-        if ((bool)result)
+        if (result != null && (bool)result)
         {
             DialogService.Close();
         }

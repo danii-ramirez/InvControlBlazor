@@ -58,5 +58,10 @@ namespace InvControl.Client.Services
         {
             return (await _httpClient.GetFromJsonAsync<List<Marca>>($"{BASE_REQUEST_URI}/marcas"))!;
         }
+
+        public async ValueTask<List<TipoContenedor>> GetTiposContenedores()
+        {
+            return (await _httpClient.GetFromJsonAsync<List<TipoContenedor>>($"{BASE_REQUEST_URI}/tiposcontenedores"))!;
+        }
     }
 }

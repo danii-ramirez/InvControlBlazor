@@ -52,8 +52,7 @@
             <RadzenDataGridColumn Property="@nameof(SKU.Codigo)" Title="Código" TextAlign="TextAlign.Right" />
             <RadzenDataGridColumn Property="@nameof(SKU.Nombre)" Title="Nombre" />
             <RadzenDataGridColumn Property="@nameof(SKU.Descripcion)" Title="Descripción" />
-            <RadzenDataGridColumn Property="@nameof(SKU.Activo)" Title="Activo" TextAlign="TextAlign.Center"
-                                  Filterable="false">
+            <RadzenDataGridColumn Property="@nameof(SKU.Activo)" Title="Activo" TextAlign="TextAlign.Center" Width="90px" Filterable="false">
                 <Template>
                     @if (context.Activo)
                     {
@@ -65,8 +64,7 @@
                     }
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Property="@nameof(SKU.Especial)" Title="Especial" TextAlign="TextAlign.Center"
-                                  Filterable="false">
+            <RadzenDataGridColumn Property="@nameof(SKU.Especial)" Title="Especial" TextAlign="TextAlign.Center" Width="90px" Filterable="false">
                 <Template>
                     @if (context.Especial)
                     {
@@ -79,8 +77,7 @@
                 </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Property="@nameof(SKU.NombreMarca)" Title="Marca" />
-            <RadzenDataGridColumn Property="@nameof(SKU.Stock)" Title="Stock" />
-            <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="100px" Sortable="false" Visible="@(acciones.Exists(x => x == Accion.Editar))">
+            <RadzenDataGridColumn TextAlign="TextAlign.Center" Sortable="false" Width="80px" Visible="@(acciones.Exists(x => x == Accion.Editar))">
                 <Template>
                     <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter"
                                   Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
@@ -118,6 +115,7 @@ else
         {
             acciones = success.Item2!;
             marcas = await SKUService.GetMarcas();
+            tiposContenedores = await SKUService.GetTiposContenedores();
 
             estados = new()
             {
@@ -141,6 +139,8 @@ else
 
         if (res != null)
         {
+            sku.NombreMarca = marcas.Find(x => x.IdMarca == sku.IdMarca)!.Descripcion;
+            sku.NombreTipoContenedor = tiposContenedores.Find(x => x.IdTipoContenedor == sku.IdTipoContenedor)!.Nombre;
             skus.Add(sku);
             await refData.Reload();
         }
@@ -155,7 +155,18 @@ else
 
         if (res != null)
         {
+            var skuModal = (SKU)res;
 
+            sku.Codigo = skuModal.Codigo;
+            sku.Nombre = skuModal.Nombre;
+            sku.Descripcion = skuModal.Descripcion;
+            sku.Activo = skuModal.Activo;
+            sku.Especial = skuModal.Especial;
+            sku.IdMarca = skuModal.IdMarca;
+            sku.NombreMarca = marcas.Find(x => x.IdMarca == sku.IdMarca)!.Descripcion;
+            sku.IdTipoContenedor = skuModal.IdTipoContenedor;
+            sku.NombreTipoContenedor = tiposContenedores.Find(x => x.IdTipoContenedor == sku.IdTipoContenedor)!.Nombre;
+            sku.UnidadesPorContenedor = skuModal.UnidadesPorContenedor;
         }
     }
 

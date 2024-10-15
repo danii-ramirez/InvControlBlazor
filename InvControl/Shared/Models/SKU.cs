@@ -25,15 +25,13 @@ namespace InvControl.Shared.Models
         public int IdMarca { get; set; }
         public string NombreMarca { get; set; } = string.Empty;
 
-        [Required]
-        public int IdTipoContenedor { get; set; }
+        [Required(ErrorMessage = "Debe completar este campo")]
+        public int? IdTipoContenedor { get; set; }
         public string NombreTipoContenedor { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Debe completar este campo"),
             Range(1, int.MaxValue, ErrorMessage = "Debe ingresar un número valido")]
         public int? UnidadesPorContenedor { get; set; }
-
-        public int Stock { get; set; }
 
         public object Clone() => MemberwiseClone();
     }

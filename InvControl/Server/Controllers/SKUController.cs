@@ -37,10 +37,11 @@ namespace InvControl.Server.Controllers
                         Nombre = (string)dr["Nombre"],
                         Activo = (bool)dr["Activo"],
                         Especial = (bool)dr["Especial"],
-                        UnidadesPorContenedor = (int?)dr["UnidadesPorBandeja"],
-                        Stock = (int)dr["Stock"],
                         IdMarca = (int)dr["IdMarca"],
-                        NombreMarca = (string)dr["DescripcionMarca"]
+                        NombreMarca = (string)dr["DescripcionMarca"],
+                        IdTipoContenedor = (int?)dr["IdTipoContenedor"],
+                        NombreTipoContenedor = (string)dr["NombreTipoContenedor"],
+                        UnidadesPorContenedor = (int?)dr["UnidadesPorContenedor"],
                     };
                     if (dr["Descripcion"] != DBNull.Value) s.Descripcion = (string)dr["Descripcion"];
 
@@ -73,8 +74,8 @@ namespace InvControl.Server.Controllers
                         cnn.Open();
                         transaction = cnn.BeginTransaction();
 
-                        sku.IdSKU = daSKU.InsertarSKU((int)sku.Codigo!, sku.Nombre.Trim(), sku.Descripcion?.Trim()!, sku.Activo, sku.Especial, (int)sku.UnidadesPorContenedor!,
-                            sku.IdMarca, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), DateTime.Now, transaction);
+                        sku.IdSKU = daSKU.InsertarSKU((int)sku.Codigo!, sku.Nombre.Trim(), sku.Descripcion?.Trim()!, sku.Activo, sku.Especial, sku.IdMarca,
+                             (int)sku.IdTipoContenedor!, (int)sku.UnidadesPorContenedor!, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), DateTime.Now, transaction);
 
                         daAu.Insertar($"Se creó el SKU: {sku.Codigo}", DateTime.Now, (int)TipoEntidad.SKU, (int)TipoOperacion.Creacion,
                             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
@@ -125,8 +126,8 @@ namespace InvControl.Server.Controllers
                         cnn.Open();
                         transaction = cnn.BeginTransaction();
 
-                        daSKU.ActualizarSKU(sku.IdSKU, (int)sku.Codigo!, sku.Nombre.Trim(), sku.Descripcion?.Trim()!, sku.Activo, sku.Especial, (int)sku.UnidadesPorContenedor!,
-                           sku.IdMarca, transaction);
+                        daSKU.ActualizarSKU(sku.IdSKU, (int)sku.Codigo!, sku.Nombre.Trim(), sku.Descripcion?.Trim()!, sku.Activo, sku.Especial, sku.IdMarca,
+                            (int)sku.IdTipoContenedor!, (int)sku.UnidadesPorContenedor!, transaction);
 
                         daAu.Insertar($"Se editó el SKU: {sku.Codigo}", DateTime.Now, (int)TipoEntidad.SKU, (int)TipoOperacion.Edicion,
                             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
@@ -153,8 +154,7 @@ namespace InvControl.Server.Controllers
         public IActionResult GetMarcas()
         {
             List<Marca> marcas = new();
-            DA_SKU da = new(connectionString);
-            using (DataTable dt = da.ObtenerMarcas())
+            using (DataTable dt = new DA_SKU(connectionString).ObtenerMarcas())
             {
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -167,6 +167,25 @@ namespace InvControl.Server.Controllers
                 }
             }
             return Ok(marcas);
+        }
+
+        [HttpGet("tiposcontenedores")]
+        public IActionResult GetTiposContenedores()
+        {
+            List<TipoContenedor> tipos = new();
+            using (DataTable dt = new DA_SKU(connectionString).ObtenerTiposContendores())
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    TipoContenedor m = new()
+                    {
+                        IdTipoContenedor = (int)dr["IdTipoContenedor"],
+                        Nombre = (string)dr["Nombre"]
+                    };
+                    tipos.Add(m);
+                }
+            }
+            return Ok(tipos);
         }
     }
 }

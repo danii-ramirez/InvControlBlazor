@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using InvControl.Shared.Models;
+using Microsoft.Data.SqlClient;
 using System.Data;
 
 namespace InvControl.Server.Data
@@ -28,7 +29,7 @@ namespace InvControl.Server.Data
             return dt;
         }
 
-        public int InsertarSKU(int codigo, string nombre, string descripcion, bool activo, bool especial, int unidadesPorBandeja, int idMarca,
+        public int InsertarSKU(int codigo, string nombre, string descripcion, bool activo, bool especial, int idMarca, int idTipoContenedor, int unidadesPorContenedor,
             int idUsuario, DateTime altaRegistro, SqlTransaction transaction)
         {
             int result = 0;
@@ -42,8 +43,9 @@ namespace InvControl.Server.Data
             if (descripcion != null) cmd.Parameters.AddWithValue("@pDescripcion", descripcion);
             cmd.Parameters.AddWithValue("@pActivo", activo);
             cmd.Parameters.AddWithValue("@pEspecial", especial);
-            cmd.Parameters.AddWithValue("@pUnidadesPorBandeja", unidadesPorBandeja);
             cmd.Parameters.AddWithValue("@pIdMarca", idMarca);
+            cmd.Parameters.AddWithValue("@pIdTipoContenedor", idTipoContenedor);
+            cmd.Parameters.AddWithValue("@pUnidadesPorContenedor", unidadesPorContenedor);
             cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
             cmd.Parameters.AddWithValue("@pAltaRegistro", altaRegistro);
             SqlParameter returValue = new("@pReturn", result)
@@ -56,7 +58,8 @@ namespace InvControl.Server.Data
             return result;
         }
 
-        public void ActualizarSKU(int idSku, int codigo, string nombre, string descripcion, bool activo, bool especial, int unidadesPorBandeja, int idMarca, SqlTransaction transaction)
+        public void ActualizarSKU(int idSku, int codigo, string nombre, string descripcion, bool activo, bool especial, int idMarca, int idTipoContenedor, int unidadesPorContenedor,
+            SqlTransaction transaction)
         {
             var cnn = transaction.Connection;
             var cmd = cnn.CreateCommand();
@@ -69,8 +72,9 @@ namespace InvControl.Server.Data
             cmd.Parameters.AddWithValue("@pDescripcion", descripcion);
             cmd.Parameters.AddWithValue("@pActivo", activo);
             cmd.Parameters.AddWithValue("@pEspecial", especial);
-            cmd.Parameters.AddWithValue("@pUnidadesPorBandeja", unidadesPorBandeja);
             cmd.Parameters.AddWithValue("@pIdMarca", idMarca);
+            cmd.Parameters.AddWithValue("@pIdTipoContenedor", idTipoContenedor);
+            cmd.Parameters.AddWithValue("@pUnidadesPorContenedor", unidadesPorContenedor);
             cmd.ExecuteNonQuery();
         }
 
@@ -82,6 +86,20 @@ namespace InvControl.Server.Data
                 var cmd = cnn.CreateCommand();
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.CommandText = "prc_get_Marcas";
+                SqlDataAdapter da = new(cmd);
+                da.Fill(dt);
+            }
+            return dt;
+        }
+
+        public DataTable ObtenerTiposContendores()
+        {
+            DataTable dt = new();
+            using (SqlConnection cnn = new(connectionString))
+            {
+                var cmd = cnn.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "prc_get_TipoContenedor";
                 SqlDataAdapter da = new(cmd);
                 da.Fill(dt);
             }
