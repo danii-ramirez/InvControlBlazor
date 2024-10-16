@@ -1,0 +1,123 @@
+@page "/remitos"
+
+@inject RemitosService RemitosService
+@inject DialogService DialogService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Ingreso de Remito" />
+
+    <EditForm EditContext="editContext">
+        <RadzenRow class="rz-mb-3">
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                    <RadzenLabel Text="Número de remito:" Component="numero" />
+                    <RadzenTextBox @bind-Value="@Remito.Numero" Name="numero" />
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                    <RadzenLabel Text="Fecha:" Component="fecha" />
+                    <RadzenDatePicker @bind-Value="@Remito.Fecha" ShowCalendarWeek Max="DateTime.Now"
+                        DateFormat="dd/MM/yyyy" ShowTime="false" Name="fecha" />
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenRow class="rz-mb-3">
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                    <RadzenLabel Text="Chofer:" Component="chofer" />
+                    <RadzenDropDown @bind-Value="Remito.IdChofer" Data="choferes" Name="chofer"
+                        TextProperty="@nameof(Chofer.Nombre)" ValueProperty="@nameof(Chofer.IdChofer)" />
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                    <RadzenLabel Text="Transporte:" Component="transporte" />
+                    <RadzenDropDown @bind-Value="Remito.IdTransporte" Data="transportes" Name="transporte"
+                        TextProperty="@nameof(Transporte.Nombre)" ValueProperty="@nameof(Transporte.IdTransporte)" />
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenRow class="rz-mb-3">
+            <RadzenColumn Size="12">
+                <RadzenDataGrid @ref="grid" TItem="RemitoDetalle" Data="Remito.Detalle" Density="Density.Compact"
+                    EmptyText="" Style="height: 20rem;">
+                    <HeaderTemplate>
+                        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary"
+                            Size="ButtonSize.Small" Icon="add" Text="Agregar línea" Click="HandleClickAddLinea" />
+                    </HeaderTemplate>
+                    <Columns>
+                        <RadzenDataGridColumn Property="@nameof(RemitoDetalle.CodigoNombre)" Title="SKU">
+                            <Template Context="data">
+                                <RadzenAutoComplete @bind-Value="data.CodigoNombre" Data="skus" Style="width: 100%;" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Cantidad)" Title="Cantidad" Width="100px">
+                            <Template Context="data">
+                                <RadzenNumeric TValue="int?" @bind-Value="data.Cantidad" Min="1"
+                                    TextAlign="TextAlign.Right" ShowUpDown="false" Style="width: 100%;" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" />
+            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save"
+                Text="Guardar" />
+        </RadzenStack>
+    </EditForm>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    Remito Remito { get; set; } = new();
+    EditContext editContext = default!;
+
+    List<SKU> skus = new();
+    List<Transporte> transportes = new();
+    List<Chofer> choferes = new();
+    bool showForm;
+
+    RadzenDataGrid<RemitoDetalle> grid = default!;
+
+    protected override void OnInitialized()
+    {
+        editContext = new(Remito);
+        showForm = true;
+    }
+
+    private async Task Submit()
+    {
+        await Task.Delay(1);
+    }
+
+    private async Task Cancelar()
+    {
+        var result = await DialogService.Confirm(
+        Message.Cancel,
+        Message.Title,
+        new() { OkButtonText = "Sí", CancelButtonText = "No" });
+
+        if (result != null && (bool)result)
+        {
+        }
+    }
+
+    private async Task HandleClickAddLinea()
+    {
+        RemitoDetalle detalle = new();
+        Remito.Detalle.Add(detalle);
+        await grid.Reload();
+    }
+}

@@ -38,7 +38,7 @@ namespace InvControl.Server.Controllers
 
                     foreach (var d in remito.Detalle)
                     {
-                        daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, d.NombreSku, d.Cantidad, transaction);
+                        daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, d.NombreSku, (int)d.Cantidad!, transaction);
                     }
 
                     transaction.Commit();
