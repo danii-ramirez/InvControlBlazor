@@ -1,5 +1,6 @@
 ﻿using InvControl.Server.Data;
 using InvControl.Server.Helpers;
+using InvControl.Shared.DTO;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -186,6 +187,26 @@ namespace InvControl.Server.Controllers
                 }
             }
             return Ok(tipos);
+        }
+
+        [HttpGet("sugerencias")]
+        public IActionResult GetSugerencias(string sugerencia)
+        {
+            List<SKUDTO> skus = new();
+            using (DataTable dt = new DA_SKU(connectionString).ObtenerSugerencias(sugerencia.Trim()))
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    SKUDTO s = new()
+                    {
+                        IdSku = (int)dr["IdSKU"],
+                        Codigo = (int?)dr["Codigo"],
+                        NombreSku = (string)dr["Nombre"]
+                    };
+                    skus.Add(s);
+                }
+            }
+            return Ok(skus);
         }
     }
 }

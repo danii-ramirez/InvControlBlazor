@@ -1,6 +1,7 @@
 @page "/remitos"
 
 @inject RemitosService RemitosService
+@inject SKUService SKUService
 @inject DialogService DialogService
 
 @if (showForm)
@@ -8,11 +9,14 @@
     <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Ingreso de Remito" />
 
     <EditForm EditContext="editContext">
+        <DataAnnotationsValidator />
+
         <RadzenRow class="rz-mb-3">
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Número de remito:" Component="numero" />
                     <RadzenTextBox @bind-Value="@Remito.Numero" Name="numero" />
+                    <ValidationMessage For="@(() => Remito.Numero)" />
                 </RadzenStack>
             </RadzenColumn>
 
@@ -20,7 +24,7 @@
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Fecha:" Component="fecha" />
                     <RadzenDatePicker @bind-Value="@Remito.Fecha" ShowCalendarWeek Max="DateTime.Now"
-                        DateFormat="dd/MM/yyyy" ShowTime="false" Name="fecha" />
+                                      DateFormat="dd/MM/yyyy" ShowTime="false" Name="fecha" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
@@ -30,7 +34,7 @@
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Chofer:" Component="chofer" />
                     <RadzenDropDown @bind-Value="Remito.IdChofer" Data="choferes" Name="chofer"
-                        TextProperty="@nameof(Chofer.Nombre)" ValueProperty="@nameof(Chofer.IdChofer)" />
+                                    TextProperty="@nameof(Chofer.Nombre)" ValueProperty="@nameof(Chofer.IdChofer)" />
                 </RadzenStack>
             </RadzenColumn>
 
@@ -38,7 +42,7 @@
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Transporte:" Component="transporte" />
                     <RadzenDropDown @bind-Value="Remito.IdTransporte" Data="transportes" Name="transporte"
-                        TextProperty="@nameof(Transporte.Nombre)" ValueProperty="@nameof(Transporte.IdTransporte)" />
+                                    TextProperty="@nameof(Transporte.Nombre)" ValueProperty="@nameof(Transporte.IdTransporte)" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
@@ -46,21 +50,33 @@
         <RadzenRow class="rz-mb-3">
             <RadzenColumn Size="12">
                 <RadzenDataGrid @ref="grid" TItem="RemitoDetalle" Data="Remito.Detalle" Density="Density.Compact"
-                    EmptyText="" Style="height: 20rem;">
+                                EmptyText="" Style="height: 20rem;">
                     <HeaderTemplate>
-                        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary"
-                            Size="ButtonSize.Small" Icon="add" Text="Agregar línea" Click="HandleClickAddLinea" />
+                        <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" Icon="add" Text="Agregar línea" Click="HandleClickAddRow" />
                     </HeaderTemplate>
                     <Columns>
                         <RadzenDataGridColumn Property="@nameof(RemitoDetalle.CodigoNombre)" Title="SKU">
                             <Template Context="data">
-                                <RadzenAutoComplete @bind-Value="data.CodigoNombre" Data="skus" Style="width: 100%;" />
+                                @if (data.IdSku == 0)
+                                {
+                                    <RadzenAutoComplete Data="skus" TextProperty="@nameof(SKUDTO.CodigoNombre)" Change="@(args => HandleChangeSkuAutoComplete(data, args))"
+                                                        LoadData="@OnLoadData" MinLength="2" Style="width: 100%;" />
+                                }
+                                else
+                                {
+                                    <text>@data.CodigoNombre</text>
+                                }
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Cantidad)" Title="Cantidad" Width="100px">
                             <Template Context="data">
-                                <RadzenNumeric TValue="int?" @bind-Value="data.Cantidad" Min="1"
-                                    TextAlign="TextAlign.Right" ShowUpDown="false" Style="width: 100%;" />
+                                <RadzenNumeric TValue="int?" @bind-Value="data.Cantidad" Min="1" TextAlign="TextAlign.Right" ShowUpDown="false" Style="width: 100%;" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px">
+                            <Template Context="data">
+                                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                              Size="ButtonSize.Small" Click="@(() => HandleDeleteRow(data))" @onclick:stopPropagation="true" />
                             </Template>
                         </RadzenDataGridColumn>
                     </Columns>
@@ -70,8 +86,7 @@
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
             <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" />
-            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save"
-                Text="Guardar" />
+            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" Click="Submit" />
         </RadzenStack>
     </EditForm>
 }
@@ -84,7 +99,7 @@ else
     Remito Remito { get; set; } = new();
     EditContext editContext = default!;
 
-    List<SKU> skus = new();
+    List<SKUDTO> skus = new();
     List<Transporte> transportes = new();
     List<Chofer> choferes = new();
     bool showForm;
@@ -99,25 +114,64 @@ else
 
     private async Task Submit()
     {
-        await Task.Delay(1);
+        if (editContext.Validate())
+        {
+            var result = await DialogService.Confirm(
+                Message.Confirm,
+                Message.Title,
+                new() { OkButtonText = "Sí", CancelButtonText = "No" });
+
+            if (result != null && (bool)result)
+            {
+                await RemitosService.PostRemito(Remito);                
+            }
+        }
     }
 
     private async Task Cancelar()
     {
         var result = await DialogService.Confirm(
-        Message.Cancel,
-        Message.Title,
-        new() { OkButtonText = "Sí", CancelButtonText = "No" });
+            Message.Cancel,
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No" });
 
         if (result != null && (bool)result)
         {
+            
         }
     }
 
-    private async Task HandleClickAddLinea()
+    private async Task HandleClickAddRow()
     {
         RemitoDetalle detalle = new();
         Remito.Detalle.Add(detalle);
+        await grid.Reload();
+    }
+
+    private void HandleChangeSkuAutoComplete(RemitoDetalle data, dynamic args)
+    {
+        var sku = skus.Find(x => x.CodigoNombre.ToUpper() == args?.Trim().ToUpper());
+        if (sku != null)
+        {
+            data.IdSku = sku.IdSku;
+            data.Codigo = sku.Codigo;
+            data.NombreSku = sku.NombreSku;
+
+            skus.Clear();
+        }
+    }
+
+    private async Task OnLoadData(LoadDataArgs args)
+    {
+        if (!string.IsNullOrWhiteSpace(args.Filter?.Trim()))
+        {
+            skus = await SKUService.GetSugerencias(args.Filter);
+        }
+    }
+
+    private async Task HandleDeleteRow(RemitoDetalle data)
+    {
+        Remito.Detalle.Remove(data);
         await grid.Reload();
     }
 }

@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_Remito(string connectionString) => this.connectionString = connectionString;
 
-        public int InsertarRemito(string numero, DateTime fecha, int idTransporte, int idChofer, int idEstado, int idUsuario,
+        public int InsertarRemito(string numero, DateTime fecha, int? idTransporte, int? idChofer, int idEstado, int idUsuario,
             DateTime altaRegistro, SqlTransaction transaction)
         {
             int result = 0;
@@ -20,8 +20,8 @@ namespace InvControl.Server.Data
             cmd.CommandText = "prc_ins_Remitos";
             cmd.Parameters.AddWithValue("@pNumero", numero);
             cmd.Parameters.AddWithValue("@pFecha", fecha);
-            cmd.Parameters.AddWithValue("@pIdTransporte", idTransporte);
-            cmd.Parameters.AddWithValue("@pIdChofer", idChofer);
+            if (idTransporte != null) cmd.Parameters.AddWithValue("@pIdTransporte", idTransporte);
+            if (idChofer != null) cmd.Parameters.AddWithValue("@pIdChofer", idChofer);
             cmd.Parameters.AddWithValue("@pIdEstadoRemito", idEstado);
             cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
             cmd.Parameters.AddWithValue("@pAltaRegistro", altaRegistro);

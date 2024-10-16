@@ -1,12 +1,10 @@
-namespace InvControl.Shared.Models
+﻿namespace InvControl.Shared.DTO
 {
-    public class RemitoDetalle
+    public class SKUDTO
     {
-        public int IdRemito { get; set; }
         public int IdSku { get; set; }
         public int? Codigo { get; set; }
         public string NombreSku { get; set; } = string.Empty;
-        public int? Cantidad { get; set; }
         public string CodigoNombre => $"{Codigo} - {NombreSku}";
     }
 }
