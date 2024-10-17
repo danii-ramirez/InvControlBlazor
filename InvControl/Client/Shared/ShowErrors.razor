@@ -1,0 +1,21 @@
+﻿@inject DialogService dialogService
+
+<RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" AllowClose="false" ShowIcon="false">
+    <ul>
+        @foreach (var item in Errors)
+        {
+            <li>
+                @item
+            </li>
+        }
+    </ul>
+</RadzenAlert>
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Normal" JustifyContent="JustifyContent.Center">
+    <RadzenButton Click="@(() => dialogService.Close())">Cerrar</RadzenButton>
+</RadzenStack>
+
+@code {
+    [Parameter] public List<string> Errors { get; set; } = new();
+}
+

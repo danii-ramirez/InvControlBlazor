@@ -1,4 +1,5 @@
 ﻿using InvControl.Client.Helpers;
+using InvControl.Shared.DTO;
 using InvControl.Shared.Models;
 using System.Net;
 using System.Net.Http.Json;
@@ -62,6 +63,11 @@ namespace InvControl.Client.Services
         public async ValueTask<List<TipoContenedor>> GetTiposContenedores()
         {
             return (await _httpClient.GetFromJsonAsync<List<TipoContenedor>>($"{BASE_REQUEST_URI}/tiposcontenedores"))!;
+        }
+
+        public async ValueTask<List<SKUDTO>> GetSugerencias(string sugerencia)
+        {
+            return (await _httpClient.GetFromJsonAsync<List<SKUDTO>>($"{BASE_REQUEST_URI}/sugerencias?sugerencia={sugerencia}"))!;
         }
     }
 }

@@ -16,6 +16,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStat
 builder.Services.AddAuthorizationCore();
 
 builder.Services.AddRadzenComponents();
+builder.Services.AddScoped<RadzenCustom>();
 
 Services(builder.Services);
 
@@ -29,4 +30,5 @@ static void Services(IServiceCollection services)
     services.AddScoped<ChoferesService>();
     services.AddScoped<TransportesService>();
     services.AddScoped<SKUService>();
+    services.AddScoped<RemitosService>();
 }
