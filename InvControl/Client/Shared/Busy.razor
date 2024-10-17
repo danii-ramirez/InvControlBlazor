@@ -1,0 +1,35 @@
+﻿@inject DialogService DialogService
+
+<RadzenStack AlignItems="AlignItems.Center" Gap="2rem" Class="rz-p-12">
+    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Secondary"
+                               Mode="ProgressBarMode.Indeterminate"
+                               Size="ProgressBarCircularSize.Large"
+                               Value="100"
+                               ShowValue="false" />
+    <RadzenText TextStyle="TextStyle.H6">@Text</RadzenText>
+</RadzenStack>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+
+    public void OpenBusyWithLoader(string text)
+    {
+        DialogService.Open("",
+           ds =>
+           {
+               RenderFragment content = b =>
+               {
+                   b.OpenComponent(0, typeof(Busy));
+                   b.AddAttribute(1, "Text", text);
+                   b.CloseComponent();
+               };
+               return content;
+           },
+           new DialogOptions()
+               {
+                   ShowTitle = false,
+                   Style = "min-height: auto; min-width: auto; width: auto",
+                   CloseDialogOnEsc = false
+               });
+    }
+}

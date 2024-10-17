@@ -16,6 +16,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthenticationStat
 builder.Services.AddAuthorizationCore();
 
 builder.Services.AddRadzenComponents();
+builder.Services.AddScoped<RadzenCustom>();
 
 Services(builder.Services);
 

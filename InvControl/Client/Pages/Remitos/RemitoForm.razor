@@ -2,11 +2,15 @@
 
 @inject RemitosService RemitosService
 @inject SKUService SKUService
+@inject TransportesService TransportesService
+@inject ChoferesService ChoferesService
 @inject DialogService DialogService
+@inject RadzenCustom RadzenCustom
+@inject NotificationService NotificationService
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Ingreso de Remito" />
+    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Ingreso de remito" />
 
     <EditForm EditContext="editContext">
         <DataAnnotationsValidator />
@@ -23,8 +27,8 @@
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Fecha:" Component="fecha" />
-                    <RadzenDatePicker @bind-Value="@Remito.Fecha" ShowCalendarWeek Max="DateTime.Now"
-                                      DateFormat="dd/MM/yyyy" ShowTime="false" Name="fecha" />
+                    <RadzenDatePicker @bind-Value="@Remito.Fecha" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" Name="fecha" />
+                    <ValidationMessage For="@(() => Remito.Fecha)" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
@@ -33,16 +37,16 @@
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Chofer:" Component="chofer" />
-                    <RadzenDropDown @bind-Value="Remito.IdChofer" Data="choferes" Name="chofer"
-                                    TextProperty="@nameof(Chofer.Nombre)" ValueProperty="@nameof(Chofer.IdChofer)" />
+                    <RadzenDropDown @bind-Value="Remito.IdChofer" Data="choferes" Name="chofer" AllowClear="true" Placeholder="Sin seleccionar"
+                                    TextProperty="@nameof(Chofer.NombreCompleto)" ValueProperty="@nameof(Chofer.IdChofer)" />
                 </RadzenStack>
             </RadzenColumn>
 
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Transporte:" Component="transporte" />
-                    <RadzenDropDown @bind-Value="Remito.IdTransporte" Data="transportes" Name="transporte"
-                                    TextProperty="@nameof(Transporte.Nombre)" ValueProperty="@nameof(Transporte.IdTransporte)" />
+                    <RadzenDropDown @bind-Value="Remito.IdTransporte" Data="transportes" Name="transporte" AllowClear="true" Placeholder="Sin seleccionar"
+                                    TextProperty="@nameof(Transporte.NombrePatente)" ValueProperty="@nameof(Transporte.IdTransporte)" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
@@ -106,8 +110,11 @@ else
 
     RadzenDataGrid<RemitoDetalle> grid = default!;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        transportes = await TransportesService.GetTransportes();
+        choferes = await ChoferesService.GetChoferes();
+
         editContext = new(Remito);
         showForm = true;
     }
@@ -123,7 +130,15 @@ else
 
             if (result != null && (bool)result)
             {
-                await RemitosService.PostRemito(Remito);                
+                RadzenCustom.OpenBusyWithLoader();
+                var res = await RemitosService.PostRemito(Remito);
+                RadzenCustom.CloseDialog();
+
+                if (res.Success)
+                {
+                    NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
+                    Clear();
+                }
             }
         }
     }
@@ -137,8 +152,14 @@ else
 
         if (result != null && (bool)result)
         {
-            
+            Clear();
         }
+    }
+
+    private void Clear()
+    {
+        Remito = new();
+        editContext = new(Remito);
     }
 
     private async Task HandleClickAddRow()

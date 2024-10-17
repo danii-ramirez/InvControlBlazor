@@ -33,7 +33,7 @@ namespace InvControl.Server.Controllers
                     cnn.Open();
                     transaction = cnn.BeginTransaction();
 
-                    remito.IdRemito = daRe.InsertarRemito(remito.Numero.Trim(), remito.Fecha, remito.IdTransporte, remito.IdChofer, 1,
+                    remito.IdRemito = daRe.InsertarRemito(remito.Numero.Trim(), (DateTime)remito.Fecha!, remito.IdTransporte, remito.IdChofer, 1,
                         int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), DateTime.Now, transaction);
 
                     foreach (var d in remito.Detalle)

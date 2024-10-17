@@ -16,6 +16,8 @@ namespace InvControl.Shared.Models
 
         public bool Activo { get; set; }
 
+        public string NombreCompleto => $"{Nombre} {Apellido}";
+
         public object Clone() => MemberwiseClone();
     }
 }

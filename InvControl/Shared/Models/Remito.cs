@@ -9,7 +9,8 @@ namespace InvControl.Shared.Models
         [Required(ErrorMessage = "Debe completar este campo")]
         public string Numero { get; set; } = string.Empty;
 
-        public DateTime Fecha { get; set; }
+        [Required(ErrorMessage = "Debe completar este campo")]
+        public DateTime? Fecha { get; set; }
 
         public int? IdTransporte { get; set; }
 
