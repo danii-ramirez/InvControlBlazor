@@ -1,0 +1,52 @@
+@page "/remitos/pendientes"
+
+@inject RemitosService RemitosService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Remitos" />
+
+    <RadzenDataGrid Data="remitos" AllowSorting="true" Density="Density.Compact" EmptyText="">
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.FechaIngreso)" Title="Fecha ingreso" FormatString="{0:dd/MM/yyyy hh:mm}" />
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.Numero)" Title="Número" />
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.Fecha)" Title="Fecha" FormatString="{0:dd/MM/yyyy}" />
+            <RadzenDataGridColumn Title="Transporte">
+                <Template>
+                    @context.NombreTransporte - @context.Patente
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Chofer">
+                <Template>
+                    @context.NombreChofer @context.ApellidoChofer
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Usuario">
+                <Template>
+                    @context.NombreUsuario @context.ApellidoUsuario
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Sortable="false" Width="45px">
+                <Template>
+                    <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="check" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                  Size="ButtonSize.Small" @onclick:stopPropagation="true" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<RemitoDTO> remitos = new();
+    bool showForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        remitos = await RemitosService.GetRemitosDTO(null, null, 1);
+        showForm = true;
+    }
+}

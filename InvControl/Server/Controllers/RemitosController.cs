@@ -1,5 +1,7 @@
+using System.Data;
 using System.Security.Claims;
 using InvControl.Server.Data;
+using InvControl.Shared.DTO;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -17,6 +19,58 @@ namespace InvControl.Server.Controllers
         {
             _logger = logger;
             connectionString = configuration.GetConnectionString("InvControlDB");
+        }
+
+        [HttpGet]
+        public IActionResult GetRemitos(int? idRemito, string? numeroRemito, int? idEstado)
+        {
+            List<RemitoDTO> remitos = new();
+            DA_Remito da = new(connectionString);
+            using (DataTable dtR = da.ObtenerRemitos(idRemito, numeroRemito, idEstado))
+            {
+                foreach (DataRow drR in dtR.Rows)
+                {
+                    RemitoDTO r = new()
+                    {
+                        IdRemito = (int)drR["IdRemito"],
+                        Numero = (string)drR["Numero"],
+                        FechaIngreso = (DateTime)drR["FechaIngreso"],
+                        Fecha = (DateTime)drR["Fecha"],
+                        IdEstado = (int)drR["IdEstado"],
+                        DescripcionEstado = (string)drR["DescripcionEstado"],
+                        IdUsuario = (int)drR["IdUsuario"],
+                        NombreUsuario = (string)drR["NombreUsuario"],
+                        ApellidoUsuario = (string)drR["ApellidoUsuario"]
+                    };
+
+                    if (drR["IdTransporte"] != DBNull.Value) r.IdTransporte = (int?)drR["IdTransporte"];
+                    if (drR["NombreTransporte"] != DBNull.Value) r.NombreTransporte = (string)drR["NombreTransporte"];
+                    if (drR["Patente"] != DBNull.Value) r.Patente = (string)drR["Patente"];
+                    if (drR["IdChofer"] != DBNull.Value) r.IdChofer = (int?)drR["IdChofer"];
+                    if (drR["NombreChofer"] != DBNull.Value) r.NombreChofer = (string)drR["NombreChofer"];
+                    if (drR["ApellidoChofer"] != DBNull.Value) r.ApellidoChofer = (string)drR["ApellidoChofer"];
+
+                    using (DataTable dtD = da.ObtenerRemitosDetalle(r.IdRemito))
+                    {
+                        foreach (DataRow drD in dtD.Rows)
+                        {
+                            RemitoDetalle rd = new()
+                            {
+                                IdRemito = r.IdRemito,
+                                IdSku = (int)drD["IdSKU"],
+                                NombreSku = (string)drD["NombreSKU"],
+                                Cantidad = (int?)drD["Cantidad"]
+                            };
+
+                            r.Detalle.Add(rd);
+                        }
+                    }
+
+                    remitos.Add(r);
+                }
+            }
+
+            return Ok(remitos);
         }
 
         [HttpPost]

@@ -9,6 +9,38 @@ namespace InvControl.Server.Data
 
         public DA_Remito(string connectionString) => this.connectionString = connectionString;
 
+        public DataTable ObtenerRemitos(int? idRemito, string? numeroRemito, int? idEstado)
+        {
+                DataTable dt = new();
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    var cmd = cnn.CreateCommand();
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "prc_get_Remitos";
+                    if (idRemito != null) cmd.Parameters.AddWithValue("@pIdRemito", idRemito);
+                    if (numeroRemito != null) cmd.Parameters.AddWithValue("@pNumero", numeroRemito);
+                    if (idEstado != null) cmd.Parameters.AddWithValue("@pIdEstado", idEstado);
+                    SqlDataAdapter da = new(cmd);
+                    da.Fill(dt);
+                }
+                return dt;
+        }
+
+        public DataTable ObtenerRemitosDetalle(int idRemito)
+        {
+            DataTable dt = new();
+            using (SqlConnection cnn = new(connectionString))
+            {
+                var cmd = cnn.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "prc_get_RemitosDetalle";
+                cmd.Parameters.AddWithValue("@pIdRemito", idRemito);
+                SqlDataAdapter da = new(cmd);
+                da.Fill(dt);
+            }
+            return dt;
+        }
+
         public int InsertarRemito(string numero, DateTime fecha, int? idTransporte, int? idChofer, int idEstado, int idUsuario,
             DateTime altaRegistro, SqlTransaction transaction)
         {
