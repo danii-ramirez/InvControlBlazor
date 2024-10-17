@@ -19,12 +19,12 @@ namespace InvControl.Client.Services
             DialogService.Open("",
                ds =>
                {
-                   RenderFragment content = b =>
+                   void content(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder b)
                    {
                        b.OpenComponent(0, typeof(Busy));
                        b.AddAttribute(1, "Text", text);
                        b.CloseComponent();
-                   };
+                   }
                    return content;
                },
                new DialogOptions()
