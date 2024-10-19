@@ -80,6 +80,7 @@ namespace InvControl.Server.Controllers
             try
             {
                 DA_Remito daRe = new(connectionString);
+                DA_StockMovimiento daSM = new();
                 DA_Auditoria daAu = new(connectionString);
 
                 using (SqlConnection cnn = new(connectionString))
@@ -93,6 +94,7 @@ namespace InvControl.Server.Controllers
                     foreach (var d in remito.Detalle)
                     {
                         daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, d.NombreSku, (int)d.Cantidad!, transaction);
+                        daSM.InsertarStockMovimientos(1, d.IdSku, d.NombreSku, (int)d.Cantidad, remito.Numero, DateTime.Now, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
                     }
 
                     transaction.Commit();
