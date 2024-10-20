@@ -58,7 +58,7 @@ namespace InvControl.Server.Controllers
                             {
                                 IdRemito = r.IdRemito,
                                 IdSku = (int)drD["IdSKU"],
-                                Codigo = (int?)drD["Codigo"],
+                                Codigo = (int?)drD["CodigoSKU"],
                                 NombreSku = (string)drD["NombreSKU"],
                                 Cantidad = (int?)drD["Cantidad"]
                             };
@@ -99,8 +99,7 @@ namespace InvControl.Server.Controllers
 
                         foreach (var d in remito.Detalle)
                         {
-                            daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, d.NombreSku, (int)d.Cantidad!, transaction);
-                            daSM.InsertarStockMovimientos(1, d.IdSku, d.NombreSku, (int)d.Cantidad, remito.Numero, DateTime.Now, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+                            daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, (int)d.Codigo!, d.NombreSku, (int)d.Cantidad!, transaction);
                         }
 
                         transaction.Commit();

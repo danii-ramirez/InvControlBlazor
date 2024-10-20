@@ -54,7 +54,7 @@ namespace InvControl.Server.Data
             cmd.Parameters.AddWithValue("@pFecha", fecha);
             if (idTransporte != null) cmd.Parameters.AddWithValue("@pIdTransporte", idTransporte);
             if (idChofer != null) cmd.Parameters.AddWithValue("@pIdChofer", idChofer);
-            cmd.Parameters.AddWithValue("@pIdEstadoRemito", idEstado);
+            cmd.Parameters.AddWithValue("@pIdEstado", idEstado);
             cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
             cmd.Parameters.AddWithValue("@pAltaRegistro", altaRegistro);
             SqlParameter returnValue = new("@returnValue", result)
@@ -67,7 +67,7 @@ namespace InvControl.Server.Data
             return result;
         }
 
-        public void InsertarRemitoDetalle(int idRemito, int idSku, string nombreSku, int cantidad, SqlTransaction transaction)
+        public void InsertarRemitoDetalle(int idRemito, int idSku, int codigoSku, string nombreSku, int cantidad, SqlTransaction transaction)
         {
             var cnn = transaction.Connection;
             var cmd = cnn.CreateCommand();
@@ -75,8 +75,9 @@ namespace InvControl.Server.Data
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.CommandText = "prc_ins_RemitosDetalle";
             cmd.Parameters.AddWithValue("@pIdRemito", idRemito);
-            cmd.Parameters.AddWithValue("@pIdSku", idSku);
-            cmd.Parameters.AddWithValue("@pNombreSku", nombreSku);
+            cmd.Parameters.AddWithValue("@pIdSKU", idSku);
+            cmd.Parameters.AddWithValue("@pCodigoSKU", codigoSku);
+            cmd.Parameters.AddWithValue("@pNombreSKU", nombreSku);
             cmd.Parameters.AddWithValue("@pCantidad", cantidad);
             cmd.ExecuteNonQuery();
         }

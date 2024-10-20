@@ -45,3 +45,12 @@ VALUEs
     ('Creación'),
     ('Edición'),
     ('Borrado')
+
+insert into RemitosEstados
+    (IdEstado, Descripcion)
+VALUES
+    (1, 'Pendiente'),
+    (2, 'Aprobado'),
+    (3, 'Procesado'),
+    (4, 'Rechazado')
+    
