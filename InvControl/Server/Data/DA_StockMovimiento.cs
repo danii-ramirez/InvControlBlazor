@@ -5,7 +5,7 @@ namespace InvControl.Server.Data
 {
     public class DA_StockMovimiento
     {
-        public void InsertarStockMovimientos(int idTipoMovimiento, int idSku, string nombreSku, int cantidad, string referencia,
+        public void InsertarStockMovimientos(int idTipoMovimiento, int idSku, int codigoSku, string nombreSku, int cantidad, string referencia,
             DateTime fechaMovimiento, int idUsuario, SqlTransaction transaction)
         {
             var cnn = transaction.Connection;
@@ -15,6 +15,7 @@ namespace InvControl.Server.Data
             cmd.CommandText = "prc_ins_StockMovimientos";
             cmd.Parameters.AddWithValue("@pIdTipoMovimiento", idTipoMovimiento);
             cmd.Parameters.AddWithValue("@pIdSKU", idSku);
+            cmd.Parameters.AddWithValue("@pCodigoSKU", codigoSku);
             cmd.Parameters.AddWithValue("@pNombreSKU", nombreSku);
             cmd.Parameters.AddWithValue("@pCantidad", cantidad);
             cmd.Parameters.AddWithValue("@pReferencia", referencia);

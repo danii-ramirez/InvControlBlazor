@@ -2,9 +2,11 @@ using System.Data;
 using System.Security.Claims;
 using InvControl.Server.Data;
 using InvControl.Shared.DTO;
+using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Radzen.Blazor.Rendering;
 
 namespace InvControl.Server.Controllers
 {
@@ -135,6 +137,56 @@ namespace InvControl.Server.Controllers
                     transaction = cnn.BeginTransaction();
 
                     daRe.ActualziarRemitoEstado(remito.IdRemito, remito.IdEstado, transaction);
+
+                    transaction.Commit();
+                    cnn.Close();
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpPut("procesar")]
+        public IActionResult PutRemitosProcesar(List<RemitoDTO> remitos)
+        {
+            SqlTransaction transaction = default!;
+            try
+            {
+                DA_Remito daRe = new(connectionString);
+                DA_StockMovimiento daSM = new();
+                DA_SKU daSKU = new(connectionString);
+                DA_Stock daS = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
+
+                    foreach (var r in remitos)
+                    {
+                        daRe.ActualziarRemitoEstado(r.IdRemito, (int)RemitoEstado.Procesado, transaction);
+
+                        foreach (var rd in r.Detalle)
+                        {
+                            DateTime fecha = DateTime.Now;
+                            int unidadesPorContenedor = (int)daSKU.ObtenerSKU(rd.IdSku, null, null, null, null, transaction).Rows[0]["UnidadesPorContenedor"];
+                            int unidades = (int)rd.Cantidad! * unidadesPorContenedor;
+                            int stock = (int)daS.ObtenerStockPorSKU(rd.IdSku, transaction).Rows[0]["Cantidad"];
+
+                            daSM.InsertarStockMovimientos((int)StockMovimientoEstado.Ingreso, rd.IdSku, (int)rd.Codigo!, rd.NombreSku, unidades,
+                                $"Remito nro.: {r.NumeroRemito}", fecha, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                            daS.InsertarStock(rd.IdSku, stock + unidades, fecha, transaction);
+                        }
+                    }
 
                     transaction.Commit();
                     cnn.Close();

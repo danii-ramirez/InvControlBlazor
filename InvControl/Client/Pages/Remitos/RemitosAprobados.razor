@@ -2,6 +2,7 @@
 
 @inject RemitosService RemitosService
 @inject DialogService DialogService
+@inject RadzenCustom RadzenCustom
 @inject NotificationService NotificationService
 
 @if (showForm)
@@ -114,17 +115,10 @@ else
 
             if (result != null && (bool)result)
             {
-                List<RemitoState> remitosStates = new();
-                foreach (var item in selectedRemitos)
-                {
-                    RemitoState rs = new();
-                    rs.IdEstado = item.IdRemito;
-                    rs.IdEstado = (int)RemitoEstado.Procesado;
-                    remitosStates.Add(rs);
+                RadzenCustom.OpenBusyWithLoader();
+                var response = await RemitosService.PutRemitosProcesar(selectedRemitos.ToList());
+                RadzenCustom.CloseDialog();
 
-                }
-
-                var response = await RemitosService.PutRemitosProcesar(remitosStates);
                 if (response)
                 {
                     NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);

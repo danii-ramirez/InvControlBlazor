@@ -7,4 +7,9 @@
         Procesado = 3,
         Rechazado = 4
     }
+
+    public enum StockMovimientoEstado
+    {
+        Ingreso = 1
+    }
 }

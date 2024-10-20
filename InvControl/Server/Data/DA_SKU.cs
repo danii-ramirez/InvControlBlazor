@@ -1,5 +1,4 @@
-﻿using InvControl.Shared.Models;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using System.Data;
 
 namespace InvControl.Server.Data
@@ -10,22 +9,31 @@ namespace InvControl.Server.Data
 
         public DA_SKU(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerSKU(int? idSku, int? codigo, string? nombre, bool? activo, int? idMarca)
+        public DataTable ObtenerSKU(int? idSku, int? codigo, string? nombre, bool? activo, int? idMarca, SqlTransaction? transaction = null)
         {
             DataTable dt = new();
-            using (SqlConnection cnn = new(connectionString))
+            SqlConnection cnn;
+            SqlCommand cmd;
+            if (transaction == null)
             {
-                var cmd = cnn.CreateCommand();
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.CommandText = "prc_get_SKU";
-                if (idSku != null) cmd.Parameters.AddWithValue("@pIdSKU", idSku);
-                if (codigo != null) cmd.Parameters.AddWithValue("@pCodigo", codigo);
-                if (nombre != null) cmd.Parameters.AddWithValue("@pNombre", nombre);
-                if (activo != null) cmd.Parameters.AddWithValue("@pActivo", activo);
-                if (idMarca != null) cmd.Parameters.AddWithValue("@pIdMarca", idMarca);
-                SqlDataAdapter da = new(cmd);
-                da.Fill(dt);
+                cnn = new(connectionString);
+                cmd = cnn.CreateCommand();
             }
+            else
+            {
+                cnn = transaction.Connection;
+                cmd = cnn.CreateCommand();
+                cmd.Transaction = transaction;
+            }
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_get_SKU";
+            if (idSku != null) cmd.Parameters.AddWithValue("@pIdSKU", idSku);
+            if (codigo != null) cmd.Parameters.AddWithValue("@pCodigo", codigo);
+            if (nombre != null) cmd.Parameters.AddWithValue("@pNombre", nombre);
+            if (activo != null) cmd.Parameters.AddWithValue("@pActivo", activo);
+            if (idMarca != null) cmd.Parameters.AddWithValue("@pIdMarca", idMarca);
+            SqlDataAdapter da = new(cmd);
+            da.Fill(dt);
             return dt;
         }
 
