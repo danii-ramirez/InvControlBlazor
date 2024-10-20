@@ -43,5 +43,11 @@ namespace InvControl.Client.Services
             var res = await _httpClient.PutAsJsonAsync($"{BASE_REQUEST_URI}/estado", remito);
             return res.StatusCode == HttpStatusCode.OK;
         }
+
+        public async ValueTask<bool> PutRemitosProcesar(List<RemitoState> remitos)
+        {
+            var res = await _httpClient.PutAsJsonAsync($"{BASE_REQUEST_URI}/procesar", remitos);
+            return res.StatusCode == HttpStatusCode.OK;
+        }
     }
 }
