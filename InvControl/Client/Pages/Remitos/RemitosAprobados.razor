@@ -2,14 +2,15 @@
 
 @inject RemitosService RemitosService
 @inject DialogService DialogService
+@inject NotificationService NotificationService
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Remitos aprobados" />
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Remitos aprobados" />
 
     <RadzenDataGrid @ref="grid" TItem="RemitoDTO" Data="remitos" ExpandMode="DataGridExpandMode.Single"
         RowRender="@RowRender" SelectionMode="DataGridSelectionMode.Multiple" @bind-Value="selectedRemitos"
-        AllowRowSelectOnRowClick="true" AllowSorting="true" Density="Density.Compact" EmptyText="">
+        AllowRowSelectOnRowClick="true" AllowSorting="true" Density="Density.Compact" Style="height: 25rem;" EmptyText="">
         <Columns>
             <RadzenDataGridColumn Width="60px" Sortable="false" Filterable="false" TextAlign=" TextAlign.Center">
                 <HeaderTemplate>
@@ -50,17 +51,22 @@
             </RadzenDataGridColumn>
         </Columns>
         <Template Context="remito">
-            <RadzenDataGrid Data="@remito.Detalle" AllowSorting="true">
+            <RadzenDataGrid Data="@remito.Detalle" AllowSorting="true" Style="width: 40rem;">
                 <Columns>
                     <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Codigo)" Title="Código"
-                        TextAlign="TextAlign.Right" />
+                        TextAlign="TextAlign.Right" Width="110px" />
                     <RadzenDataGridColumn Property="@nameof(RemitoDetalle.NombreSku)" Title="Nombre" />
                     <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Cantidad)" Title="Cantidad"
-                        TextAlign="TextAlign.Right" />
+                        TextAlign="TextAlign.Right" Width="100px" />
                 </Columns>
             </RadzenDataGrid>
         </Template>
     </RadzenDataGrid>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="HandleClickCancelar" />
+        <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" Click="HandleClickGuardar" />
+    </RadzenStack>
 }
 else
 {
@@ -82,5 +88,55 @@ else
     private void RowRender(RowRenderEventArgs<RemitoDTO> args)
     {
         args.Expandable = args.Data.Detalle.Any();
+    }
+
+    private async Task HandleClickCancelar()
+    {
+        var result = await DialogService.Confirm(
+        Message.Cancel,
+        Message.Title,
+        new() { OkButtonText = "Sí", CancelButtonText = "No" });
+
+        if (result != null && (bool)result)
+        {
+            selectedRemitos = new List<RemitoDTO>();
+        }
+    }
+
+    private async Task HandleClickGuardar()
+    {
+        if (selectedRemitos.Any())
+        {
+            var result = await DialogService.Confirm(
+            Message.Confirm,
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No" });
+
+            if (result != null && (bool)result)
+            {
+                List<RemitoState> remitosStates = new();
+                foreach (var item in selectedRemitos)
+                {
+                    RemitoState rs = new();
+                    rs.IdEstado = item.IdRemito;
+                    rs.IdEstado = (int)RemitoEstado.Procesado;
+                    remitosStates.Add(rs);
+
+                }
+
+                var response = await RemitosService.PutRemitosProcesar(remitosStates);
+                if (response)
+                {
+                    NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
+                    selectedRemitos = new List<RemitoDTO>();
+                    remitos = await RemitosService.GetRemitosDTO(null, null, (int)RemitoEstado.Aprobado);
+                    await grid.Reload();
+                }
+            }
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Info, "Debe seleecionar al menos un remito");
+        }
     }
 }
