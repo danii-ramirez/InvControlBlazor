@@ -1,0 +1,86 @@
+@page "/remitos/aprobados"
+
+@inject RemitosService RemitosService
+@inject DialogService DialogService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Remitos aprobados" />
+
+    <RadzenDataGrid @ref="grid" TItem="RemitoDTO" Data="remitos" ExpandMode="DataGridExpandMode.Single"
+        RowRender="@RowRender" SelectionMode="DataGridSelectionMode.Multiple" @bind-Value="selectedRemitos"
+        AllowRowSelectOnRowClick="true" AllowSorting="true" Density="Density.Compact" EmptyText="">
+        <Columns>
+            <RadzenDataGridColumn Width="60px" Sortable="false" Filterable="false" TextAlign=" TextAlign.Center">
+                <HeaderTemplate>
+                    <RadzenCheckBox TabIndex="-1" TriState="false" TValue="bool?"
+                        Value="@(selectedRemitos == null || selectedRemitos?.Any() != true ? false : !remitos.All(i => selectedRemitos.Contains(i)) ? null : remitos.Any(i => selectedRemitos.Contains(i)))"
+                        Change="@(args => selectedRemitos = args == true ? remitos.ToList() : new List<RemitoDTO>())" />
+                </HeaderTemplate>
+                <Template Context="data">
+                    <RadzenCheckBox TabIndex="-1" TriState="false"
+                        Value="@(selectedRemitos != null && selectedRemitos.Contains(data))" TValue="bool" />
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.FechaIngreso)" Title="Fecha ingreso"
+                FormatString="{0:dd/MM/yyyy hh:mm}" TextAlign="TextAlign.Center" Width="130px" />
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.NumeroRemito)" Title="Número de remito" Width="150px" />
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.Fecha)" Title="Fecha remito" FormatString="{0:dd/MM/yyyy}"
+                TextAlign="TextAlign.Center" Width="115px" />
+            <RadzenDataGridColumn Title="Transporte" Width="190px">
+                <Template>
+                    @if (context.IdTransporte != null)
+                    {
+                        <text>@context.NombreTransporte - @context.Patente</text>
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Chofer" Width="150px">
+                <Template>
+                    @if (context.IdChofer != null)
+                    {
+                        <text>@context.NombreChofer @context.ApellidoChofer</text>
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Usuario" Width="150px">
+                <Template>
+                    @context.NombreUsuario @context.ApellidoUsuario
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+        <Template Context="remito">
+            <RadzenDataGrid Data="@remito.Detalle" AllowSorting="true">
+                <Columns>
+                    <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Codigo)" Title="Código"
+                        TextAlign="TextAlign.Right" />
+                    <RadzenDataGridColumn Property="@nameof(RemitoDetalle.NombreSku)" Title="Nombre" />
+                    <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Cantidad)" Title="Cantidad"
+                        TextAlign="TextAlign.Right" />
+                </Columns>
+            </RadzenDataGrid>
+        </Template>
+    </RadzenDataGrid>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<RemitoDTO> remitos = new();
+    IList<RemitoDTO> selectedRemitos = new List<RemitoDTO>();
+    RadzenDataGrid<RemitoDTO> grid = default!;
+    bool showForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        remitos = await RemitosService.GetRemitosDTO(null, null, (int)RemitoEstado.Aprobado);
+        showForm = true;
+    }
+
+    private void RowRender(RowRenderEventArgs<RemitoDTO> args)
+    {
+        args.Expandable = args.Data.Detalle.Any();
+    }
+}

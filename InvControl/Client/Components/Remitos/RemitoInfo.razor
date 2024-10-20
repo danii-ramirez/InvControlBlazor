@@ -89,25 +89,44 @@
 </RadzenRow>
 
 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-4">
-    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Rechazar" Click="HandleClickRechazar" />
-    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="check_circle" Text="Aprobar" Click="HandleClickAprobar"/>
+    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Rechazar" Click="HandleClickRechazar" IsBusy="isBusy" />
+    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="check_circle" Text="Aprobar" Click="HandleClickAprobar" IsBusy="isBusy" />
 </RadzenStack>
 
 @code {
     [Parameter] public RemitoDTO Remito { get; set; } = default!;
 
+    bool isBusy;
+
     private async Task HandleClickAprobar()
     {
-        await Save(RemitoEstado.Aprobado);
+        var result = await DialogService.Confirm(
+                $"Confirma que desea aprobar el remito {Remito.NumeroRemito}?",
+                Message.Title,
+                new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+        if(result != null && (bool)result)
+        {
+            await Save(RemitoEstado.Aprobado);
+        }
     }
 
     private async Task HandleClickRechazar()
     {
-        await Save(RemitoEstado.Rechazado);
+        var result = await DialogService.Confirm(
+                $"Confirma que desea rechazar el remito {Remito.NumeroRemito}?",
+                Message.Title,
+                new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+        if(result != null && (bool)result)
+        {
+            await Save(RemitoEstado.Rechazado);
+        }
     }
 
     private async Task Save(RemitoEstado remitoEstado)
     {
+        isBusy = true;
         RemitoState remitoState = new();
         remitoState.IdRemito = Remito.IdRemito;
         remitoState.IdEstado = (int)remitoEstado;
@@ -117,5 +136,6 @@
             NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
             DialogService.Close(true);
         }
+        isBusy = false;
     }
 }
