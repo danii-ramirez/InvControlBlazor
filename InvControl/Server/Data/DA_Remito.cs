@@ -1,5 +1,5 @@
-using System.Data;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace InvControl.Server.Data
 {
@@ -11,19 +11,19 @@ namespace InvControl.Server.Data
 
         public DataTable ObtenerRemitos(int? idRemito, string? numeroRemito, int? idEstado)
         {
-                DataTable dt = new();
-                using (SqlConnection cnn = new(connectionString))
-                {
-                    var cmd = cnn.CreateCommand();
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.CommandText = "prc_get_Remitos";
-                    if (idRemito != null) cmd.Parameters.AddWithValue("@pIdRemito", idRemito);
-                    if (numeroRemito != null) cmd.Parameters.AddWithValue("@pNumero", numeroRemito);
-                    if (idEstado != null) cmd.Parameters.AddWithValue("@pIdEstado", idEstado);
-                    SqlDataAdapter da = new(cmd);
-                    da.Fill(dt);
-                }
-                return dt;
+            DataTable dt = new();
+            using (SqlConnection cnn = new(connectionString))
+            {
+                var cmd = cnn.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "prc_get_Remitos";
+                if (idRemito != null) cmd.Parameters.AddWithValue("@pIdRemito", idRemito);
+                if (numeroRemito != null) cmd.Parameters.AddWithValue("@pNumero", numeroRemito);
+                if (idEstado != null) cmd.Parameters.AddWithValue("@pIdEstado", idEstado);
+                SqlDataAdapter da = new(cmd);
+                da.Fill(dt);
+            }
+            return dt;
         }
 
         public DataTable ObtenerRemitosDetalle(int idRemito)
@@ -78,6 +78,18 @@ namespace InvControl.Server.Data
             cmd.Parameters.AddWithValue("@pIdSku", idSku);
             cmd.Parameters.AddWithValue("@pNombreSku", nombreSku);
             cmd.Parameters.AddWithValue("@pCantidad", cantidad);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void ActualziarRemitoEstado(int idRemito, int idEstado, SqlTransaction transaction)
+        {
+            var cnn = transaction.Connection;
+            var cmd = cnn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_upd_RemitosEstado";
+            cmd.Parameters.AddWithValue("@pIdRemito", idRemito);
+            cmd.Parameters.AddWithValue("@pIdEstado", idEstado);
             cmd.ExecuteNonQuery();
         }
     }

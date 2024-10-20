@@ -5,7 +5,7 @@ namespace InvControl.Shared.DTO
     public class RemitoDTO
     {
         public int IdRemito { get; set; }
-        public string Numero { get; set; } = string.Empty;
+        public string NumeroRemito { get; set; } = string.Empty;
         public DateTime Fecha { get; set; }
         public int? IdTransporte { get; set; }
         public string NombreTransporte { get; set; } = string.Empty;

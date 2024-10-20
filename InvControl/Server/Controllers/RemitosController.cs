@@ -33,7 +33,7 @@ namespace InvControl.Server.Controllers
                     RemitoDTO r = new()
                     {
                         IdRemito = (int)drR["IdRemito"],
-                        Numero = (string)drR["Numero"],
+                        NumeroRemito = (string)drR["Numero"],
                         FechaIngreso = (DateTime)drR["FechaIngreso"],
                         Fecha = (DateTime)drR["Fecha"],
                         IdEstado = (int)drR["IdEstado"],
@@ -58,6 +58,7 @@ namespace InvControl.Server.Controllers
                             {
                                 IdRemito = r.IdRemito,
                                 IdSku = (int)drD["IdSKU"],
+                                Codigo = (int?)drD["Codigo"],
                                 NombreSku = (string)drD["NombreSKU"],
                                 Cantidad = (int?)drD["Cantidad"]
                             };
@@ -83,25 +84,64 @@ namespace InvControl.Server.Controllers
                 DA_StockMovimiento daSM = new();
                 DA_Auditoria daAu = new(connectionString);
 
+                if (daRe.ObtenerRemitos(null, remito.Numero.Trim(), null).Rows.Count > 0)
+                    ModelState.AddModelError(nameof(Remito.Numero), "El remito ya se encuetra cargado");
+
+                if (ModelState.IsValid)
+                {
+                    using (SqlConnection cnn = new(connectionString))
+                    {
+                        cnn.Open();
+                        transaction = cnn.BeginTransaction();
+
+                        remito.IdRemito = daRe.InsertarRemito(remito.Numero.Trim(), (DateTime)remito.Fecha!, remito.IdTransporte, remito.IdChofer, 1,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), DateTime.Now, transaction);
+
+                        foreach (var d in remito.Detalle)
+                        {
+                            daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, d.NombreSku, (int)d.Cantidad!, transaction);
+                            daSM.InsertarStockMovimientos(1, d.IdSku, d.NombreSku, (int)d.Cantidad, remito.Numero, DateTime.Now, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+                        }
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+
+                    return Ok(remito);
+                }
+
+                return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpPut("estado")]
+        public IActionResult PutRemito(RemitoState remito)
+        {
+            SqlTransaction transaction = default!;
+            try
+            {
+                DA_Remito daRe = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
                 using (SqlConnection cnn = new(connectionString))
                 {
                     cnn.Open();
                     transaction = cnn.BeginTransaction();
 
-                    remito.IdRemito = daRe.InsertarRemito(remito.Numero.Trim(), (DateTime)remito.Fecha!, remito.IdTransporte, remito.IdChofer, 1,
-                        int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), DateTime.Now, transaction);
-
-                    foreach (var d in remito.Detalle)
-                    {
-                        daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, d.NombreSku, (int)d.Cantidad!, transaction);
-                        daSM.InsertarStockMovimientos(1, d.IdSku, d.NombreSku, (int)d.Cantidad, remito.Numero, DateTime.Now, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
-                    }
+                    daRe.ActualziarRemitoEstado(remito.IdRemito, remito.IdEstado, transaction);
 
                     transaction.Commit();
                     cnn.Close();
                 }
 
-                return Ok(remito);
+                return Ok();
             }
             catch (Exception ex)
             {

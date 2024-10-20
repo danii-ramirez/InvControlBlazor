@@ -1,0 +1,121 @@
+﻿@inject RemitosService RemitosService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<RadzenRow Gap="5px" RowGap="5px" class="rz-mb-1">
+    <RadzenColumn Size="12" SizeMD="6">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
+            <RadzenLabel Text="Fecha de ingreso:" />
+            <RadzenText TextStyle="TextStyle.Body1">
+                <strong>@Remito.FechaIngreso.ToString("dd/MM/yyyy")</strong>
+            </RadzenText>
+        </RadzenStack>
+    </RadzenColumn>
+
+    <RadzenColumn Size="12" SizeMD="6">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
+            <RadzenLabel Text="Usuario:" />
+            <RadzenText TextStyle="TextStyle.Body1">
+                <strong>@Remito.NombreUsuario @Remito.ApellidoUsuario</strong>
+            </RadzenText>
+        </RadzenStack>
+    </RadzenColumn>
+</RadzenRow>
+
+<RadzenRow Gap="5px" RowGap="5px" class="rz-mb-1">
+    <RadzenColumn Size="12" SizeMD="6">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
+            <RadzenLabel Text="Número de remito:" />
+            <RadzenText TextStyle="TextStyle.Body1">
+                <strong>@Remito.NumeroRemito</strong>
+            </RadzenText>
+        </RadzenStack>
+    </RadzenColumn>
+
+    <RadzenColumn Size="12" SizeMD="6">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
+            <RadzenLabel Text="Fecha de remito:" />
+            <RadzenText TextStyle="TextStyle.Body1">
+                <strong>@Remito.Fecha.ToString("dd/MM/yyyy")</strong>
+            </RadzenText>
+        </RadzenStack>
+    </RadzenColumn>
+</RadzenRow>
+
+<RadzenRow Gap="5px" RowGap="5px" class="rz-mb-1">
+    <RadzenColumn Size="12" SizeMD="6">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
+            <RadzenLabel Text="Transporte:" />
+            <RadzenText TextStyle="TextStyle.Body1">
+                @if (Remito.IdTransporte != null)
+                {
+                    <strong>@Remito.NombreTransporte - @Remito.Patente</strong>
+                }
+                else
+                {
+                    <strong>Sin transporte</strong>
+                }
+            </RadzenText>
+        </RadzenStack>
+    </RadzenColumn>
+
+    <RadzenColumn Size="12" SizeMD="6">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
+            <RadzenLabel Text="Chofer:" />
+            <RadzenText TextStyle="TextStyle.Body1">
+                @if (Remito.IdChofer != null)
+                {
+                    <strong>@Remito.NombreChofer @Remito.ApellidoChofer</strong>
+                }
+                else
+                {
+                    <strong>Sin chofer</strong>
+                }
+            </RadzenText>
+        </RadzenStack>
+    </RadzenColumn>
+</RadzenRow>
+
+<RadzenRow Gap="5px" RowGap="5px" class="rz-mb-1">
+    <RadzenColumn Size="12">
+        <RadzenDataGrid Data="Remito.Detalle" AllowSorting="true" Density="Density.Compact" Style="height: 20rem;">
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Codigo)" Title="Código" TextAlign="TextAlign.Right" Width="100px" />
+                <RadzenDataGridColumn Property="@nameof(RemitoDetalle.NombreSku)" Title="Nombre" />
+                <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Cantidad)" Title="Cantidad" TextAlign="TextAlign.Center" Width="100px" />
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenColumn>
+</RadzenRow>
+
+<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-4">
+    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Rechazar" />
+    <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="check_circle" Text="Aprobar" />
+</RadzenStack>
+
+@code {
+    [Parameter] public RemitoDTO Remito { get; set; } = default!;
+
+    private async Task HandleClickAprobar()
+    {
+        await Save(RemitoEstado.Aprobado);
+    }
+
+    private async Task HandleClickRechazar()
+    {
+        await Save(RemitoEstado.Rechazado);
+    }
+
+    private async Task Save(RemitoEstado remitoEstado)
+    {
+        RemitoState remitoState = new();
+        remitoState.IdRemito = Remito.IdRemito;
+        remitoState.IdEstado = (int)remitoEstado;
+        var res = await RemitosService.PutRemitoEstado(remitoState);
+        if (res)
+        {
+            NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
+            DialogService.Close(true);
+        }
+    }
+}

@@ -1,35 +1,45 @@
 @page "/remitos/pendientes"
 
+@using InvControl.Client.Components.Remitos
+
 @inject RemitosService RemitosService
+@inject DialogService DialogService
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Remitos" />
+    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Remitos pendientes" />
 
-    <RadzenDataGrid Data="remitos" AllowSorting="true" Density="Density.Compact" EmptyText="">
+    <RadzenDataGrid @ref="grid" TItem="RemitoDTO" Data="remitos" RowDoubleClick="(args => HandleClick(args.Data))"
+                    AllowSorting="true" Density="Density.Compact" EmptyText="">
         <Columns>
-            <RadzenDataGridColumn Property="@nameof(RemitoDTO.FechaIngreso)" Title="Fecha ingreso" FormatString="{0:dd/MM/yyyy hh:mm}" />
-            <RadzenDataGridColumn Property="@nameof(RemitoDTO.Numero)" Title="Número" />
-            <RadzenDataGridColumn Property="@nameof(RemitoDTO.Fecha)" Title="Fecha" FormatString="{0:dd/MM/yyyy}" />
-            <RadzenDataGridColumn Title="Transporte">
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.FechaIngreso)" Title="Fecha ingreso" FormatString="{0:dd/MM/yyyy hh:mm}" TextAlign="TextAlign.Center" Width="130px" />
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.NumeroRemito)" Title="Número de remito" Width="150px" />
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.Fecha)" Title="Fecha remito" FormatString="{0:dd/MM/yyyy}" TextAlign="TextAlign.Center" Width="115px" />
+            <RadzenDataGridColumn Title="Transporte" Width="190px">
                 <Template>
-                    @context.NombreTransporte - @context.Patente
+                    @if (context.IdTransporte != null)
+                    {
+                        <text>@context.NombreTransporte - @context.Patente</text>
+                    }
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Title="Chofer">
+            <RadzenDataGridColumn Title="Chofer" Width="150px">
                 <Template>
-                    @context.NombreChofer @context.ApellidoChofer
+                    @if (context.IdChofer != null)
+                    {
+                        <text>@context.NombreChofer @context.ApellidoChofer</text>
+                    }
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Title="Usuario">
+            <RadzenDataGridColumn Title="Usuario" Width="150px">
                 <Template>
                     @context.NombreUsuario @context.ApellidoUsuario
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Sortable="false" Width="45px">
+            <RadzenDataGridColumn Sortable="false" TextAlign="TextAlign.Center" Width="45px">
                 <Template>
                     <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="check" Variant="Variant.Flat" Shade="Shade.Lighter"
-                                  Size="ButtonSize.Small" @onclick:stopPropagation="true" />
+                                  Size="ButtonSize.Small" Click="(() => HandleClick(context))" @onclick:stopPropagation="true" />
                 </Template>
             </RadzenDataGridColumn>
         </Columns>
@@ -43,10 +53,25 @@ else
 @code {
     List<RemitoDTO> remitos = new();
     bool showForm;
+    RadzenDataGrid<RemitoDTO> grid = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        remitos = await RemitosService.GetRemitosDTO(null, null, 1);
+        remitos = await RemitosService.GetRemitosDTO(null, null, (int)RemitoEstado.Pendiente);
         showForm = true;
+    }
+
+    private async Task HandleClick(RemitoDTO remito)
+    {
+        var res = await DialogService.OpenAsync<RemitoInfo>(
+            $"Remito nro. {remito.NumeroRemito}",
+            new() { { "Remito", remito } },
+            new() { CloseDialogOnEsc = false });
+
+        if (res != null && (bool)res)
+        {
+            remitos.Remove(remito);
+            await grid.Reload();
+        }
     }
 }
