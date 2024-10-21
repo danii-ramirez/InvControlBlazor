@@ -43,6 +43,7 @@ namespace InvControl.Server.Controllers
                         IdTipoContenedor = (int?)dr["IdTipoContenedor"],
                         NombreTipoContenedor = (string)dr["NombreTipoContenedor"],
                         UnidadesPorContenedor = (int?)dr["UnidadesPorContenedor"],
+                        Stock = (int)dr["StockActual"]
                     };
                     if (dr["Descripcion"] != DBNull.Value) s.Descripcion = (string)dr["Descripcion"];
 
