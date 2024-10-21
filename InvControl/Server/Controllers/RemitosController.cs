@@ -6,7 +6,6 @@ using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using Radzen.Blazor.Rendering;
 
 namespace InvControl.Server.Controllers
 {
@@ -179,12 +178,11 @@ namespace InvControl.Server.Controllers
                             DateTime fecha = DateTime.Now;
                             int unidadesPorContenedor = (int)daSKU.ObtenerSKU(rd.IdSku, null, null, null, null, transaction).Rows[0]["UnidadesPorContenedor"];
                             int unidades = (int)rd.Cantidad! * unidadesPorContenedor;
-                            int stock = (int)daS.ObtenerStockPorSKU(rd.IdSku, transaction).Rows[0]["Cantidad"];
 
                             daSM.InsertarStockMovimientos((int)StockMovimientoEstado.Ingreso, rd.IdSku, (int)rd.Codigo!, rd.NombreSku, unidades,
                                 $"Remito nro.: {r.NumeroRemito}", fecha, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
-                            daS.InsertarStock(rd.IdSku, stock + unidades, fecha, transaction);
+                            daS.InsertarStock(rd.IdSku, unidades, fecha, transaction);
                         }
                     }
 
