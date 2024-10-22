@@ -33,6 +33,8 @@ namespace InvControl.Shared.Models
             Range(1, int.MaxValue, ErrorMessage = "Debe ingresar un número valido")]
         public int? UnidadesPorContenedor { get; set; }
 
+        public int Stock { get; set; }
+
         public object Clone() => MemberwiseClone();
     }
 }

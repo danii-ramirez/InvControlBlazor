@@ -43,6 +43,7 @@ namespace InvControl.Server.Controllers
                         IdTipoContenedor = (int?)dr["IdTipoContenedor"],
                         NombreTipoContenedor = (string)dr["NombreTipoContenedor"],
                         UnidadesPorContenedor = (int?)dr["UnidadesPorContenedor"],
+                        Stock = (int)dr["StockActual"]
                     };
                     if (dr["Descripcion"] != DBNull.Value) s.Descripcion = (string)dr["Descripcion"];
 
@@ -60,6 +61,7 @@ namespace InvControl.Server.Controllers
             try
             {
                 DA_SKU daSKU = new(connectionString);
+                DA_Stock daS = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
                 if (daSKU.ObtenerSKU(null, sku.Codigo, null, null, null).Rows.Count > 0)
@@ -77,6 +79,8 @@ namespace InvControl.Server.Controllers
 
                         sku.IdSKU = daSKU.InsertarSKU((int)sku.Codigo!, sku.Nombre.Trim(), sku.Descripcion?.Trim()!, sku.Activo, sku.Especial, sku.IdMarca,
                              (int)sku.IdTipoContenedor!, (int)sku.UnidadesPorContenedor!, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), DateTime.Now, transaction);
+
+                        daS.InsertarStock(sku.IdSKU, 0, DateTime.Now, transaction);
 
                         daAu.Insertar($"Se creó el SKU: {sku.Codigo}", DateTime.Now, (int)TipoEntidad.SKU, (int)TipoOperacion.Creacion,
                             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);

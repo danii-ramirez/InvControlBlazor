@@ -65,12 +65,12 @@ namespace InvControl.Client.Services
             DialogService.Open("Compruebe los datos ingresados",
                 ds =>
                 {
-                    RenderFragment content = b =>
+                    void content(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder b)
                     {
                         b.OpenComponent(0, typeof(ShowErrors));
                         b.AddAttribute(1, "Errors", errors);
                         b.CloseComponent();
-                    };
+                    }
                     return content;
                 },
                 new DialogOptions()

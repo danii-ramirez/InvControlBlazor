@@ -18,6 +18,7 @@ namespace InvControl.Shared.Models
 
         public int IdEstado { get; set; }
 
+        [MinLength(1, ErrorMessage = "Debe ingresar al menos una línea")]
         public List<RemitoDetalle> Detalle { get; set; } = new();
     }
 }

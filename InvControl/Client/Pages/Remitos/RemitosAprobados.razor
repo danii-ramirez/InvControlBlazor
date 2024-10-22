@@ -1,0 +1,136 @@
+@page "/remitos/aprobados"
+
+@inject RemitosService RemitosService
+@inject DialogService DialogService
+@inject RadzenCustom RadzenCustom
+@inject NotificationService NotificationService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Remitos aprobados" />
+
+    <RadzenDataGrid @ref="grid" TItem="RemitoDTO" Data="remitos" ExpandMode="DataGridExpandMode.Single"
+        RowRender="@RowRender" SelectionMode="DataGridSelectionMode.Multiple" @bind-Value="selectedRemitos"
+        AllowRowSelectOnRowClick="true" AllowSorting="true" Density="Density.Compact" Style="height: 25rem;" EmptyText="">
+        <Columns>
+            <RadzenDataGridColumn Width="60px" Sortable="false" Filterable="false" TextAlign=" TextAlign.Center">
+                <HeaderTemplate>
+                    <RadzenCheckBox TabIndex="-1" TriState="false" TValue="bool?"
+                        Value="@(selectedRemitos == null || selectedRemitos?.Any() != true ? false : !remitos.All(i => selectedRemitos.Contains(i)) ? null : remitos.Any(i => selectedRemitos.Contains(i)))"
+                        Change="@(args => selectedRemitos = args == true ? remitos.ToList() : new List<RemitoDTO>())" />
+                </HeaderTemplate>
+                <Template Context="data">
+                    <RadzenCheckBox TabIndex="-1" TriState="false"
+                        Value="@(selectedRemitos != null && selectedRemitos.Contains(data))" TValue="bool" />
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.FechaIngreso)" Title="Fecha ingreso"
+                FormatString="{0:dd/MM/yyyy hh:mm}" TextAlign="TextAlign.Center" Width="130px" />
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.NumeroRemito)" Title="Número de remito" Width="150px" />
+            <RadzenDataGridColumn Property="@nameof(RemitoDTO.Fecha)" Title="Fecha remito" FormatString="{0:dd/MM/yyyy}"
+                TextAlign="TextAlign.Center" Width="115px" />
+            <RadzenDataGridColumn Title="Transporte" Width="190px">
+                <Template>
+                    @if (context.IdTransporte != null)
+                    {
+                        <text>@context.NombreTransporte - @context.Patente</text>
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Chofer" Width="150px">
+                <Template>
+                    @if (context.IdChofer != null)
+                    {
+                        <text>@context.NombreChofer @context.ApellidoChofer</text>
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Usuario" Width="150px">
+                <Template>
+                    @context.NombreUsuario @context.ApellidoUsuario
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+        <Template Context="remito">
+            <RadzenDataGrid Data="@remito.Detalle" AllowSorting="true" Style="width: 40rem;">
+                <Columns>
+                    <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Codigo)" Title="Código"
+                        TextAlign="TextAlign.Right" Width="110px" />
+                    <RadzenDataGridColumn Property="@nameof(RemitoDetalle.NombreSku)" Title="Nombre" />
+                    <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Cantidad)" Title="Cantidad"
+                        TextAlign="TextAlign.Right" Width="100px" />
+                </Columns>
+            </RadzenDataGrid>
+        </Template>
+    </RadzenDataGrid>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="HandleClickCancelar" />
+        <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" Click="HandleClickGuardar" />
+    </RadzenStack>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<RemitoDTO> remitos = new();
+    IList<RemitoDTO> selectedRemitos = new List<RemitoDTO>();
+    RadzenDataGrid<RemitoDTO> grid = default!;
+    bool showForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        remitos = await RemitosService.GetRemitosDTO(null, null, (int)RemitoEstado.Aprobado);
+        showForm = true;
+    }
+
+    private void RowRender(RowRenderEventArgs<RemitoDTO> args)
+    {
+        args.Expandable = args.Data.Detalle.Any();
+    }
+
+    private async Task HandleClickCancelar()
+    {
+        var result = await DialogService.Confirm(
+        Message.Cancel,
+        Message.Title,
+        new() { OkButtonText = "Sí", CancelButtonText = "No" });
+
+        if (result != null && (bool)result)
+        {
+            selectedRemitos = new List<RemitoDTO>();
+        }
+    }
+
+    private async Task HandleClickGuardar()
+    {
+        if (selectedRemitos.Any())
+        {
+            var result = await DialogService.Confirm(
+            Message.Confirm,
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No" });
+
+            if (result != null && (bool)result)
+            {
+                RadzenCustom.OpenBusyWithLoader();
+                var response = await RemitosService.PutRemitosProcesar(selectedRemitos.ToList());
+                RadzenCustom.CloseDialog();
+
+                if (response)
+                {
+                    NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
+                    selectedRemitos = new List<RemitoDTO>();
+                    remitos = await RemitosService.GetRemitosDTO(null, null, (int)RemitoEstado.Aprobado);
+                    await grid.Reload();
+                }
+            }
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Info, "Debe seleecionar al menos un remito");
+        }
+    }
+}

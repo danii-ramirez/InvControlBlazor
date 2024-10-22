@@ -1,4 +1,4 @@
-@page "/remitos"
+@page "/remitos/ingreso"
 
 @inject RemitosService RemitosService
 @inject SKUService SKUService
@@ -14,6 +14,7 @@
 
     <EditForm EditContext="editContext">
         <DataAnnotationsValidator />
+        <CustomValidation @ref="customValidation" />
 
         <RadzenRow class="rz-mb-3">
             <RadzenColumn Size="12" SizeMD="6">
@@ -26,7 +27,7 @@
 
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-                    <RadzenLabel Text="Fecha:" Component="fecha" />
+                    <RadzenLabel Text="Fecha de remito:" Component="fecha" />
                     <RadzenDatePicker @bind-Value="@Remito.Fecha" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" Name="fecha" />
                     <ValidationMessage For="@(() => Remito.Fecha)" />
                 </RadzenStack>
@@ -50,6 +51,13 @@
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
+
+        @if (Remito.Detalle.Count == 0)
+        {
+            <RadzenStack class="rz-mb-3">
+                <ValidationMessage For="@(() => Remito.Detalle)" />
+            </RadzenStack>
+        }
 
         <RadzenRow class="rz-mb-3">
             <RadzenColumn Size="12">
@@ -102,6 +110,7 @@ else
 @code {
     Remito Remito { get; set; } = new();
     EditContext editContext = default!;
+    CustomValidation customValidation = default!;
 
     List<SKUDTO> skus = new();
     List<Transporte> transportes = new();
@@ -114,7 +123,6 @@ else
     {
         transportes = await TransportesService.GetTransportes();
         choferes = await ChoferesService.GetChoferes();
-
         editContext = new(Remito);
         showForm = true;
     }
@@ -139,6 +147,8 @@ else
                     NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
                     Clear();
                 }
+                else
+                    customValidation.DisplayErrors(res.Errors!);
             }
         }
     }
