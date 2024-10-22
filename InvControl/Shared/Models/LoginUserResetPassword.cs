@@ -7,7 +7,7 @@ namespace InvControl.Shared.Models
         public int IdUsuario { get; set; }
 
         [Required(ErrorMessage = "Debe completar este campo")]
-        [StringLength(15, ErrorMessage = "La {0} debe tener al menos {2} y un máximo de {1} caracteres.", MinimumLength = 4)]
+        [StringLength(18, ErrorMessage = "La {0} debe tener al menos {2} y un máximo de {1} caracteres.", MinimumLength = 4)]
         [DataType(DataType.Password)]
         [Display(Name = "Nueva contraseña")]
         public string NewPassword { get; set; } = string.Empty;

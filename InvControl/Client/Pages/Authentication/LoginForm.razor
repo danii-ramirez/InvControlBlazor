@@ -19,13 +19,14 @@
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="height: 4rem; margin-top: 20px;">
             <RadzenLabel Text="Usuario:" Component="user" />
-            <RadzenTextBox @bind-Value=@LoginModel.Username Name="user" Disabled="isBusy" autofocus />
+            <RadzenTextBox @bind-Value=@LoginModel.Username MaxLength="25" Name="user" Disabled="isBusy" Placeholder="Ingrese el usuario" autofocus />
             <ValidationMessage For="@(() => LoginModel.Username)" />
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="height: 4rem; margin-top: 20px;">
             <RadzenLabel Text="Contraseña:" Component="pass" />
-            <RadzenPassword @bind-Value=@LoginModel.Password Name="pass" Disabled="isBusy" aria-label="enter password" />
+            <RadzenPassword @bind-Value=@LoginModel.Password Name="pass" Disabled="isBusy" Placeholder="Ingrese la contraseña"
+                            AutoCompleteType="AutoCompleteType.Off" Attributes="@(new Dictionary<string,object>(){ { "maxlength", "18" }})" />
             <ValidationMessage For="@(() => LoginModel.Password)" />
         </RadzenStack>
 
