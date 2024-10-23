@@ -71,9 +71,18 @@ namespace InvControl.Client.Services
             return response.StatusCode == HttpStatusCode.OK;
         }
 
-        public async ValueTask PostResetPassword(LoginUserResetPassword user)
+        public async ValueTask<Response> PostResetPassword(LoginUserResetPassword user)
         {
-            await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/resetpassword", user);
+            var res = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/resetpassword", user);
+            if (res.StatusCode == HttpStatusCode.OK)
+                return new(true);
+            else if (res.StatusCode == HttpStatusCode.BadRequest)
+                return new(false, (await res.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>())!);
+            else
+            {
+                _logger.LogError("{msg}", await res.Content.ReadAsStringAsync());
+                return new(false);
+            }
         }
 
         public async ValueTask<bool> GetResetPassword(int idUsuario)

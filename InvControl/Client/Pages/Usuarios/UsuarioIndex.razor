@@ -7,6 +7,7 @@
 @inject RolesService RolesService
 @inject DialogService DialogService
 @inject NotificationService NotificationService
+@inject RadzenCustom RadzenCustom
 
 @if (showForm)
 {
@@ -28,8 +29,7 @@
                 <RadzenDataGridColumn Property="@nameof(Usuario.Nombre)" Title="Nombre" />
                 <RadzenDataGridColumn Property="@nameof(Usuario.Apellido)" Title="Apellido" />
                 <RadzenDataGridColumn Property="@nameof(Usuario.DescripcionRol)" Title="Rol" />
-                <RadzenDataGridColumn Property="@nameof(Usuario.Activo)" Title="Activo" TextAlign="TextAlign.Center"
-                                      Filterable="false">
+                <RadzenDataGridColumn Property="@nameof(Usuario.Activo)" Title="Activo" TextAlign="TextAlign.Center" Filterable="false">
                     <Template>
                         @if (context.Activo)
                         {
@@ -41,8 +41,7 @@
                         }
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Property="@nameof(Usuario.Bloqueado)" Title="Bloqueado" TextAlign="TextAlign.Center"
-                                      Filterable="false">
+                <RadzenDataGridColumn Property="@nameof(Usuario.Bloqueado)" Title="Bloqueado" TextAlign="TextAlign.Center" Filterable="false">
                     <Template>
                         @if (context.Bloqueado)
                         {
@@ -54,8 +53,7 @@
                         }
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false"
-                                      Visible="acciones.Exists(x => x == Accion.Editar)">
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false" Visible="acciones.Exists(x => x == Accion.Editar)">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
                                       Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
@@ -148,13 +146,16 @@ else
     private async Task HandleClickResetPass(Usuario usuario)
     {
         var res = await DialogService.Confirm(
-        $"Desea restablecer la contraseña de {usuario.User.ToUpper()}?",
-        Message.Title,
-        new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+            $"Desea restablecer la contraseña de {usuario.User.ToUpper()}?",
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
         if ((bool)res)
         {
+            RadzenCustom.OpenBusy("Restableciendo contraseña");
             var result = await UsuariosService.GetResetPassword(usuario.IdUsuario);
+            RadzenCustom.CloseDialog();
+
             if (result)
             {
                 NotificationService.Notify(NotificationSeverity.Success, "La contraseña se restablecio correctamente");
@@ -169,9 +170,9 @@ else
     private async Task HandleClickBorrar(Usuario usuario)
     {
         var res = await DialogService.Confirm(
-        $"Desea borrar el usaurio {usuario.User.ToUpper()}?",
-        Message.Title,
-        new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+            $"Desea borrar el usaurio {usuario.User.ToUpper()}?",
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
         if ((bool)res)
         {
