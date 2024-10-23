@@ -1,5 +1,6 @@
 ﻿using InvControl.Server.Data;
 using InvControl.Server.Helpers;
+using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -15,7 +16,6 @@ namespace InvControl.Server.Controllers
     {
         private readonly ILogger<UsuariosController> _logger;
         private readonly string connectionString;
-        private const string password = "12345";
 
         public UsuariosController(ILogger<UsuariosController> logger, IConfiguration configuration)
         {
@@ -65,8 +65,10 @@ namespace InvControl.Server.Controllers
 
                 if (ModelState.IsValid)
                 {
+                    var defaultPassword = new ParametrosController(connectionString: connectionString).ObtenerParametro(ParametroNombre.DefaultPassword)!.Valor;
+
                     Hashing hashing = new();
-                    string passHash = hashing.HashPassword(usuario.User.ToLower().Trim(), Convert.ToBase64String(Encoding.UTF8.GetBytes(password)));
+                    string passHash = hashing.HashPassword(usuario.User.ToLower().Trim(), Convert.ToBase64String(Encoding.UTF8.GetBytes(defaultPassword)));
 
                     using (SqlConnection cnn = new(connectionString))
                     {
@@ -168,6 +170,11 @@ namespace InvControl.Server.Controllers
         {
             try
             {
+                var defaultPassword = new ParametrosController(connectionString: connectionString).ObtenerParametro(ParametroNombre.DefaultPassword)!.Valor;
+
+                if (user.NewPassword == defaultPassword)
+                    ModelState.AddModelError(nameof(user.NewPassword), "La contraseña no puede ser la misma que la defecto");
+
                 if (ModelState.IsValid)
                 {
                     DA_Usuario da = new(connectionString);
@@ -199,11 +206,12 @@ namespace InvControl.Server.Controllers
             try
             {
                 DA_Usuario da = new(connectionString);
+                var defaultPassword = new ParametrosController(connectionString: connectionString).ObtenerParametro(ParametroNombre.DefaultPassword)!.Valor;
                 Hashing hashing = new();
 
                 using (DataTable dt = da.ObtenerUsuario(idUsuario, null))
                 {
-                    var hash = hashing.HashPassword((string)dt.Rows[0]["User"], Convert.ToBase64String(Encoding.UTF8.GetBytes(password)));
+                    var hash = hashing.HashPassword((string)dt.Rows[0]["User"], Convert.ToBase64String(Encoding.UTF8.GetBytes(defaultPassword)));
                     da.RestablecerPass(idUsuario, hash);
                 }
 
