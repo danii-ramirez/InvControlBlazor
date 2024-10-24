@@ -27,6 +27,17 @@ namespace InvControl.Client.Services
             return (await _httpClient.GetFromJsonAsync<List<RemitoDTO>>(uri))!;
         }
 
+        public async ValueTask<Remito?> GetRemito(int idRemito, int? idEstado)
+        {
+            var uri = $"{BASE_REQUEST_URI}/{idRemito}";
+
+            if (idEstado != null)
+                uri += $"?idEstado={idEstado}";
+
+            var res = await _httpClient.GetFromJsonAsync<Remito>(uri);
+            return res;
+        }
+
         public async ValueTask<Response> PostRemito(Remito remito)
         {
             var res = await _httpClient.PostAsJsonAsync(BASE_REQUEST_URI, remito);

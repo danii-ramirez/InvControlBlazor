@@ -75,6 +75,50 @@ namespace InvControl.Server.Controllers
             return Ok(remitos);
         }
 
+        [HttpGet("{idRemito:int}")]
+        public IActionResult GetRemito(int idRemito, int? idEstado)
+        {
+            Remito? remito = null;
+
+            DA_Remito da = new(connectionString);
+
+            using (DataTable dtR = da.ObtenerRemitos(idRemito, null, idEstado))
+            {
+                if (dtR.Rows.Count > 0)
+                {
+                    DataRow drR = dtR.Rows[0];
+
+                    remito = new()
+                    {
+                        IdRemito = (int)drR["IdRemito"],
+                        Numero = (string)drR["Numero"],
+                        Fecha = (DateTime)drR["Fecha"],
+                        IdEstado = (int)drR["IdEstado"]
+                    };
+
+                    if (drR["IdTransporte"] != DBNull.Value) remito.IdTransporte = (int?)drR["IdTransporte"];
+                    if (drR["IdChofer"] != DBNull.Value) remito.IdChofer = (int?)drR["IdChofer"];
+
+                    using DataTable dtD = da.ObtenerRemitosDetalle(remito.IdRemito);
+                    foreach (DataRow drD in dtD.Rows)
+                    {
+                        RemitoDetalle rd = new()
+                        {
+                            IdRemito = remito.IdRemito,
+                            IdSku = (int)drD["IdSKU"],
+                            Codigo = (int?)drD["CodigoSKU"],
+                            NombreSku = (string)drD["NombreSKU"],
+                            Cantidad = (int?)drD["Cantidad"]
+                        };
+
+                        remito.Detalle.Add(rd);
+                    }
+                }
+            }
+
+            return Ok(remito);
+        }
+
         [HttpPost]
         public IActionResult PostRemito(Remito remito)
         {

@@ -1,4 +1,5 @@
 @page "/remitos/ingreso"
+@page "/remitos/ingreso/{idRemito:int}"
 
 @inject RemitosService RemitosService
 @inject SKUService SKUService
@@ -7,10 +8,11 @@
 @inject DialogService DialogService
 @inject RadzenCustom RadzenCustom
 @inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Ingreso de remito" />
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Ingreso de remito" />
 
     <EditForm EditContext="editContext">
         <DataAnnotationsValidator />
@@ -20,7 +22,7 @@
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Número de remito:" Component="numero" />
-                    <RadzenTextBox @bind-Value="@Remito.Numero" Name="numero" />
+                    <RadzenTextBox @bind-Value="@Remito.Numero" Name="numero" Disabled="reingreso" />
                     <ValidationMessage For="@(() => Remito.Numero)" />
                 </RadzenStack>
             </RadzenColumn>
@@ -28,7 +30,7 @@
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Fecha de remito:" Component="fecha" />
-                    <RadzenDatePicker @bind-Value="@Remito.Fecha" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" Name="fecha" />
+                    <RadzenDatePicker @bind-Value="@Remito.Fecha" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" Name="fecha" Disabled="reingreso" />
                     <ValidationMessage For="@(() => Remito.Fecha)" />
                 </RadzenStack>
             </RadzenColumn>
@@ -39,7 +41,7 @@
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Chofer:" Component="chofer" />
                     <RadzenDropDown @bind-Value="Remito.IdChofer" Data="choferes" Name="chofer" AllowClear="true" Placeholder="Sin seleccionar"
-                                    TextProperty="@nameof(Chofer.NombreCompleto)" ValueProperty="@nameof(Chofer.IdChofer)" />
+                                    TextProperty="@nameof(Chofer.NombreCompleto)" ValueProperty="@nameof(Chofer.IdChofer)" Disabled="reingreso" />
                 </RadzenStack>
             </RadzenColumn>
 
@@ -47,7 +49,7 @@
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Transporte:" Component="transporte" />
                     <RadzenDropDown @bind-Value="Remito.IdTransporte" Data="transportes" Name="transporte" AllowClear="true" Placeholder="Sin seleccionar"
-                                    TextProperty="@nameof(Transporte.NombrePatente)" ValueProperty="@nameof(Transporte.IdTransporte)" />
+                                    TextProperty="@nameof(Transporte.NombrePatente)" ValueProperty="@nameof(Transporte.IdTransporte)" Disabled="reingreso"/>
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
@@ -108,6 +110,8 @@ else
 }
 
 @code {
+    [Parameter] public int? IdRemito {get;set;}
+
     Remito Remito { get; set; } = new();
     EditContext editContext = default!;
     CustomValidation customValidation = default!;
@@ -115,12 +119,27 @@ else
     List<SKUDTO> skus = new();
     List<Transporte> transportes = new();
     List<Chofer> choferes = new();
-    bool showForm;
+    bool showForm, reingreso;
 
     RadzenDataGrid<RemitoDetalle> grid = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        if(IdRemito != null)
+        {
+            var res = await RemitosService.GetRemito((int)IdRemito!, null);
+            if(res == null)
+            {
+                NavigationManager.NavigateTo("/remitos/rechazados");
+            }
+            else
+            {
+                Remito = res;
+            }
+
+            reingreso = true;
+        }
+
         transportes = await TransportesService.GetTransportes();
         choferes = await ChoferesService.GetChoferes();
         editContext = new(Remito);
