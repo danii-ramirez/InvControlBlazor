@@ -1,11 +1,11 @@
-using System.Data;
-using System.Security.Claims;
 using InvControl.Server.Data;
 using InvControl.Shared.DTO;
 using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using System.Data;
+using System.Security.Claims;
 
 namespace InvControl.Server.Controllers
 {
@@ -23,11 +23,11 @@ namespace InvControl.Server.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetRemitos(int? idRemito, string? numeroRemito, int? idEstado)
+        public IActionResult GetRemitos(int? idRemito, string? numeroRemito, RemitoEstado? remitoEstado)
         {
             List<RemitoDTO> remitos = new();
             DA_Remito da = new(connectionString);
-            using (DataTable dtR = da.ObtenerRemitos(idRemito, numeroRemito, idEstado))
+            using (DataTable dtR = da.ObtenerRemitos(idRemito, numeroRemito, remitoEstado?.GetHashCode()))
             {
                 foreach (DataRow drR in dtR.Rows)
                 {
@@ -75,14 +75,14 @@ namespace InvControl.Server.Controllers
             return Ok(remitos);
         }
 
-        [HttpGet("{idRemito:int}")]
-        public IActionResult GetRemito(int idRemito, int? idEstado)
+        [HttpGet("{idRemito}")]
+        public IActionResult GetRemito([FromRoute] int idRemito, [FromQuery] RemitoEstado? remitoEstado)
         {
             Remito? remito = null;
 
             DA_Remito da = new(connectionString);
 
-            using (DataTable dtR = da.ObtenerRemitos(idRemito, null, idEstado))
+            using (DataTable dtR = da.ObtenerRemitos(idRemito, null, remitoEstado?.GetHashCode()))
             {
                 if (dtR.Rows.Count > 0)
                 {
@@ -91,8 +91,8 @@ namespace InvControl.Server.Controllers
                     remito = new()
                     {
                         IdRemito = (int)drR["IdRemito"],
-                        Numero = (string)drR["Numero"],
-                        Fecha = (DateTime)drR["Fecha"],
+                        NumeroRemito = (string)drR["Numero"],
+                        FechaRemito = (DateTime)drR["Fecha"],
                         IdEstado = (int)drR["IdEstado"]
                     };
 
@@ -129,8 +129,8 @@ namespace InvControl.Server.Controllers
                 DA_StockMovimiento daSM = new();
                 DA_Auditoria daAu = new(connectionString);
 
-                if (daRe.ObtenerRemitos(null, remito.Numero.Trim(), null).Rows.Count > 0)
-                    ModelState.AddModelError(nameof(Remito.Numero), "El remito ya se encuetra cargado");
+                if (daRe.ObtenerRemitos(null, remito.NumeroRemito.Trim(), null).Rows.Count > 0)
+                    ModelState.AddModelError(nameof(Remito.NumeroRemito), "El remito ya se encuetra cargado");
 
                 if (ModelState.IsValid)
                 {
@@ -139,7 +139,7 @@ namespace InvControl.Server.Controllers
                         cnn.Open();
                         transaction = cnn.BeginTransaction();
 
-                        remito.IdRemito = daRe.InsertarRemito(remito.Numero.Trim(), (DateTime)remito.Fecha!, remito.IdTransporte, remito.IdChofer, 1,
+                        remito.IdRemito = daRe.InsertarRemito(remito.NumeroRemito.Trim(), (DateTime)remito.FechaRemito!, remito.IdTransporte, remito.IdChofer, 1,
                             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), DateTime.Now, transaction);
 
                         foreach (var d in remito.Detalle)

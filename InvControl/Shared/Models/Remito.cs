@@ -7,10 +7,10 @@ namespace InvControl.Shared.Models
         public int IdRemito { get; set; }
 
         [Required(ErrorMessage = "Debe completar este campo")]
-        public string Numero { get; set; } = string.Empty; //TODO: renombrar NumeroRemito
+        public string NumeroRemito { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Debe completar este campo")]
-        public DateTime? Fecha { get; set; } //TODO: renombrar FechaRemito
+        public DateTime? FechaRemito { get; set; }
 
         public int? IdTransporte { get; set; }
 
@@ -18,7 +18,7 @@ namespace InvControl.Shared.Models
 
         public int IdEstado { get; set; }
 
-        [MinLength(1, ErrorMessage = "Debe ingresar al menos una l�nea")]
+        [MinLength(1, ErrorMessage = "Debe ingresar al menos una línea")]
         public List<RemitoDetalle> Detalle { get; set; } = new();
     }
 }

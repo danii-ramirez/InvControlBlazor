@@ -5,10 +5,11 @@
 
 @inject RemitosService RemitosService
 @inject DialogService DialogService
+@inject NavigationManager NavigationManager
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H2" TextStyle="TextStyle.H2" TextAlign="TextAlign.Center" Text="Remitos pendientes" />
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Remitos pendientes" />
 
     <RadzenDataGrid @ref="grid" TItem="RemitoDTO" Data="remitos" RowDoubleClick="(args => HandleClick(args.Data))"
                     AllowSorting="true" Density="Density.Compact" EmptyText="">

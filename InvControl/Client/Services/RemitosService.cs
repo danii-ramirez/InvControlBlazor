@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using InvControl.Client.Helpers;
 using InvControl.Shared.DTO;
+using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 
 namespace InvControl.Client.Services
@@ -27,15 +28,16 @@ namespace InvControl.Client.Services
             return (await _httpClient.GetFromJsonAsync<List<RemitoDTO>>(uri))!;
         }
 
-        public async ValueTask<Remito?> GetRemito(int idRemito, int? idEstado)
+        public async ValueTask<Remito?> GetRemito(int idRemito, RemitoEstado? remitoEstado)
         {
             var uri = $"{BASE_REQUEST_URI}/{idRemito}";
 
-            if (idEstado != null)
-                uri += $"?idEstado={idEstado}";
+            if (remitoEstado != null)
+                uri += $"?remitoEstado={remitoEstado}";
 
-            var res = await _httpClient.GetFromJsonAsync<Remito>(uri);
-            return res;
+            var res = await _httpClient.GetAsync(uri);
+
+            return res.StatusCode == HttpStatusCode.OK ? await res.Content.ReadFromJsonAsync<Remito>() : null;
         }
 
         public async ValueTask<Response> PostRemito(Remito remito)
