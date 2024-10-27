@@ -5,6 +5,7 @@
 @inject SKUService SKUService
 @inject UsuariosService UsuariosService
 @inject DialogService DialogService
+@inject RadzenCustom RadzenCustom
 @inject NotificationService NotificationService
 
 @if (showForm)
@@ -42,11 +43,16 @@
                     AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterMode="FilterMode.Simple"
                     IsLoading="isLoading" Responsive="true" EmptyText="" Style="height: 40rem;">
         <HeaderTemplate>
-            @if (acciones.Exists(x => x == Accion.Crear))
-            {
-                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
-                              Icon="add" Text="Agregar SKU" Click="HandleClickAgregar" />
-            }
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" Wrap="FlexWrap.Wrap">
+                @if (acciones.Exists(x => x == Accion.Crear))
+                {
+                    <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                                  Icon="add" Text="Agregar SKU" Click="HandleClickAgregar" />
+                }
+
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small"
+                              Icon="file_save" Text="Exportar a Excel" Click="HandleClickExportToExcel" Disabled="(skus.Count == 0)" />
+            </RadzenStack>
         </HeaderTemplate>
         <Columns>
             <RadzenDataGridColumn Property="@nameof(SKU.Codigo)" Title="Código" TextAlign="TextAlign.Right" />
@@ -176,5 +182,12 @@ else
         isLoading = true;
         skus = await SKUService.GetSKU(filterCodigo, filterNombre, filterActivo, filterIdMarca);
         isLoading = false;
+    }
+
+    private async Task HandleClickExportToExcel()
+    {
+        RadzenCustom.OpenBusyWithLoader("Generando Excel");
+        await SKUService.PostExportToExcel(skus);
+        RadzenCustom.CloseDialog();
     }
 }
