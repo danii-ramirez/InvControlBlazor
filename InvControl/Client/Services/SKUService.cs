@@ -81,7 +81,7 @@ namespace InvControl.Client.Services
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsByteArrayAsync();
-                await _jsFunctions.DownloadFile($"skus {DateTime.Now:dd-MM-yyyy}.xlsx", data);
+                await _jsFunctions.downloadFileFromStream($"skus {DateTime.Now:dd-MM-yyyy}.xlsx", data);
             }
             else
             {

@@ -3,13 +3,25 @@
 
 @using InvControl.Client.Components.Remitos
 
+@attribute [Authorize]
+
+@inject UsuariosService UsuariosService
 @inject RemitosService RemitosService
 @inject DialogService DialogService
 @inject NavigationManager NavigationManager
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Remitos pendientes" />
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center">
+        @if (remitosPendientes)
+        {
+            <text>Remitos pendientes</text>
+        }
+        else
+        {
+            <text>Remitos rechazados</text>
+        }
+    </RadzenText>
 
     <RadzenDataGrid @ref="grid" TItem="RemitoDTO" Data="remitos" RowDoubleClick="(args => HandleClick(args.Data))"
                     AllowSorting="true" Density="Density.Compact" EmptyText="">
@@ -54,26 +66,32 @@ else
 
 @code {
     List<RemitoDTO> remitos = new();
-    bool showForm;
+    bool showForm, remitosPendientes;
     RadzenDataGrid<RemitoDTO> grid = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        remitos = await RemitosService.GetRemitosDTO(null, null, (int)RemitoEstado.Pendiente);
+        await UsuariosService.GetValidarAcceso();
+        remitosPendientes = NavigationManager.ToBaseRelativePath(NavigationManager.Uri) == "remitos/pendientes";
+        remitos = await RemitosService.GetRemitosDTO(null, null, remitosPendientes ? (int)RemitoEstado.Pendiente : (int)RemitoEstado.Rechazado);
         showForm = true;
     }
 
     private async Task HandleClick(RemitoDTO remito)
     {
-        var res = await DialogService.OpenAsync<RemitoInfo>(
-            $"Remito nro. {remito.NumeroRemito}",
-            new() { { "Remito", remito } },
-            new() { CloseDialogOnEsc = false });
-
-        if (res != null && (bool)res)
+        if (remitosPendientes)
         {
-            remitos.Remove(remito);
-            await grid.Reload();
+            var res = await DialogService.OpenAsync<RemitoInfo>(
+                $"Remito nro. {remito.NumeroRemito}",
+                new() { { "Remito", remito } });
+
+            if (res != null && (bool)res)
+            {
+                remitos.Remove(remito);
+                await grid.Reload();
+            }
         }
+        else
+            NavigationManager.NavigateTo($"/remitos/ingreso/{remito.IdRemito}");
     }
 }

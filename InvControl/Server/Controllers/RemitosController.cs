@@ -165,6 +165,50 @@ namespace InvControl.Server.Controllers
             }
         }
 
+        [HttpPut]
+        public IActionResult PutRemito(Remito remito)
+        {
+            SqlTransaction transaction = default!;
+            try
+            {
+                DA_Remito daRe = new(connectionString);
+                DA_StockMovimiento daSM = new();
+                DA_Auditoria daAu = new(connectionString);
+
+                if (ModelState.IsValid)
+                {
+                    using (SqlConnection cnn = new(connectionString))
+                    {
+                        cnn.Open();
+                        transaction = cnn.BeginTransaction();
+
+                        daRe.ActualziarRemitoEstado(remito.IdRemito, (int)RemitoEstado.Pendiente, transaction);
+
+                        daRe.EliminarRemitoDetalle(remito.IdRemito, transaction);
+
+                        foreach (var d in remito.Detalle)
+                        {
+                            daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, (int)d.Codigo!, d.NombreSku, (int)d.Cantidad!, transaction);
+                        }
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+
+                    return Ok(remito);
+                }
+
+                return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpPut("estado")]
         public IActionResult PutRemito(RemitoState remito)
         {

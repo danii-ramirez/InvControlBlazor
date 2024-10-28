@@ -1,6 +1,9 @@
 @page "/remitos/ingreso"
 @page "/remitos/ingreso/{idRemito:int}"
 
+@attribute [Authorize]
+
+@inject UsuariosService UsuariosService
 @inject RemitosService RemitosService
 @inject SKUService SKUService
 @inject TransportesService TransportesService
@@ -124,6 +127,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (IdRemito == null)
+            await UsuariosService.GetValidarAcceso();
+        else
+            await UsuariosService.GetValidarAcceso("remitos/rechazados");
+
         if (IdRemito != null)
         {
             var res = await RemitosService.GetRemito((int)IdRemito!, RemitoEstado.Rechazado);
@@ -162,14 +170,25 @@ else
 
                 if (result != null && (bool)result)
                 {
+                    Response res;
+
                     RadzenCustom.OpenBusyWithLoader();
-                    var res = await RemitosService.PostRemito(Remito);
+
+                    if (IdRemito == null)
+                        res = await RemitosService.PostRemito(Remito);
+                    else
+                        res = await RemitosService.PutRemito(Remito);
+
                     RadzenCustom.CloseDialog();
 
                     if (res.Success)
                     {
                         NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
-                        Clear();
+
+                        if (IdRemito == null)
+                            Clear();
+                        else
+                            NavigationManager.NavigateTo("/remitos/rechazados");
                     }
                     else
                         customValidation.DisplayErrors(res.Errors!);
@@ -187,7 +206,10 @@ else
 
         if (result != null && (bool)result)
         {
-            Clear();
+            if (IdRemito == null)
+                Clear();
+            else
+                NavigationManager.NavigateTo("/remitos/rechazados");
         }
     }
 

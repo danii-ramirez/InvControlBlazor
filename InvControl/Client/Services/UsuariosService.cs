@@ -1,6 +1,7 @@
 ﻿using InvControl.Client.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Components;
+using System;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -99,6 +100,21 @@ namespace InvControl.Client.Services
         public async ValueTask<(bool, List<string>?)> GetValidarAcceso()
         {
             var url = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
+            var response = await _httpClient.GetAsync($"{BASE_REQUEST_URI}/validar/acceso?url={url}");
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var acciones = await response.Content.ReadFromJsonAsync<List<string>>();
+                return (true, acciones);
+            }
+            else
+            {
+                _navigationManager.NavigateTo("/authentication/accessdenied");
+                return (false, null);
+            }
+        }
+
+        public async ValueTask<(bool, List<string>?)> GetValidarAcceso(string url)
+        {
             var response = await _httpClient.GetAsync($"{BASE_REQUEST_URI}/validar/acceso?url={url}");
             if (response.StatusCode == HttpStatusCode.OK)
             {

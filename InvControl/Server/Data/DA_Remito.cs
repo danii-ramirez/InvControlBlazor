@@ -1,3 +1,4 @@
+using InvControl.Client.Helpers;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -79,6 +80,17 @@ namespace InvControl.Server.Data
             cmd.Parameters.AddWithValue("@pCodigoSKU", codigoSku);
             cmd.Parameters.AddWithValue("@pNombreSKU", nombreSku);
             cmd.Parameters.AddWithValue("@pCantidad", cantidad);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void EliminarRemitoDetalle(int idRemito, SqlTransaction transaction)
+        {
+            var cnn = transaction.Connection;
+            var cmd = cnn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_del_RemitosDetalle";
+            cmd.Parameters.AddWithValue("@pIdRemito", idRemito);
             cmd.ExecuteNonQuery();
         }
 
