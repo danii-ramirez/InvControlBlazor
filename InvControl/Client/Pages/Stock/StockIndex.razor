@@ -1,0 +1,33 @@
+@page "/stock"
+@* @attribute [Authorize] *@
+
+@inject UsuariosService UsuariosService
+@inject RadzenCustom RadzenCustom
+@inject NotificationService NotificationService
+
+@if (showform)
+{
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Consulta de stock" />
+
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" Wrap="FlexWrap.Wrap">
+
+    </RadzenStack>
+
+    <RadzenDataGrid @ref="grid" Data="stock" AllowSorting="true" Density="Density.Compact">
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(Stock.Codigo)" Title="Código" />
+            <RadzenDataGridColumn Property="@nameof(Stock.Nombre)" Title="Nombre" />
+            <RadzenDataGridColumn Property="@nameof(Stock.Cantidad)" Title="Cantidad" />
+        </Columns>
+    </RadzenDataGrid>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<Stock> stock = new();
+    RadzenDataGrid<Stock> grid = default!;
+    bool showform;
+}
