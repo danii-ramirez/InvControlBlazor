@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Text;
-using System.Timers;
-using System.Transactions;
 
 namespace InvControl.Server.Controllers
 {
