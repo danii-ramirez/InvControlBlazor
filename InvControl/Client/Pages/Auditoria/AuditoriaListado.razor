@@ -1,0 +1,37 @@
+﻿@page "/auditoria"
+
+@attribute [Authorize]
+
+@inject UsuariosService UsuariosService
+
+@if (showForm)
+{
+    <RadzenDataGrid @ref="grid" Data="auditoria" AllowVirtualization="true" AllowSorting="true" AllowGrouping="true"
+                    AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Density="Density.Compact">
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(AuditoriaDTO.Fecha)" Title="Fecha" FormatString="{0:dd/MM/yyyy hh:mm}" TextAlign="TextAlign.Center" Width="130px"
+                                  Filterable="false" Groupable="false" />
+            <RadzenDataGridColumn Property="@nameof(AuditoriaDTO.Descripcion)" Title="Descripción" Groupable="false" />
+            <RadzenDataGridColumn Property="@nameof(AuditoriaDTO.DescripcionEntidad)" Title="Entidad" Width="150px" />
+            <RadzenDataGridColumn Property="@nameof(AuditoriaDTO.DescripcionOperacion)" Title="Operación" Width="150px" />
+            <RadzenDataGridColumn Property="@nameof(AuditoriaDTO.Usuario)" Title="Usuario" Width="200px" />
+        </Columns>
+    </RadzenDataGrid>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<AuditoriaDTO> auditoria = new();
+    RadzenDataGrid<AuditoriaDTO> grid = default!;
+    bool showForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UsuariosService.GetValidarAcceso();
+        auditoria = await UsuariosService.GetAuditoria(null, null);
+        showForm = true;
+    }
+}
