@@ -1,4 +1,6 @@
-﻿using InvControl.Server.Data;
+﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using InvControl.Server.Data;
 using InvControl.Server.Helpers;
 using InvControl.Shared.DTO;
 using InvControl.Shared.Models;
@@ -211,6 +213,36 @@ namespace InvControl.Server.Controllers
                 }
             }
             return Ok(skus);
+        }
+
+        [HttpPost("ExportToExcel")]
+        public IActionResult PostExportToExcel([FromBody] List<SKU> skus)
+        {
+            try
+            {
+                using var workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Datos");
+
+                worksheet.Cell(1, 1).Value = "Código";
+                worksheet.Cell(1, 2).Value = "Nombre";
+                worksheet.Cell(1, 3).Value = "Stock";
+
+                for (int i = 0; i < skus.Count; i++)
+                {
+                    worksheet.Cell(i + 2, 1).Value = skus[i].Codigo;
+                    worksheet.Cell(i + 2, 2).Value = skus[i].Nombre;
+                    worksheet.Cell(i + 2, 3).Value = skus[i].Stock;
+                }
+
+                using var stream = new MemoryStream();
+                workbook.SaveAs(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ExportedData.xlsx");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
         }
     }
 }

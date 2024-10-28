@@ -9,9 +9,14 @@ namespace InvControl.Client.Services
     public class SKUService
     {
         readonly HttpClient _httpClient;
+        readonly IJSFunctions _jsFunctions;
         const string BASE_REQUEST_URI = "api/sku";
 
-        public SKUService(HttpClient httpClient) => _httpClient = httpClient;
+        public SKUService(HttpClient httpClient, IJSFunctions jsFunctions)
+        {
+            _httpClient = httpClient;
+            _jsFunctions = jsFunctions;
+        }
 
         public async ValueTask<List<SKU>> GetSKU(int? codigo, string? nombre, bool? activo, int? idMarca)
         {
@@ -68,6 +73,20 @@ namespace InvControl.Client.Services
         public async ValueTask<List<SKUDTO>> GetSugerencias(string sugerencia)
         {
             return (await _httpClient.GetFromJsonAsync<List<SKUDTO>>($"{BASE_REQUEST_URI}/sugerencias?sugerencia={sugerencia}"))!;
+        }
+
+        public async ValueTask PostExportToExcel(List<SKU> skus)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/ExportToExcel", skus);
+            if (response.IsSuccessStatusCode)
+            {
+                var data = await response.Content.ReadAsByteArrayAsync();
+                await _jsFunctions.downloadFileFromStream($"skus {DateTime.Now:dd-MM-yyyy}.xlsx", data);
+            }
+            else
+            {
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+            }
         }
     }
 }

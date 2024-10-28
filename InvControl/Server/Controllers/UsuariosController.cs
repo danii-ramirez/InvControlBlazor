@@ -1,5 +1,6 @@
 ﻿using InvControl.Server.Data;
 using InvControl.Server.Helpers;
+using InvControl.Shared.DTO;
 using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -283,6 +284,29 @@ namespace InvControl.Server.Controllers
             {
                 return StatusCode(500, ex);
             }
+        }
+
+        [HttpGet("auditoria")]
+        public IActionResult GetAuditoria(int? idUsuario, int? idTipoEntidad)
+        {
+            List<AuditoriaDTO> auditoria = new();
+            using (DataTable dt = new DA_Auditoria(connectionString).Obtener(idUsuario, idTipoEntidad))
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    AuditoriaDTO a = new()
+                    {
+                        IdAuditoria = (int)dr["IdBitacora"],
+                        Descripcion = (string)dr["Descripcion"],
+                        Fecha = (DateTime)dr["Fecha"],
+                        DescripcionEntidad = (string)dr["DescripcionTipoEntidad"],
+                        DescripcionOperacion = (string)dr["DescripcionTipoOperacion"],
+                        Usuario = $"{dr["Nombre"]} {dr["Apellido"]}"
+                    };
+                    auditoria.Add(a);
+                }
+            }
+            return Ok(auditoria);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using InvControl.Client.Helpers;
+using InvControl.Shared.DTO;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Components;
 using System.Net;
@@ -110,6 +111,35 @@ namespace InvControl.Client.Services
                 _navigationManager.NavigateTo("/authentication/accessdenied");
                 return (false, null);
             }
+        }
+
+        public async ValueTask<(bool, List<string>?)> GetValidarAcceso(string url)
+        {
+            var response = await _httpClient.GetAsync($"{BASE_REQUEST_URI}/validar/acceso?url={url}");
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                var acciones = await response.Content.ReadFromJsonAsync<List<string>>();
+                return (true, acciones);
+            }
+            else
+            {
+                _navigationManager.NavigateTo("/authentication/accessdenied");
+                return (false, null);
+            }
+        }
+
+        public async ValueTask<List<AuditoriaDTO>> GetAuditoria(int? idUsuario, int? idTipoEntidad)
+        {
+            string uri = $"{BASE_REQUEST_URI}/auditoria";
+
+            Dictionary<string, object> query = new();
+            if (idUsuario != null) query["idUsuario"] = idUsuario;
+            if (idTipoEntidad != null) query["idTipoEntidad"] = idTipoEntidad;
+
+            if (query.Any())
+                uri = "?" + string.Join("&", query.Select(x => $"{x.Key}={x.Value}"));
+
+            return (await _httpClient.GetFromJsonAsync<List<AuditoriaDTO>>(uri))!;
         }
     }
 }

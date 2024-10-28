@@ -28,6 +28,8 @@ namespace InvControl.Server.Controllers
             try
             {
                 DA_Usuario da = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
                 Hashing hashing = new();
 
                 user.Username = user.Username.ToLower().Trim();
@@ -67,6 +69,8 @@ namespace InvControl.Server.Controllers
                                     new(ClaimTypes.Surname, currentUser.Apellido)
                                 };
 
+                                daAu.Insertar("Inició sesión", DateTime.Now, (int)TipoEntidad.Login, (int)TipoOperacion.InicioSesion, (int)dr["IdUsuario"]);
+
                                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
@@ -102,6 +106,13 @@ namespace InvControl.Server.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
+            if (User.Identity?.IsAuthenticated ?? false)
+            {
+                DA_Auditoria daAu = new(connectionString);
+                daAu.Insertar("Cerro sesión", DateTime.Now,
+                    (int)TipoEntidad.Login, (int)TipoOperacion.CerrarSesion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            }
+
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Ok(new { message = "Cierre de sesión exitoso" });
         }

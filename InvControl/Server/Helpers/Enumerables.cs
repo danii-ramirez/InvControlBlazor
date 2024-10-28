@@ -2,18 +2,22 @@
 {
     public enum TipoEntidad
     {
-        Usuario = 1,
-        Rol = 2,
-        SKU = 3,
-        CanalVenta = 4,
-        Chofer = 5,
-        Transporte = 6
+        Login = 1,
+        Usuario = 2,
+        Rol = 3,
+        SKU = 4,
+        CanalVenta = 5,
+        Chofer = 6,
+        Transporte = 7,
+        Remito = 8
     }
 
     public enum TipoOperacion
     {
         Creacion = 1,
         Edicion = 2,
-        Borrado = 3
+        Borrado = 3,
+        InicioSesion = 4,
+        CerrarSesion = 5
     }
 }
