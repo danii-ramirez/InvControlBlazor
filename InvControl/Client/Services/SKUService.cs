@@ -28,7 +28,7 @@ namespace InvControl.Client.Services
             if (activo != null) query["activo"] = activo;
             if (idMarca != null) query["idMarca"] = idMarca;
 
-            if (query.Any())
+            if (query.Count > 0)
                 uri += "?" + string.Join("&", query.Select(x => $"{x.Key}={x.Value}"));
 
             return (await _httpClient.GetFromJsonAsync<List<SKU>>(uri))!;

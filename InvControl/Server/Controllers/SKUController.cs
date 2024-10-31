@@ -1,5 +1,4 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using InvControl.Server.Data;
 using InvControl.Server.Helpers;
 using InvControl.Shared.DTO;
@@ -44,8 +43,7 @@ namespace InvControl.Server.Controllers
                         NombreMarca = (string)dr["DescripcionMarca"],
                         IdTipoContenedor = (int?)dr["IdTipoContenedor"],
                         NombreTipoContenedor = (string)dr["NombreTipoContenedor"],
-                        UnidadesPorContenedor = (int?)dr["UnidadesPorContenedor"],
-                        Stock = (int)dr["StockActual"]
+                        UnidadesPorContenedor = (int?)dr["UnidadesPorContenedor"]
                     };
                     if (dr["Descripcion"] != DBNull.Value) s.Descripcion = (string)dr["Descripcion"];
 
@@ -225,13 +223,23 @@ namespace InvControl.Server.Controllers
 
                 worksheet.Cell(1, 1).Value = "Código";
                 worksheet.Cell(1, 2).Value = "Nombre";
-                worksheet.Cell(1, 3).Value = "Stock";
+                worksheet.Cell(1, 3).Value = "Descripción";
+                worksheet.Cell(1, 4).Value = "Marca";
+                worksheet.Cell(1, 5).Value = "Activo";
+                worksheet.Cell(1, 6).Value = "Especial";
+                worksheet.Cell(1, 7).Value = "Contenedor";
+                worksheet.Cell(1, 8).Value = "Unidades por contenedor";
 
                 for (int i = 0; i < skus.Count; i++)
                 {
                     worksheet.Cell(i + 2, 1).Value = skus[i].Codigo;
                     worksheet.Cell(i + 2, 2).Value = skus[i].Nombre;
-                    worksheet.Cell(i + 2, 3).Value = skus[i].Stock;
+                    worksheet.Cell(i + 2, 3).Value = skus[i].Descripcion;
+                    worksheet.Cell(i + 2, 4).Value = skus[i].NombreMarca;
+                    worksheet.Cell(i + 2, 5).Value = skus[i].Activo;
+                    worksheet.Cell(i + 2, 6).Value = skus[i].Especial;
+                    worksheet.Cell(i + 2, 7).Value = skus[i].NombreTipoContenedor;
+                    worksheet.Cell(i + 2, 8).Value = skus[i].UnidadesPorContenedor;
                 }
 
                 using var stream = new MemoryStream();

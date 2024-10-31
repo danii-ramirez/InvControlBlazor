@@ -8,5 +8,6 @@
         public static string SaveSuccess => "Los datos se guardaron correctamente";
         public static string OkButtonText => "Sí";
         public static string CancelButtonText => "No";
+        public static string EmptySearch => "La búsqueda no ha devuelto resultados!";
     }
 }
