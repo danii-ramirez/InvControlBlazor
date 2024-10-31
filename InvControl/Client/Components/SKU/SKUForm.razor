@@ -12,7 +12,7 @@
             <RadzenColumn Size="12">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Código:" Component="codigoModal" />
-                    <RadzenNumeric @bind-Value="SKU.Codigo" TextAlign="TextAlign.Right" ShowUpDown="false" Min="0" Name="codigoModal" Disabled="isBusy" />
+                    <RadzenNumeric @bind-Value="SKU.Codigo" TextAlign="TextAlign.Right" ShowUpDown="false" Min="0" Max="999999999" Name="codigoModal" Disabled="isBusy" />
                     <ValidationMessage For="(() => SKU.Codigo)" />
                 </RadzenStack>
             </RadzenColumn>
@@ -22,7 +22,7 @@
             <RadzenColumn Size="12">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Nombre:" Component="nombreModal" />
-                    <RadzenTextBox @bind-Value="SKU.Nombre" Name="nombreModal" Disabled="isBusy" />
+                    <RadzenTextBox @bind-Value="SKU.Nombre" MaxLength="50" Name="nombreModal" Disabled="isBusy" />
                     <ValidationMessage For="(() => SKU.Nombre)" />
                 </RadzenStack>
             </RadzenColumn>
@@ -32,7 +32,7 @@
             <RadzenColumn Size="12">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Descripción:" Component="descripcioModaln" />
-                    <RadzenTextArea @bind-Value="SKU.Descripcion" Name="descripcionModal" Style="min-height: 50px;max-height: 100px;" Disabled="isBusy" />
+                    <RadzenTextArea @bind-Value="SKU.Descripcion" MaxLength="100" Name="descripcionModal" Style="min-height: 50px; max-height: 100px;" Disabled="isBusy" />
                     <ValidationMessage For="(() => SKU.Descripcion)" />
                 </RadzenStack>
             </RadzenColumn>
@@ -76,17 +76,15 @@
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Unidades:" Component="unidadesModal" />
-                    <RadzenNumeric @bind-Value="SKU.UnidadesPorContenedor" TextAlign="TextAlign.Right" ShowUpDown="false" Min="0" Name="unidadesModal" Disabled="isBusy" />
+                    <RadzenNumeric @bind-Value="SKU.UnidadesPorContenedor" TextAlign="TextAlign.Right" ShowUpDown="false" Min="0" Max="99999" Name="unidadesModal" Disabled="isBusy" />
                     <ValidationMessage For="(() => SKU.UnidadesPorContenedor)" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
-                          Disabled="isBusy" />
-            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
-                          IsBusy="isBusy" BusyText="Guardando" />
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" Disabled="isBusy" />
+            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" IsBusy="isBusy" BusyText="Guardando" />
         </RadzenStack>
     </EditForm>
 }

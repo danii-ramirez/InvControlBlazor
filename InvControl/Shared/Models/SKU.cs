@@ -21,7 +21,8 @@ namespace InvControl.Shared.Models
 
         public bool Especial { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Debe completar este campo"),
+            Range(1, int.MaxValue, ErrorMessage = "Debe completar este campo")]
         public int IdMarca { get; set; }
         public string NombreMarca { get; set; } = string.Empty;
 

@@ -10,7 +10,7 @@
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
             <RadzenLabel Text="Descripción:" Component="descripcion" />
-            <RadzenTextBox @bind-Value="Rol.Descripcion" Name="descripcion" Disabled=isBusy />
+            <RadzenTextBox @bind-Value="Rol.Descripcion" MaxLength="50" Name="descripcion" Disabled=isBusy />
             <ValidationMessage For="@(() => Rol.Descripcion)" />
         </RadzenStack>
 
@@ -21,8 +21,7 @@
                 <Columns>
                     <RadzenDataGridColumn TextAlign="Radzen.TextAlign.Center" Width="80px">
                         <Template Context="data">
-                            <RadzenCheckBox TValue="bool" Value="data.Checked"
-                                            Disabled="@(data.Descripcion == "Home" || isBusy)" />
+                            <RadzenCheckBox TValue="bool" Value="data.Checked" Disabled="@(data.Descripcion == "Home" || isBusy)" />
                         </Template>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn Property="@nameof(Permiso.Descripcion)" Title="Descripción" />
@@ -32,10 +31,8 @@
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
-                          Disabled="isBusy" />
-            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
-                          IsBusy="isBusy" BusyText="Guardando" />
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" Disabled="isBusy" />
+            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" IsBusy="isBusy" BusyText="Guardando" />
         </RadzenStack>
     </EditForm>
 }

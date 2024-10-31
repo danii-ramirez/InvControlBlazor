@@ -8,13 +8,13 @@
 
     <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
         <RadzenLabel Text="Nombre:" Component="nombre" />
-        <RadzenTextBox @bind-Value="Chofer.Nombre" Name="nombre" Disabled="isBusy" />
+        <RadzenTextBox @bind-Value="Chofer.Nombre" MaxLength="50" Name="nombre" Disabled="isBusy" />
         <ValidationMessage For="@(() => Chofer.Nombre)" />
     </RadzenStack>
 
     <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
         <RadzenLabel Text="Apellido:" Component="apellido" />
-        <RadzenTextBox @bind-Value="Chofer.Apellido" Name="apellido" Disabled="isBusy" />
+        <RadzenTextBox @bind-Value="Chofer.Apellido" MaxLength="50" Name="apellido" Disabled="isBusy" />
         <ValidationMessage For="@(() => Chofer.Apellido)" />
     </RadzenStack>
 
@@ -24,10 +24,8 @@
     </RadzenStack>
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
-                      Disabled="isBusy" />
-        <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
-                      IsBusy="isBusy" BusyText="Guardando" />
+        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" Disabled="isBusy" />
+        <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" IsBusy="isBusy" BusyText="Guardando" />
     </RadzenStack>
 </EditForm>
 

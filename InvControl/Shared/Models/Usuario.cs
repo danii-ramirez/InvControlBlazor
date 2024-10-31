@@ -7,7 +7,7 @@ namespace InvControl.Shared.Models
         public int IdUsuario { get; set; }
 
         [Required(ErrorMessage = "Debe ingresar un usuario"),
-            StringLength(50, ErrorMessage = "El usuario no puede superar los 50 caracteres")]
+            StringLength(18, ErrorMessage = "El usuario no puede superar los 50 caracteres")]
         public string User { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Debe ingresar un nombre"),

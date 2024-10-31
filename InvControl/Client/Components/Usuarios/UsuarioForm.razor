@@ -10,20 +10,20 @@
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
             <RadzenLabel Text="Usuario:" Component="user" />
-            <RadzenTextBox @bind-Value="Usuario.User" Name="user" Disabled="isBusy" />
+            <RadzenTextBox @bind-Value="Usuario.User" MaxLength="18" Name="user" Disabled="isBusy" />
             <ValidationMessage For="@(() => Usuario.User)" />
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" class="rz-mt-3">
             <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 50%;">
                 <RadzenLabel Text="Nombre:" Component="nombre" />
-                <RadzenTextBox @bind-Value="Usuario.Nombre" Name="nombre" Disabled="isBusy" />
+                <RadzenTextBox @bind-Value="Usuario.Nombre" MaxLength="50" Name="nombre" Disabled="isBusy" />
                 <ValidationMessage For="@(() => Usuario.Nombre)" />
             </RadzenStack>
 
             <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 50%;">
                 <RadzenLabel Text="Apellido:" Component="apellido" />
-                <RadzenTextBox @bind-Value="Usuario.Apellido" Name="apellido" Disabled="isBusy" />
+                <RadzenTextBox @bind-Value="Usuario.Apellido" MaxLength="50" Name="apellido" Disabled="isBusy" />
                 <ValidationMessage For="@(() => Usuario.Apellido)" />
             </RadzenStack>
         </RadzenStack>
@@ -44,10 +44,8 @@
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
-                          Disabled="isBusy" />
-            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
-                          IsBusy="isBusy" BusyText="Guardando" />
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" Disabled="isBusy" />
+            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" IsBusy="isBusy" BusyText="Guardando" />
         </RadzenStack>
     </EditForm>
 }

@@ -17,13 +17,13 @@
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
             <RadzenLabel Text="Nombre:" Component="nombre" />
-            <RadzenTextBox @bind-Value="CanalVenta.Nombre" Name="nombre" Disabled="isBusy" />
+            <RadzenTextBox @bind-Value="CanalVenta.Nombre" Name="nombre" MaxLength="25" Disabled="isBusy" />
             <ValidationMessage For="@(() => CanalVenta.Nombre)" />
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
             <RadzenLabel Text="Descripción:" Component="descripcion" />
-            <RadzenTextBox @bind-Value="CanalVenta.Descripcion" Name="descripcion" Disabled="isBusy" />
+            <RadzenTextBox @bind-Value="CanalVenta.Descripcion" Name="descripcion" MaxLength="50" Disabled="isBusy" />
             <ValidationMessage For="@(() => CanalVenta.Descripcion)" />
         </RadzenStack>
 

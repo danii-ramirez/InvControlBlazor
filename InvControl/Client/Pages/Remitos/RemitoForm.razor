@@ -84,7 +84,7 @@
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Cantidad)" Title="Cantidad" Width="100px">
                             <Template Context="data">
-                                <RadzenNumeric @ref="refCantidad" TValue="int?" @bind-Value="data.Cantidad" Min="1" TextAlign="TextAlign.Right" ShowUpDown="false" Style="width: 100%;" />
+                                <RadzenNumeric @ref="refCantidad" TValue="int?" @bind-Value="data.Cantidad" Min="1" Max="99999" TextAlign="TextAlign.Right" ShowUpDown="false" Style="width: 100%;" />
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px">
