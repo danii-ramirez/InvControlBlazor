@@ -1,4 +1,5 @@
 using System.Data;
+using DocumentFormat.OpenXml.Office.Word;
 using Microsoft.Data.SqlClient;
 
 namespace InvControl.Server.Data
@@ -44,6 +45,27 @@ namespace InvControl.Server.Data
             cmd.Parameters.AddWithValue("@pCantidad", cantidad);
             cmd.Parameters.AddWithValue("@pFechaActualizacion", fechaActualizacion);
             cmd.ExecuteNonQuery();
+        }
+
+        public DataTable ObtenerStock(string? nombre, int? idMarca, bool? especial, int? cantidadMin, int? cantidadMax, DateTime? fechaMin, DateTime? fechaMax)
+        {
+            DataTable dt = new();
+            using (SqlConnection cnn = new(connectionString))
+            {
+                var cmd = cnn.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "prc_get_Stock";
+                if (nombre != null) cmd.Parameters.AddWithValue("@pNombre", nombre);
+                if (idMarca != null) cmd.Parameters.AddWithValue("@pIdMarca", idMarca);
+                if (especial != null) cmd.Parameters.AddWithValue("@pEspecial", especial);
+                if (cantidadMin != null) cmd.Parameters.AddWithValue("@pCantidadMin", cantidadMin);
+                if (cantidadMax != null) cmd.Parameters.AddWithValue("@pCantidadMax", cantidadMax);
+                if (fechaMin != null) cmd.Parameters.AddWithValue("@pFechaMin", fechaMin);
+                if (fechaMax != null) cmd.Parameters.AddWithValue("@pFechaMax", fechaMax);
+                SqlDataAdapter da = new(cmd);
+                da.Fill(dt);
+            }
+            return dt;
         }
     }
 }

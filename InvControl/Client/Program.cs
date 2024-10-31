@@ -31,5 +31,6 @@ static void Services(IServiceCollection services)
     services.AddScoped<TransportesService>();
     services.AddScoped<SKUService>();
     services.AddScoped<RemitosService>();
+    services.AddScoped<StockService>();
     services.AddScoped<IJSFunctions, JSFunctions>();
 }

@@ -1,0 +1,108 @@
+@page "/stock"
+@attribute [Authorize]
+
+@inject UsuariosService UsuariosService
+@inject StockService StockService
+@inject SKUService SKUService
+@inject RadzenCustom RadzenCustom
+@inject NotificationService NotificationService
+
+@if (showform)
+{
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Consulta de stock" />
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" Gap="5px" Wrap="FlexWrap.Wrap" class="rz-mb-3">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Nombre del SKU:" Component="nombre" />
+            <RadzenTextBox @bind-Value="@nombre" MaxLength="50" Name="nombre" AutoCompleteType="AutoCompleteType.Off" Style="width: 15rem;" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Marca:" Component="marca" />
+            <RadzenDropDown Data="marcas" @bind-Value="idMarca" TextProperty="@nameof(Marca.Descripcion)" ValueProperty="@nameof(Marca.IdMarca)"
+                            Style="width: 15rem;" Name="marca" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Especial:" Component="especial" />
+            <RadzenDropDown Data="estados" @bind-Value="estado" TextProperty="@nameof(Estado.Description)" ValueProperty="@nameof(Estado.Value)"
+                            Placeholder="Todos" Style="width: 7rem;" Name="especial" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Stock min.:" Component="stockMin" />
+            <RadzenNumeric @bind-Value="cantidadMin" Min="0" Max="999999" ShowUpDown="false" TextAlign="TextAlign.Right" Name="stockMin" Style="width: 7rem;" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Stock max.:" Component="stockMax" />
+            <RadzenNumeric @bind-Value="cantidadMax" Min="0" Max="999999" ShowUpDown="false" TextAlign="TextAlign.Right" Name="stockMin" Style="width: 7rem;" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Text="Buscar" Icon="search" Click="HandleClickSearch" Style="height: 1rem;" Disabled="isLoading" />
+    </RadzenStack>
+
+    <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Icon="file_save" Text="Exportar a Excel"
+                  Click="HandleClickExportToExcel" Disabled="(stock.Count == 0)" class="rz-mb-1" />
+
+    <RadzenDataGrid @ref="grid" Data="stock" AllowVirtualization="true" AllowSorting="true" AllowGrouping="true"
+                    AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                    GroupPanelText="@RadzenHelper.Traducciones["GroupPanelText"]" Density="Density.Compact" IsLoading="isLoading"
+                    EmptyText="@string.Empty" Style="height: 65vh;">
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(Stock.Codigo)" Title="Código" TextAlign="TextAlign.Right" Groupable="false" />
+            <RadzenDataGridColumn Property="@nameof(Stock.Nombre)" Title="Nombre" Groupable="false" />
+            <RadzenDataGridColumn Property="@nameof(Stock.Marca)" Title="Marca" />
+            <RadzenDataGridColumn Property="@nameof(Stock.Cantidad)" Title="Stock" TextAlign="TextAlign.Right" Groupable="false" />
+        </Columns>
+    </RadzenDataGrid>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<Stock> stock = new();
+    RadzenDataGrid<Stock> grid = default!;
+    bool showform, isLoading;
+
+    //FILTROS
+    string? nombre;
+    int? cantidadMin, cantidadMax;
+    List<Marca> marcas = new();
+    int idMarca;
+    List<Estado> estados = new();
+    bool? estado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        marcas = await SKUService.GetMarcas();
+        marcas.Insert(0, new() { IdMarca = 0, Descripcion = "Todos" });
+        estados.Add(new(null, "Todos"));
+        estados.Add(new(true, "Sí"));
+        estados.Add(new(false, "No"));
+
+        showform = true;
+    }
+
+    private async Task HandleClickSearch()
+    {
+        isLoading = true;
+        await Task.Delay(1);
+        stock = await StockService.GetStock(nombre, idMarca == 0 ? null : idMarca, estado, cantidadMin, cantidadMax, null, null);
+        isLoading = false;
+        if (stock.Count == 0)
+        {
+            NotificationService.Notify(summary: Message.EmptySearch);
+        }
+        await grid.Reload();
+    }
+
+    private async Task HandleClickExportToExcel()
+    {
+        RadzenCustom.OpenBusyWithLoader("Generando Excel");
+        await StockService.PostExportToExcel(stock);
+        RadzenCustom.CloseDialog();
+    }
+}

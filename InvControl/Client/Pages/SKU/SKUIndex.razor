@@ -83,7 +83,6 @@
                 </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Property="@nameof(SKU.NombreMarca)" Title="Marca" />
-            <RadzenDataGridColumn Property="@nameof(SKU.Stock)" Title="Stock" TextAlign="TextAlign.Right" Width="90px" />
             <RadzenDataGridColumn TextAlign="TextAlign.Center" Sortable="false" Width="80px" Visible="@(acciones.Exists(x => x == Accion.Editar))">
                 <Template>
                     <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter"
