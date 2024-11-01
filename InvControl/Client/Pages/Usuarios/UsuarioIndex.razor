@@ -169,7 +169,7 @@ else
     private async Task HandleClickBorrar(Usuario usuario)
     {
         var res = await DialogService.Confirm(
-            $"Desea borrar el usaurio {usuario.User.ToUpper()}?",
+            $"Desea borrar el usuario {usuario.User.ToUpper()}?",
             Message.Title,
             new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
