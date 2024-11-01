@@ -236,8 +236,8 @@ namespace InvControl.Server.Controllers
                     worksheet.Cell(i + 2, 2).Value = skus[i].Nombre;
                     worksheet.Cell(i + 2, 3).Value = skus[i].Descripcion;
                     worksheet.Cell(i + 2, 4).Value = skus[i].NombreMarca;
-                    worksheet.Cell(i + 2, 5).Value = skus[i].Activo;
-                    worksheet.Cell(i + 2, 6).Value = skus[i].Especial;
+                    worksheet.Cell(i + 2, 5).Value = skus[i].Activo ? "Sí" : "No";
+                    worksheet.Cell(i + 2, 6).Value = skus[i].Especial ? "Sí" : "No";
                     worksheet.Cell(i + 2, 7).Value = skus[i].NombreTipoContenedor;
                     worksheet.Cell(i + 2, 8).Value = skus[i].UnidadesPorContenedor;
                 }
