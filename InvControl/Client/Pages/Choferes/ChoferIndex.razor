@@ -35,8 +35,7 @@
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
-                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
-                                      @onclick:stopPropagation="true">
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true">
                         </RadzenButton>
                     </Template>
                 </RadzenDataGridColumn>
@@ -83,7 +82,7 @@ else
     {
         var res = await DialogService.OpenAsync<ChoferForm>(
             "Formulario de choferes",
-            new() { { "Chofer", chofer } },
+            new() { { "Chofer", chofer.Clone() } },
             new() { ShowClose = false, CloseDialogOnEsc = false });
 
         if (res != null)
