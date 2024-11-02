@@ -7,12 +7,15 @@
 @inject TransportesService TransportesService
 @inject ChoferesService ChoferesService
 @inject DialogService DialogService
+@inject RadzenCustom RadzenCustom
+@inject NotificationService NotificationService
 
 @if (showForm)
 {
     <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Remitos pendientes" class="rz-mb-3" />
 
-    <RemitosListado @ref="refRemitoListado" Remitos="remitos" SelectedRemito="SelectedRemito" />
+    <RemitosListado @ref="refRemitoListado" Remitos="remitos" PermiteBorrar="true"
+        SelectedRemito="SelectedRemito" DeleteRemito="DeleteRemito" />
 }
 else
 {
@@ -38,13 +41,34 @@ else
     private async Task SelectedRemito(RemitoDTO remito)
     {
         var res = await DialogService.OpenAsync<RemitoInfo>(
-                $"Remito nro. {remito.NumeroRemito}",
-                new() { { "Remito", remito }, { "Transportes", transportes }, { "Choferes", choferes } });
+            $"Remito nro. {remito.NumeroRemito}",
+            new() { { "Remito", remito }, { "Transportes", transportes }, { "Choferes", choferes } });
 
         if (res != null && (bool)res)
         {
             remitos.Remove(remito);
             await refRemitoListado.ReloadGrid();
+        }
+    }
+
+    private async Task DeleteRemito(RemitoDTO remito)
+    {
+        var res = await DialogService.Confirm(
+            $"¿Desea borrar el remito {remito.NumeroRemito}?",
+            Message.Title,
+            new() { OkButtonText = Message.OkButtonText, CancelButtonText = Message.CancelButtonText });
+
+        if (res != null && (bool)res)
+        {
+            RadzenCustom.OpenBusyWithLoader("Borrando...");
+            var result = await RemitosService.DeleteRemito(remito.IdRemito);
+            RadzenCustom.CloseDialog();
+            if (result)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "El remito se borro correctamente");
+                remitos.Remove(remito);
+                await refRemitoListado.ReloadGrid();
+            }
         }
     }
 }
