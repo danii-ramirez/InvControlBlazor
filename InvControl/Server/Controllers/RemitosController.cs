@@ -148,7 +148,7 @@ namespace InvControl.Server.Controllers
                             daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, (int)d.Codigo!, d.NombreSku, (int)d.Cantidad!, transaction);
                         }
 
-                        daAu.Insertar($"Se ingres� el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
+                        daAu.Insertar($"Se ingresó el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
                             (int)TipoOperacion.Creacion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
                         transaction.Commit();
@@ -185,7 +185,7 @@ namespace InvControl.Server.Controllers
 
                     daRe.ActualizarRemito(remito.IdRemito, remito.IdEstado, remito.IdTransporte, remito.IdChofer, transaction);
 
-                    string accion = remito.IdEstado == (int)RemitoEstado.Aprobado ? "aprob�" : "rechaz�";
+                    string accion = remito.IdEstado == (int)RemitoEstado.Aprobado ? "aprobó" : "rechazó";
                     daAu.Insertar($"Se {accion} el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
                             (int)TipoOperacion.Edicion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
@@ -229,7 +229,7 @@ namespace InvControl.Server.Controllers
                             daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, (int)d.Codigo!, d.NombreSku, (int)d.Cantidad!, transaction);
                         }
 
-                        daAu.Insertar($"Se edit� el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
+                        daAu.Insertar($"Se editó el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
                             (int)TipoOperacion.Edicion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
                         transaction.Commit();
@@ -319,7 +319,7 @@ namespace InvControl.Server.Controllers
 
                             daS.InsertarStock(rd.IdSku, unidades, fecha, transaction);
 
-                            daAu.Insertar($"Se proces� el remito {r.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
+                            daAu.Insertar($"Se procesó el remito {r.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
                                 (int)TipoOperacion.Edicion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
                         }
                     }
