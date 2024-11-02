@@ -12,7 +12,7 @@
 {
     <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="SKU" class="rz-mb-3" />
 
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" Gap="5px" Wrap="FlexWrap.Wrap">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" Gap="5px" Wrap="FlexWrap.Wrap" class="rz-mb-3">
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
             <RadzenLabel Text="Código:" Component="codigo" />
             <RadzenNumeric @bind-Value=filterCodigo Name="codigo" TextAlign="TextAlign.Right" ShowUpDown="false" Disabled="isLoading" />
