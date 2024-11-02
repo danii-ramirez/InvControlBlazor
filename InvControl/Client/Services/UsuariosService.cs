@@ -134,8 +134,8 @@ namespace InvControl.Client.Services
 
             Dictionary<string, object> query = new()
             {
-                ["fechaDesde"] = fechaDesde.ToString("dd/MM/yyyy hh:mm:ss"),
-                ["fechaHasta"] = fechaHasta.ToString("dd/MM/yyyy hh:mm:ss")
+                ["fechaDesde"] = fechaDesde.ToString("dd/MM/yyyy"),
+                ["fechaHasta"] = fechaHasta.ToString("dd/MM/yyyy")
             };
             if (idUsuario != null) query["idUsuario"] = idUsuario;
             if (idTipoEntidad != null) query["idTipoEntidad"] = idTipoEntidad;

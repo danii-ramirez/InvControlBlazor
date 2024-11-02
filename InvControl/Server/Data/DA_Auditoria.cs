@@ -19,8 +19,8 @@ namespace InvControl.Server.Data
                 cmd.CommandText = "prc_get_Bitacora";
                 if (idUsuario != null) cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
                 if (idtipoEntidad != null) cmd.Parameters.AddWithValue("@pIdtipoEntidad", idtipoEntidad);
-                cmd.Parameters.AddWithValue("@pFechaDesde", fechaDesde.ToString("dd/MM/yyyy hh:mm:ss"));
-                cmd.Parameters.AddWithValue("@pFechaHasta", fechaHasta.ToString("dd/MM/yyyy hh:mm:ss"));
+                cmd.Parameters.AddWithValue("@pFechaDesde", fechaDesde);
+                cmd.Parameters.AddWithValue("@pFechaHasta", fechaHasta);
                 SqlDataAdapter da = new(cmd);
                 da.Fill(dt);
             }
