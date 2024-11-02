@@ -97,7 +97,7 @@ namespace InvControl.Server.Controllers
         [HttpPut]
         public IActionResult PutRol(Rol rol)
         {
-            SqlTransaction transaction = ;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Rol da = new(connectionString);
@@ -165,7 +165,7 @@ namespace InvControl.Server.Controllers
                     permisos.Add(permiso);
                 }
             }
-            
+
             if (jerarquico)
             {
                 var permisosJerarquicos = Functions.ConstruirArbolPermiso(permisos);
