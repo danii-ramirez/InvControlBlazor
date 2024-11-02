@@ -40,8 +40,8 @@ else
     private async Task SelectedRemito(RemitoDTO remito)
     {
         var res = await DialogService.OpenAsync<RemitoInfo>(
-                $"Remito nro. {remito.NumeroRemito}",
-                new() { { "Remito", remito }, { "Transportes", transportes }, { "Choferes", choferes } });
+            $"Remito nro. {remito.NumeroRemito}",
+            new() { { "Remito", remito }, { "Transportes", transportes }, { "Choferes", choferes } });
 
         if (res != null && (bool)res)
         {
