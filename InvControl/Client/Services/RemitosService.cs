@@ -57,6 +57,12 @@ namespace InvControl.Client.Services
             return res.StatusCode == HttpStatusCode.OK;
         }
 
+        public async ValueTask<bool> DeleteRemito(int idRemito)
+        {
+            var res = await _httpClient.DeleteAsync($"{BASE_REQUEST_URI}/{idRemito}");
+            return res.StatusCode == HttpStatusCode.OK;
+        }
+
         public async ValueTask<Response> PutRemitoDetalle(Remito remito)
         {
             var res = await _httpClient.PutAsJsonAsync($"{BASE_REQUEST_URI}/detalle", remito);

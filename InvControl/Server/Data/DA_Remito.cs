@@ -81,6 +81,17 @@ namespace InvControl.Server.Data
             cmd.ExecuteNonQuery();
         }
 
+        public void EliminarRemito(int idRemito, SqlTransaction transaction)
+        {
+            var cnn = transaction.Connection;
+            var cmd = cnn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_del_Remitos";
+            cmd.Parameters.AddWithValue("@pIdRemito", idRemito);
+            cmd.ExecuteNonQuery();
+        }
+
         public void InsertarRemitoDetalle(int idRemito, int idSku, int codigoSku, string nombreSku, int cantidad, SqlTransaction transaction)
         {
             var cnn = transaction.Connection;
