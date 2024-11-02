@@ -150,9 +150,27 @@ namespace InvControl.Server.Controllers
             SqlTransaction transaction = null;
             try
             {
+                DA_Usuario da = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                string user;
+                using (DataTable dt = da.ObtenerUsuario(idUsuario, null))
+                {
+                    user = $"{dt.Rows[0]["User"]}";
+                }
+
                 using (SqlConnection cnn = new(connectionString))
                 {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
 
+                    da.EliminarUsuario(idUsuario, transaction);
+
+                    daAu.Insertar($"Se eliminó el usuario: {user}", DateTime.Now, (int)TipoEntidad.Usuario, (int)TipoOperacion.Borrado,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                    transaction.Commit();
+                    cnn.Close();
                 }
 
                 return Ok();
