@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_Transporte(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerTransportes(string? nombre, string? patente, bool? activo)
+        public DataTable ObtenerTransportes(string nombre, string patente, bool? activo)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))

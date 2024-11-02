@@ -20,7 +20,7 @@ namespace InvControl.Server.Controllers
         }
 
         [HttpGet("consulta")]
-        public IActionResult GetStock(string? nombre, int? idMarca, bool? especial, int? cantidadMin, int? cantidadMax, DateTime? fechaMin, DateTime? fechaMax)
+        public IActionResult GetStock(string nombre, int? idMarca, bool? especial, int? cantidadMin, int? cantidadMax, DateTime? fechaMin, DateTime? fechaMax)
         {
             List<Stock> stock = new();
 

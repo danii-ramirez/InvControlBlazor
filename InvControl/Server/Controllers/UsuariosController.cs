@@ -243,7 +243,7 @@ namespace InvControl.Server.Controllers
 
                     if (dr["Url"] != DBNull.Value) permiso.Url = (string)dr["Url"];
                     if (dr["IdPadre"] != DBNull.Value) permiso.IdPadre = (int?)dr["IdPadre"];
-                    if (dr["Icon"] != DBNull.Value) permiso.Icon = (string?)dr["Icon"];
+                    if (dr["Icon"] != DBNull.Value) permiso.Icon = (string)dr["Icon"];
 
                     menu.Add(permiso);
                 }

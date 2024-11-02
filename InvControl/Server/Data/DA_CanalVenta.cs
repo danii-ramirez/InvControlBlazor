@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_CanalVenta(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerCanalesVentas(int? codigo, string? nombre)
+        public DataTable ObtenerCanalesVentas(int? codigo, string nombre)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))
@@ -25,7 +25,7 @@ namespace InvControl.Server.Data
             return dt;
         }
 
-        public int InsertarCanalesVentas(int codigo, string nombre, string? descripcion, SqlTransaction transaction)
+        public int InsertarCanalesVentas(int codigo, string nombre, string descripcion, SqlTransaction transaction)
         {
             int result = 0;
             var cnn = transaction.Connection;
@@ -46,7 +46,7 @@ namespace InvControl.Server.Data
             return result;
         }
 
-        public void ModificarCanalesVentas(int idCanalVenta, int codigo, string nombre, string? descripcion, SqlTransaction transaction)
+        public void ModificarCanalesVentas(int idCanalVenta, int codigo, string nombre, string descripcion, SqlTransaction transaction)
         {
             var cnn = transaction.Connection;
             var cmd = cnn.CreateCommand();

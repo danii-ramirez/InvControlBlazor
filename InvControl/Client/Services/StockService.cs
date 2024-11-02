@@ -15,7 +15,7 @@ namespace InvControl.Client.Services
             _jsFunctions = jsFunctions;
         }
 
-        public async ValueTask<List<Stock>> GetStock(string? nombre, int? idMarca, bool? especial, int? cantidadMin, int? cantidadMax, DateTime? fechaMin, DateTime? fechaMax)
+        public async ValueTask<List<Stock>> GetStock(string nombre, int? idMarca, bool? especial, int? cantidadMin, int? cantidadMax, DateTime? fechaMin, DateTime? fechaMax)
         {
             string uri = $"{BASE_REQUEST_URI}/consulta";
 

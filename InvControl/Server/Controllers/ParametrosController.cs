@@ -13,7 +13,7 @@ namespace InvControl.Server.Controllers
         private readonly ILogger<ParametrosController> _logger;
         private readonly string connectionString;
 
-        public ParametrosController(ILogger<ParametrosController>? logger = null, IConfiguration? configuration = null, string? connectionString = null)
+        public ParametrosController(ILogger<ParametrosController> logger = null, IConfiguration configuration = null, string connectionString = null)
         {
             _logger = logger!;
 
@@ -83,9 +83,9 @@ namespace InvControl.Server.Controllers
             }
         }
 
-        internal Parametro? ObtenerParametro(string nombre)
+        internal Parametro ObtenerParametro(string nombre)
         {
-            Parametro? parametro = null;
+            Parametro parametro = null;
             using (DataTable dt = new DA_Parametro(connectionString).ObtenerParametros(null, nombre))
             {
                 if (dt.Rows.Count > 0)

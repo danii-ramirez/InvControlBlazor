@@ -18,7 +18,7 @@ namespace InvControl.Client.Services
             _jsFunctions = jsFunctions;
         }
 
-        public async ValueTask<List<SKU>> GetSKU(int? codigo, string? nombre, bool? activo, int? idMarca)
+        public async ValueTask<List<SKU>> GetSKU(int? codigo, string nombre, bool? activo, int? idMarca)
         {
             string uri = $"{BASE_REQUEST_URI}";
 

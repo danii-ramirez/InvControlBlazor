@@ -21,14 +21,14 @@
             Errors = errors;
         }
 
-        public Response(bool success, string? message, Dictionary<string, List<string>>? errors) : this(success)
+        public Response(bool success, string message, Dictionary<string, List<string>> errors) : this(success)
         {
             Message = message;
             Errors = errors;
         }
 
         public bool Success { get; set; }
-        public string? Message { get; set; }
-        public Dictionary<string, List<string>>? Errors { get; set; }
+        public string Message { get; set; }
+        public Dictionary<string, List<string>> Errors { get; set; }
     }
 }

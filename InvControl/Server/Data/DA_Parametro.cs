@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_Parametro(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerParametros(int? idParametro, string? nombre)
+        public DataTable ObtenerParametros(int? idParametro, string nombre)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))

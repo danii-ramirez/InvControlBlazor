@@ -24,7 +24,7 @@ namespace InvControl.Server.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetSKU(int? codigo, string? nombre, bool? activo, int? idMarca)
+        public IActionResult GetSKU(int? codigo, string nombre, bool? activo, int? idMarca)
         {
             List<SKU> lst = new();
             DA_SKU da = new(connectionString);

@@ -23,7 +23,7 @@ namespace InvControl.Server.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetRemitos(int? idRemito, string? numeroRemito, RemitoEstado? remitoEstado)
+        public IActionResult GetRemitos(int? idRemito, string numeroRemito, RemitoEstado? remitoEstado)
         {
             List<RemitoDTO> remitos = new();
             DA_Remito da = new(connectionString);
@@ -78,7 +78,7 @@ namespace InvControl.Server.Controllers
         [HttpGet("{idRemito}")]
         public IActionResult GetRemito([FromRoute] int idRemito, [FromQuery] RemitoEstado? remitoEstado)
         {
-            Remito? remito = null;
+            Remito remito = null;
 
             DA_Remito da = new(connectionString);
 
@@ -243,7 +243,7 @@ namespace InvControl.Server.Controllers
         [HttpPut("procesar")]
         public IActionResult PutRemitosProcesar(List<RemitoDTO> remitos)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Remito daRe = new(connectionString);

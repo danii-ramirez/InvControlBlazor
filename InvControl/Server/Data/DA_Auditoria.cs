@@ -25,7 +25,7 @@ namespace InvControl.Server.Data
             return dt;
         }
 
-        public void Insertar(string descripcion, DateTime fecha, int idTipoEntidad, int idTipoOperacion, int idUsuario, SqlTransaction? transaction = null)
+        public void Insertar(string descripcion, DateTime fecha, int idTipoEntidad, int idTipoOperacion, int idUsuario, SqlTransaction transaction = null)
         {
             SqlConnection cnn;
             SqlCommand cmd;

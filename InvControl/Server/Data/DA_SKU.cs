@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_SKU(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerSKU(int? idSku, int? codigo, string? nombre, bool? activo, int? idMarca, SqlTransaction? transaction = null)
+        public DataTable ObtenerSKU(int? idSku, int? codigo, string nombre, bool? activo, int? idMarca, SqlTransaction transaction = null)
         {
             DataTable dt = new();
             SqlConnection cnn;

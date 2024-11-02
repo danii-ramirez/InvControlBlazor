@@ -22,7 +22,7 @@ namespace InvControl.Server.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetRoles(int? idRol, string? descripcion)
+        public IActionResult GetRoles(int? idRol, string descripcion)
         {
             List<Rol> roles = new();
             DA_Rol da = new(connectionString);

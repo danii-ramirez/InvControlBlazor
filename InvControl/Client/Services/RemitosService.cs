@@ -14,7 +14,7 @@ namespace InvControl.Client.Services
 
         public RemitosService(HttpClient httpClient) => _httpClient = httpClient;
 
-        public async ValueTask<List<RemitoDTO>> GetRemitosDTO(int? idRemito, string? numeroRemito, int? remitoEstado)
+        public async ValueTask<List<RemitoDTO>> GetRemitosDTO(int? idRemito, string numeroRemito, int? remitoEstado)
         {
             string uri = $"{BASE_REQUEST_URI}";
             Dictionary<string, object> query = new();
@@ -28,7 +28,7 @@ namespace InvControl.Client.Services
             return (await _httpClient.GetFromJsonAsync<List<RemitoDTO>>(uri))!;
         }
 
-        public async ValueTask<Remito?> GetRemito(int idRemito, RemitoEstado? remitoEstado)
+        public async ValueTask<Remito> GetRemito(int idRemito, RemitoEstado? remitoEstado)
         {
             var uri = $"{BASE_REQUEST_URI}/{idRemito}";
 

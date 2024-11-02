@@ -17,7 +17,7 @@ namespace InvControl.Client.Services
             _logger = logger;
         }
 
-        public async ValueTask<List<Rol>> GetRoles(int? idRol = null, string? descripcion = null)
+        public async ValueTask<List<Rol>> GetRoles(int? idRol = null, string descripcion = null)
         {
             string uri = $"{BASE_REQUEST_URI}";
 

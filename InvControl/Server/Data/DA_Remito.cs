@@ -10,7 +10,7 @@ namespace InvControl.Server.Data
 
         public DA_Remito(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerRemitos(int? idRemito, string? numeroRemito, int? idEstado)
+        public DataTable ObtenerRemitos(int? idRemito, string numeroRemito, int? idEstado)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))

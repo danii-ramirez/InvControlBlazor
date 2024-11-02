@@ -97,7 +97,7 @@ namespace InvControl.Client.Services
             return (await _httpClient.GetFromJsonAsync<List<Permiso>>($"{BASE_REQUEST_URI}/menu"))!;
         }
 
-        public async ValueTask<(bool, List<string>?)> GetValidarAcceso()
+        public async ValueTask<(bool, List<string>)> GetValidarAcceso()
         {
             var url = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
             var response = await _httpClient.GetAsync($"{BASE_REQUEST_URI}/validar/acceso?url={url}");
@@ -113,7 +113,7 @@ namespace InvControl.Client.Services
             }
         }
 
-        public async ValueTask<(bool, List<string>?)> GetValidarAcceso(string url)
+        public async ValueTask<(bool, List<string>)> GetValidarAcceso(string url)
         {
             var response = await _httpClient.GetAsync($"{BASE_REQUEST_URI}/validar/acceso?url={url}");
             if (response.StatusCode == HttpStatusCode.OK)

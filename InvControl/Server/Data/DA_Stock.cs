@@ -10,7 +10,7 @@ namespace InvControl.Server.Data
 
         public DA_Stock(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerStockPorSKU(int idSku, SqlTransaction? transaction = null)
+        public DataTable ObtenerStockPorSKU(int idSku, SqlTransaction transaction = null)
         {
             DataTable dt = new();
             SqlConnection cnn;
@@ -47,7 +47,7 @@ namespace InvControl.Server.Data
             cmd.ExecuteNonQuery();
         }
 
-        public DataTable ObtenerStock(string? nombre, int? idMarca, bool? especial, int? cantidadMin, int? cantidadMax, DateTime? fechaMin, DateTime? fechaMax)
+        public DataTable ObtenerStock(string nombre, int? idMarca, bool? especial, int? cantidadMin, int? cantidadMax, DateTime? fechaMin, DateTime? fechaMax)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))

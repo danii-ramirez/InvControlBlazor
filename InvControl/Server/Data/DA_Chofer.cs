@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_Chofer(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerChoferes(string? nombre, string? apellido, bool? activo)
+        public DataTable ObtenerChoferes(string nombre, string apellido, bool? activo)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))

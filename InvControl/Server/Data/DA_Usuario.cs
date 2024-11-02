@@ -59,7 +59,7 @@ namespace InvControl.Server.Data
             cnn.Close();
         }
 
-        public DataTable ObtenerUsuario(int? idUsuario, string? user)
+        public DataTable ObtenerUsuario(int? idUsuario, string user)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))

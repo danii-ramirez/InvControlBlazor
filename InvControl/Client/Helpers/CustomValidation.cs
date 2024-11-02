@@ -5,10 +5,10 @@ namespace InvControl.Client.Helpers
 {
     public class CustomValidation : ComponentBase
     {
-        private ValidationMessageStore? messageStore;
+        private ValidationMessageStore messageStore;
 
         [CascadingParameter]
-        private EditContext? CurrentEditContext { get; set; }
+        private EditContext CurrentEditContext { get; set; }
 
         protected override void OnInitialized()
         {

@@ -55,7 +55,7 @@ namespace InvControl.Client.Provider
             NotifyAuthenticationStateChanged();
         }
 
-        public async Task<CurrentUser?> GetCurrentUser()
+        public async Task<CurrentUser> GetCurrentUser()
         {
             var response = await _httpClient.GetAsync($"{BASE_REQUEST_URI}/currentUser");
             if (response.IsSuccessStatusCode)

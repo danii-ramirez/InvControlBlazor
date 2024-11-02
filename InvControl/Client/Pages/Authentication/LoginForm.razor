@@ -38,8 +38,8 @@
 
 @code {
     LoginUser LoginModel { get; set; } = new();
-    EditContext? editContext;
-    CustomValidation? customValidation;
+    EditContext editContext;
+    CustomValidation customValidation;
 
     string _returnUrl = "/";
     bool isBusy;

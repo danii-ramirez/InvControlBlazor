@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_Rol(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerRoles(int? idRol, string? descripcion)
+        public DataTable ObtenerRoles(int? idRol, string descripcion)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))
