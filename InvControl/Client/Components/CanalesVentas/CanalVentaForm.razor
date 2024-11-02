@@ -37,10 +37,10 @@
 }
 
 @code {
-    [Parameter] public CanalVenta CanalVenta { get; set; } = default!;
+    [Parameter] public CanalVenta CanalVenta { get; set; }
 
-    EditContext editContext = default!;
-    CustomValidation customValidation = default!;
+    EditContext editContext;
+    CustomValidation customValidation;
 
     bool isBusy;
 

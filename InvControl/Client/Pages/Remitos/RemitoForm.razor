@@ -113,17 +113,17 @@ else
     [Parameter] public int? IdRemito { get; set; }
 
     Remito Remito { get; set; } = new();
-    EditContext editContext = default!;
-    CustomValidation customValidation = default!;
+    EditContext editContext;
+    CustomValidation customValidation;
 
     List<SKUDTO> skus = new();
     List<Transporte> transportes = new();
     List<Chofer> choferes = new();
     bool showForm, reingreso;
 
-    RadzenDataGrid<RemitoDetalle> grid = default!;
-    RadzenAutoComplete refAutoComplete = default!;
-    RadzenNumeric<int?> refCantidad = default!;
+    RadzenDataGrid<RemitoDetalle> grid;
+    RadzenAutoComplete refAutoComplete;
+    RadzenNumeric<int?> refCantidad;
 
     protected override async Task OnInitializedAsync()
     {

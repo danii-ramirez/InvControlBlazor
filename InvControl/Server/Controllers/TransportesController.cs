@@ -46,7 +46,7 @@ namespace InvControl.Server.Controllers
         [HttpPost]
         public IActionResult PostTransportes(Transporte transporte)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Transporte daT = new(connectionString);
@@ -88,7 +88,7 @@ namespace InvControl.Server.Controllers
         [HttpPut]
         public IActionResult PutTransportes(Transporte transporte)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Transporte daT = new(connectionString);

@@ -50,7 +50,7 @@ namespace InvControl.Server.Controllers
         [HttpPost]
         public IActionResult PostRol(Rol rol)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Rol da = new(connectionString);
@@ -97,7 +97,7 @@ namespace InvControl.Server.Controllers
         [HttpPut]
         public IActionResult PutRol(Rol rol)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = ;
             try
             {
                 DA_Rol da = new(connectionString);

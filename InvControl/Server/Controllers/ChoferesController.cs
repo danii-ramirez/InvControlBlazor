@@ -49,7 +49,7 @@ namespace InvControl.Server.Controllers
         [HttpPost]
         public IActionResult PostChoferes(Chofer chofer)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Chofer daC = new(connectionString);
@@ -91,7 +91,7 @@ namespace InvControl.Server.Controllers
         [HttpPut]
         public IActionResult Putchoferes(Chofer chofer)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Chofer daC = new(connectionString);

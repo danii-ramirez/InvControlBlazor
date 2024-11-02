@@ -57,7 +57,7 @@ namespace InvControl.Server.Controllers
         [HttpPost]
         public IActionResult PostSKU(SKU sku)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_SKU daSKU = new(connectionString);
@@ -106,7 +106,7 @@ namespace InvControl.Server.Controllers
         [HttpPut]
         public IActionResult PutSKU(SKU sku)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_SKU daSKU = new(connectionString);

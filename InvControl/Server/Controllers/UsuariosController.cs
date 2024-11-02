@@ -55,7 +55,7 @@ namespace InvControl.Server.Controllers
         [HttpPost]
         public IActionResult PostUsuario(Usuario usuario)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Usuario da = new(connectionString);
@@ -102,7 +102,7 @@ namespace InvControl.Server.Controllers
         [HttpPut]
         public IActionResult PutUsuario(Usuario usuario)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Usuario da = new(connectionString);
@@ -147,7 +147,7 @@ namespace InvControl.Server.Controllers
         [HttpDelete("{idUsuario:int}")]
         public IActionResult DeleteUsuario(int idUsuario)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 using (SqlConnection cnn = new(connectionString))

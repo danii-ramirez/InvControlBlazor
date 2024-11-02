@@ -30,10 +30,10 @@
 </EditForm>
 
 @code {
-    [Parameter] public Transporte Transporte { get; set; } = default!;
+    [Parameter] public Transporte Transporte { get; set; }
 
-    EditContext editContext = default!;
-    CustomValidation customValidation = default!;
+    EditContext editContext;
+    CustomValidation customValidation;
 
     bool isBusy;
 

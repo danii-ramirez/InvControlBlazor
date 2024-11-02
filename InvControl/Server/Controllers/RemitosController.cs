@@ -122,7 +122,7 @@ namespace InvControl.Server.Controllers
         [HttpPost]
         public IActionResult PostRemito(Remito remito)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Remito daRe = new(connectionString);
@@ -168,7 +168,7 @@ namespace InvControl.Server.Controllers
         [HttpPut]
         public IActionResult PutRemito(Remito remito)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Remito daRe = new(connectionString);
@@ -212,7 +212,7 @@ namespace InvControl.Server.Controllers
         [HttpPut("estado")]
         public IActionResult PutRemito(RemitoState remito)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Remito daRe = new(connectionString);

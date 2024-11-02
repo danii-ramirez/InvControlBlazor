@@ -56,7 +56,7 @@ namespace InvControl.Server.Controllers
         [HttpPut]
         public IActionResult PutParametro(Parametro parametro)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_Parametro daP = new(connectionString);

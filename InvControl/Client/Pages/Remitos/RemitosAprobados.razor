@@ -76,7 +76,7 @@ else
 @code {
     List<RemitoDTO> remitos = new();
     IList<RemitoDTO> selectedRemitos = new List<RemitoDTO>();
-    RadzenDataGrid<RemitoDTO> grid = default!;
+    RadzenDataGrid<RemitoDTO> grid;
     bool showForm;
 
     protected override async Task OnInitializedAsync()

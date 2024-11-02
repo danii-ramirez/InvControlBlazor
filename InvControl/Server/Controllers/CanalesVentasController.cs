@@ -47,7 +47,7 @@ namespace InvControl.Server.Controllers
         [HttpPost]
         public IActionResult PostCanalesVentas(CanalVenta canalVenta)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_CanalVenta daC = new(connectionString);
@@ -92,7 +92,7 @@ namespace InvControl.Server.Controllers
         [HttpPut]
         public IActionResult PutCanalesVentas(CanalVenta canalVenta)
         {
-            SqlTransaction transaction = default!;
+            SqlTransaction transaction = null;
             try
             {
                 DA_CanalVenta daC = new(connectionString);

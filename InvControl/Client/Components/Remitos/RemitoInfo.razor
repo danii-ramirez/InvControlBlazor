@@ -94,7 +94,7 @@
 </RadzenStack>
 
 @code {
-    [Parameter] public RemitoDTO Remito { get; set; } = default!;
+    [Parameter] public RemitoDTO Remito { get; set; }
 
     bool isBusy;
 
@@ -105,7 +105,7 @@
                 Message.Title,
                 new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
-        if(result != null && (bool)result)
+        if (result != null && (bool)result)
         {
             await Save(RemitoEstado.Aprobado);
         }
@@ -118,7 +118,7 @@
                 Message.Title,
                 new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
-        if(result != null && (bool)result)
+        if (result != null && (bool)result)
         {
             await Save(RemitoEstado.Rechazado);
         }

@@ -90,12 +90,12 @@
 }
 
 @code {
-    [Parameter] public SKU SKU { get; set; } = default!;
-    [Parameter] public List<Marca> Marcas { get; set; } = default!;
-    [Parameter] public List<TipoContenedor> TiposContenedores { get; set; } = default!;
+    [Parameter] public SKU SKU { get; set; }
+    [Parameter] public List<Marca> Marcas { get; set; }
+    [Parameter] public List<TipoContenedor> TiposContenedores { get; set; }
 
-    EditContext editContext = default!;
-    CustomValidation customValidation = default!;
+    EditContext editContext;
+    CustomValidation customValidation;
 
     bool isBusy;
 

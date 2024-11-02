@@ -12,10 +12,10 @@
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
         <RadzenDataGrid @ref="refData" TItem="Transporte" Data="transportes" AllowSorting="true" Density="Density.Compact"
-            EmptyText="" Style="width: 50rem;">
+                        EmptyText="" Style="width: 50rem;">
             <HeaderTemplate>
                 <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
-                    Icon="add" Text="Agregar transporte" Click="HandleClickAgregar" />
+                              Icon="add" Text="Agregar transporte" Click="HandleClickAgregar" />
             </HeaderTemplate>
             <Columns>
                 <RadzenDataGridColumn Property="@nameof(Transporte.Nombre)" Title="Nombre" />
@@ -35,8 +35,8 @@
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
-                            Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
-                            @onclick:stopPropagation="true">
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
+                                      @onclick:stopPropagation="true">
                         </RadzenButton>
                     </Template>
                 </RadzenDataGridColumn>
@@ -52,7 +52,7 @@ else
 @code {
     List<Transporte> transportes = new();
     bool showForm;
-    RadzenDataGrid<Transporte> refData = default!;
+    RadzenDataGrid<Transporte> refData;
 
     protected override async Task OnInitializedAsync()
     {

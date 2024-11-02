@@ -38,13 +38,13 @@
 }
 
 @code {
-    [Parameter] public Rol Rol { get; set; } = default!;
-    [Parameter] public List<Permiso> Permisos { get; set; } = default!;
+    [Parameter] public Rol Rol { get; set; }
+    [Parameter] public List<Permiso> Permisos { get; set; }
 
-    EditContext editContext = default!;
-    CustomValidation customValidation = default!;
+    EditContext editContext;
+    CustomValidation customValidation;
 
-    RadzenDataGrid<Permiso> grid = default!;
+    RadzenDataGrid<Permiso> grid;
     List<Permiso> permisosPadre = new();
     bool isBusy;
 

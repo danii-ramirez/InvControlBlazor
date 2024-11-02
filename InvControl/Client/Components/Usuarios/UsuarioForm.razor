@@ -51,11 +51,11 @@
 }
 
 @code {
-    [Parameter] public Usuario Usuario { get; set; } = default!;
-    [Parameter] public List<Rol> Roles { get; set; } = default!;
+    [Parameter] public Usuario Usuario { get; set; } 
+    [Parameter] public List<Rol> Roles { get; set; } 
 
-    EditContext editContext = default!;
-    CustomValidation customValidation = default!;
+    EditContext editContext;
+    CustomValidation customValidation;
 
     bool isBusy;
 
