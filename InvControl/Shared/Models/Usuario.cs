@@ -33,6 +33,8 @@ namespace InvControl.Shared.Models
 
         public bool ResetPas { get; set; }
 
+        public string NombreCompleto => $"{Nombre} {Apellido}";
+
         public object Clone() => MemberwiseClone();
     }
 }

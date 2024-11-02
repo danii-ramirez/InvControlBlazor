@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_Auditoria(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable Obtener(int? idUsuario, int? idtipoEntidad)
+        public DataTable Obtener(int? idUsuario, int? idtipoEntidad, DateTime fechaDesde, DateTime fechaHasta)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))
@@ -19,6 +19,8 @@ namespace InvControl.Server.Data
                 cmd.CommandText = "prc_get_Bitacora";
                 if (idUsuario != null) cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
                 if (idtipoEntidad != null) cmd.Parameters.AddWithValue("@pIdtipoEntidad", idtipoEntidad);
+                cmd.Parameters.AddWithValue("@pFechaDesde", fechaDesde);
+                cmd.Parameters.AddWithValue("@pFechaHasta", fechaHasta);
                 SqlDataAdapter da = new(cmd);
                 da.Fill(dt);
             }

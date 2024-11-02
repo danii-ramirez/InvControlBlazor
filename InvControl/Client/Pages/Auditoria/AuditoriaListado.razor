@@ -8,9 +8,38 @@
 {
     <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Auditoria" class="rz-mb-3" />
 
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" Gap="5px" Wrap="FlexWrap.Wrap" class="rz-mb-3">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Usuario:" Component="usuario" />
+            <RadzenDropDown TValue="int?" Data="usuarios" @bind-Value="idUsuario" Placeholder="Todos" AllowClear="true"
+                            TextProperty="@nameof(Usuario.NombreCompleto)" ValueProperty="@nameof(Usuario.IdUsuario)"
+                            AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                            Style="width: 20rem;" Name="usuario" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Entidad:" Component="entidad" />
+            <RadzenDropDown Data="@(Enum.GetValues(typeof(TipoEntidad)).Cast<Enum>())" @bind-Value="tipoEntidad" Placeholder="Todos" AllowClear="true"
+                            AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                            Style="width: 15rem;" Name="entidad" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Buscar desde:" Component="fechaDesde" />
+            <RadzenDatePicker @bind-Value="@fechaDesde" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" AllowInput="false" Name="fechaDesde" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Buscar hasta:" Component="fechaDesde" />
+            <RadzenDatePicker @bind-Value="@fechaHasta" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" AllowInput="false" Name="fechaHasta" />
+        </RadzenStack>
+
+        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="search" Click="Buscar" IsBusy="isLoading" />
+    </RadzenStack>
+
     <RadzenDataGrid @ref="grid" Data="auditoria" AllowVirtualization="true" AllowSorting="true" AllowGrouping="true" Density="Density.Compact"
                     AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                    GroupPanelText="@RadzenHelper.Traducciones["GroupPanelText"]">
+                    IsLoading="isLoading" GroupPanelText="@RadzenHelper.Traducciones["GroupPanelText"]">
         <Columns>
             <RadzenDataGridColumn Property="@nameof(AuditoriaDTO.Fecha)" Title="Fecha" FormatString="{0:dd/MM/yyyy hh:mm}" TextAlign="TextAlign.Center" Width="130px"
                                   Filterable="false" Groupable="false" />
@@ -28,13 +57,28 @@ else
 
 @code {
     List<AuditoriaDTO> auditoria = new();
+    List<Usuario> usuarios;
+    int? idUsuario;
+    TipoEntidad? tipoEntidad;
+    DateTime fechaDesde, fechaHasta;
+
     RadzenDataGrid<AuditoriaDTO> grid;
-    bool showForm;
+    bool showForm, isLoading;
 
     protected override async Task OnInitializedAsync()
     {
         await UsuariosService.GetValidarAcceso();
-        auditoria = await UsuariosService.GetAuditoria(null, null);
+        usuarios = (await UsuariosService.GetUsuarios()).OrderBy(x => x.NombreCompleto).ToList();
+        fechaDesde = DateTime.Today.AddDays(-7);
+        fechaHasta = DateTime.Today;
+
         showForm = true;
+    }
+
+    private async Task Buscar()
+    {
+        isLoading = true;
+        auditoria = await UsuariosService.GetAuditoria(idUsuario, (int?)tipoEntidad, fechaDesde, fechaHasta);
+        isLoading = false;
     }
 }

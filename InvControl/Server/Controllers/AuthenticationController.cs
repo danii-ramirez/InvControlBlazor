@@ -1,5 +1,6 @@
 ﻿using InvControl.Server.Data;
 using InvControl.Server.Helpers;
+using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
