@@ -10,9 +10,9 @@
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Usuarios" />
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Usuarios" class="rz-mb-3" />
 
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
         <RadzenDataGrid @ref="refData" TItem="Usuario" Data="usuarios" Density="Density.Compact" AllowSorting="true"
                         AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                         FilterMode="FilterMode.Simple" Responsive="true" EmptyText="" Style="width: 75rem;">
@@ -145,11 +145,11 @@ else
     private async Task HandleClickResetPass(Usuario usuario)
     {
         var res = await DialogService.Confirm(
-            $"Desea restablecer la contraseña de {usuario.User.ToUpper()}?",
+            $"¿Desea restablecer la contraseña de {usuario.User.ToUpper()}?",
             Message.Title,
             new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
-        if ((bool)res)
+        if (res != null && (bool)res)
         {
             RadzenCustom.OpenBusy("Restableciendo contraseña");
             var result = await UsuariosService.GetResetPassword(usuario.IdUsuario);
@@ -169,11 +169,11 @@ else
     private async Task HandleClickBorrar(Usuario usuario)
     {
         var res = await DialogService.Confirm(
-            $"Desea borrar el usuario {usuario.User.ToUpper()}?",
+            $"¿Desea borrar el usuario {usuario.User.ToUpper()}?",
             Message.Title,
             new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
-        if ((bool)res)
+        if (res != null && (bool)res)
         {
 
         }

@@ -10,7 +10,7 @@
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Remitos aprobados" />
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Remitos aprobados" class="rz-mb-3" />
 
     <RadzenDataGrid @ref="grid" TItem="RemitoDTO" Data="remitos" ExpandMode="DataGridExpandMode.Single"
                     RowRender="@RowRender" SelectionMode="DataGridSelectionMode.Multiple" @bind-Value="selectedRemitos"

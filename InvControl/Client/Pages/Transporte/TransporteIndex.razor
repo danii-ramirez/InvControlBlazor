@@ -8,9 +8,9 @@
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Transportes" />
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Transportes" class="rz-mb-3" />
 
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
         <RadzenDataGrid @ref="refData" TItem="Transporte" Data="transportes" AllowSorting="true" Density="Density.Compact"
                         EmptyText="" Style="width: 50rem;">
             <HeaderTemplate>

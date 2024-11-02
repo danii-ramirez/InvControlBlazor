@@ -8,11 +8,10 @@
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Roles" />
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Roles" class="rz-mb-3" />
 
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-5">
-        <RadzenDataGrid @ref="refData" TItem="Rol" Data="roles" AllowSorting="true" Density="Density.Compact" EmptyText=""
-                        Style="width: 50rem;">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+        <RadzenDataGrid @ref="refData" TItem="Rol" Data="roles" AllowSorting="true" Density="Density.Compact" EmptyText="" Style="width: 50rem;">
             <HeaderTemplate>
                 <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
                               Icon="add" Text="Agregar rol" Click="HandleClickAgregarRol" />
@@ -22,8 +21,7 @@
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
-                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditarRol(context))"
-                                      @onclick:stopPropagation="true">
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditarRol(context))" @onclick:stopPropagation="true">
                         </RadzenButton>
                     </Template>
                 </RadzenDataGridColumn>

@@ -101,7 +101,7 @@
     private async Task HandleClickAprobar()
     {
         var result = await DialogService.Confirm(
-                $"Confirma que desea aprobar el remito {Remito.NumeroRemito}?",
+                $"¿Confirma que desea aprobar el remito {Remito.NumeroRemito}?",
                 Message.Title,
                 new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
@@ -114,7 +114,7 @@
     private async Task HandleClickRechazar()
     {
         var result = await DialogService.Confirm(
-                $"Confirma que desea rechazar el remito {Remito.NumeroRemito}?",
+                $"¿Confirma que desea rechazar el remito {Remito.NumeroRemito}?",
                 Message.Title,
                 new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
