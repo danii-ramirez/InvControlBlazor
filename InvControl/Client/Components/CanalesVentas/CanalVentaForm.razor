@@ -10,8 +10,7 @@
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
             <RadzenLabel Text="Código:" Component="codigo" />
-            <RadzenNumeric @bind-Value="CanalVenta.Codigo" TextAlign="TextAlign.Right" Name="codigo" Min="0"
-                           ShowUpDown="false" Disabled="isBusy" />
+            <RadzenNumeric @bind-Value="CanalVenta.Codigo" TextAlign="TextAlign.Right" Name="codigo" Min="0" Max="999999" ShowUpDown="false" Disabled="isBusy" />
             <ValidationMessage For="@(() => CanalVenta.Codigo)" />
         </RadzenStack>
 
@@ -28,10 +27,8 @@
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar"
-                          Disabled="isBusy" />
-            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar"
-                          IsBusy="isBusy" BusyText="Guardando" />
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" Disabled="isBusy" />
+            <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" IsBusy="isBusy" BusyText="Guardando" />
         </RadzenStack>
     </EditForm>
 }

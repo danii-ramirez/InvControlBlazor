@@ -8,8 +8,9 @@
 {
     <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Auditoria" class="rz-mb-3" />
 
-    <RadzenDataGrid @ref="grid" Data="auditoria" AllowVirtualization="true" AllowSorting="true" AllowGrouping="true"
-                    AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Density="Density.Compact">
+    <RadzenDataGrid @ref="grid" Data="auditoria" AllowVirtualization="true" AllowSorting="true" AllowGrouping="true" Density="Density.Compact"
+                    AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                    GroupPanelText="@RadzenHelper.Traducciones["GroupPanelText"]">
         <Columns>
             <RadzenDataGridColumn Property="@nameof(AuditoriaDTO.Fecha)" Title="Fecha" FormatString="{0:dd/MM/yyyy hh:mm}" TextAlign="TextAlign.Center" Width="130px"
                                   Filterable="false" Groupable="false" />
