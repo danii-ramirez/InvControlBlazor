@@ -2,6 +2,7 @@
 using InvControl.Server.Data;
 using InvControl.Server.Helpers;
 using InvControl.Shared.DTO;
+using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;

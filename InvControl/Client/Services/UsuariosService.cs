@@ -128,16 +128,20 @@ namespace InvControl.Client.Services
             }
         }
 
-        public async ValueTask<List<AuditoriaDTO>> GetAuditoria(int? idUsuario, int? idTipoEntidad)
+        public async ValueTask<List<AuditoriaDTO>> GetAuditoria(int? idUsuario, int? idTipoEntidad, DateTime fechaDesde, DateTime fechaHasta)
         {
             string uri = $"{BASE_REQUEST_URI}/auditoria";
 
-            Dictionary<string, object> query = new();
+            Dictionary<string, object> query = new()
+            {
+                ["fechaDesde"] = fechaDesde.ToString("dd/MM/yyyy hh:mm:ss"),
+                ["fechaHasta"] = fechaHasta.ToString("dd/MM/yyyy hh:mm:ss")
+            };
             if (idUsuario != null) query["idUsuario"] = idUsuario;
             if (idTipoEntidad != null) query["idTipoEntidad"] = idTipoEntidad;
 
             if (query.Any())
-                uri = "?" + string.Join("&", query.Select(x => $"{x.Key}={x.Value}"));
+                uri += "?" + string.Join("&", query.Select(x => $"{x.Key}={x.Value}"));
 
             return (await _httpClient.GetFromJsonAsync<List<AuditoriaDTO>>(uri))!;
         }

@@ -287,10 +287,10 @@ namespace InvControl.Server.Controllers
         }
 
         [HttpGet("auditoria")]
-        public IActionResult GetAuditoria(int? idUsuario, int? idTipoEntidad)
+        public IActionResult GetAuditoria(int? idUsuario, int? idTipoEntidad, DateTime fechaDesde, DateTime fechaHasta)
         {
             List<AuditoriaDTO> auditoria = new();
-            using (DataTable dt = new DA_Auditoria(connectionString).Obtener(idUsuario, idTipoEntidad))
+            using (DataTable dt = new DA_Auditoria(connectionString).Obtener(idUsuario, idTipoEntidad, fechaDesde, fechaHasta.AddHours(23).AddMinutes(59).AddSeconds(59)))
             {
                 foreach (DataRow dr in dt.Rows)
                 {
