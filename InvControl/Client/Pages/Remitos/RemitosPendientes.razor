@@ -8,6 +8,7 @@
 @inject ChoferesService ChoferesService
 @inject DialogService DialogService
 @inject RadzenCustom RadzenCustom
+@inject NotificationService NotificationService
 
 @if (showForm)
 {
@@ -60,10 +61,14 @@ else
         if (res != null && (bool)res)
         {
             RadzenCustom.OpenBusyWithLoader("Borrando...");
-            await RemitosService.DeleteRemito(remito.IdRemito);
+            var result = await RemitosService.DeleteRemito(remito.IdRemito);
             RadzenCustom.CloseDialog();
-            remitos.Remove(remito);
-            await refRemitoListado.ReloadGrid();
+            if (result)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "El remito se borro correctamente");
+                remitos.Remove(remito);
+                await refRemitoListado.ReloadGrid();
+            }
         }
     }
 }

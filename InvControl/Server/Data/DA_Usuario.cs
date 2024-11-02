@@ -119,6 +119,7 @@ namespace InvControl.Server.Data
         {
             var cnn = transaction.Connection;
             var cmd = cnn.CreateCommand();
+            cmd.Transaction = transaction;
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.CommandText = "prc_del_Usuario";
             cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);

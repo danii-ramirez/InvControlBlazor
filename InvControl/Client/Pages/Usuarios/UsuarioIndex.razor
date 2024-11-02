@@ -175,7 +175,19 @@ else
 
         if (res != null && (bool)res)
         {
-
+            RadzenCustom.OpenBusyWithLoader("Borrando...");
+            var result = await UsuariosService.DeleteUsuario(usuario.IdUsuario);
+            RadzenCustom.CloseDialog();
+            if (result)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "El usuario se borro correctamente");
+                usuarios.Remove(usuario);
+                await refData.Reload();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Info, "No es posible eliminar el usuario");
+            }
         }
     }
 }

@@ -1,9 +1,12 @@
-﻿<RadzenDataGrid @ref="grid" TItem="RemitoDTO" Data="Remitos" RowDoubleClick="(args => SelectedRemito.InvokeAsync(args.Data))"
-                AllowSorting="true" Density="Density.Compact" EmptyText="">
+﻿<RadzenDataGrid @ref="grid" TItem="RemitoDTO" Data="Remitos"
+    RowDoubleClick="(args => SelectedRemito.InvokeAsync(args.Data))" AllowSorting="true" Density="Density.Compact"
+    EmptyText="">
     <Columns>
-        <RadzenDataGridColumn Property="@nameof(RemitoDTO.FechaIngreso)" Title="Fecha ingreso" FormatString="{0:dd/MM/yyyy hh:mm}" TextAlign="TextAlign.Center" Width="130px" />
+        <RadzenDataGridColumn Property="@nameof(RemitoDTO.FechaIngreso)" Title="Fecha ingreso"
+            FormatString="{0:dd/MM/yyyy hh:mm}" TextAlign="TextAlign.Center" Width="130px" />
         <RadzenDataGridColumn Property="@nameof(RemitoDTO.NumeroRemito)" Title="Número de remito" Width="150px" />
-        <RadzenDataGridColumn Property="@nameof(RemitoDTO.FechaRemito)" Title="Fecha remito" FormatString="{0:dd/MM/yyyy}" TextAlign="TextAlign.Center" Width="115px" />
+        <RadzenDataGridColumn Property="@nameof(RemitoDTO.FechaRemito)" Title="Fecha remito"
+            FormatString="{0:dd/MM/yyyy}" TextAlign="TextAlign.Center" Width="115px" />
         <RadzenDataGridColumn Title="Transporte" Width="190px">
             <Template>
                 @if (context.IdTransporte != null)
@@ -27,14 +30,16 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Sortable="false" TextAlign="TextAlign.Center" Width="45px">
             <Template>
-                <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="check" Variant="Variant.Flat" Shade="Shade.Lighter"
-                              Size="ButtonSize.Small" Click="(() => SelectedRemito.InvokeAsync(context))" @onclick:stopPropagation="true" />
+                <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="check" Variant="Variant.Flat"
+                    Shade="Shade.Lighter" Size="ButtonSize.Small" Click="(() => SelectedRemito.InvokeAsync(context))"
+                    @onclick:stopPropagation="true" title="Seleccionar" />
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Sortable="false" TextAlign="TextAlign.Center" Width="45px" Visible="PermiteBorrar">
             <Template>
-                <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="check" Variant="Variant.Flat" Shade="Shade.Lighter"
-                              Size="ButtonSize.Small" Click="(() => DeleteRemito.InvokeAsync(context))" @onclick:stopPropagation="true" />
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat"
+                    Shade="Shade.Lighter" Size="ButtonSize.Small" Click="(() => DeleteRemito.InvokeAsync(context))"
+                    @onclick:stopPropagation="true" title="Borrar" />
             </Template>
         </RadzenDataGridColumn>
     </Columns>
@@ -45,7 +50,7 @@
     [Parameter] public List<RemitoDTO> Remitos { get; set; }
     [Parameter] public bool PermiteBorrar { get; set; }
     [Parameter] public EventCallback<RemitoDTO> SelectedRemito { get; set; }
-        [Parameter] public EventCallback<RemitoDTO> DeleteRemito { get; set; }
+    [Parameter] public EventCallback<RemitoDTO> DeleteRemito { get; set; }
 
     RadzenDataGrid<RemitoDTO> grid;
 
