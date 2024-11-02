@@ -1,0 +1,35 @@
+@page "/remitos/rechazados"
+@using InvControl.Client.Components.Remitos
+@attribute [Authorize]
+
+@inject UsuariosService UsuariosService
+@inject RemitosService RemitosService
+@inject NavigationManager NavigationManager
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Remitos rechazados" class="rz-mb-3" />
+
+    <RemitosListado Remitos="remitos" SelectedRemito="SelectedRemito" />
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<RemitoDTO> remitos = new();
+    bool showForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UsuariosService.GetValidarAcceso();
+        remitos = await RemitosService.GetRemitosDTO(null, null, (int)RemitoEstado.Rechazado);
+        showForm = true;
+    }
+
+    private void SelectedRemito(RemitoDTO remito)
+    {
+        NavigationManager.NavigateTo($"/remitos/ingreso/{remito.IdRemito}");
+    }
+}

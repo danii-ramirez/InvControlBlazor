@@ -1,0 +1,44 @@
+﻿@page "/remitos/pendientes"
+@using InvControl.Client.Components.Remitos
+@attribute [Authorize]
+
+@inject UsuariosService UsuariosService
+@inject RemitosService RemitosService
+@inject DialogService DialogService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Remitos pendientes" class="rz-mb-3" />
+
+    <RemitosListado @ref="refRemitoListado" Remitos="remitos" SelectedRemito="SelectedRemito" />
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<RemitoDTO> remitos = new();
+    bool showForm;
+    RemitosListado refRemitoListado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UsuariosService.GetValidarAcceso();
+        remitos = await RemitosService.GetRemitosDTO(null, null, (int)RemitoEstado.Pendiente);
+        showForm = true;
+    }
+
+    private async Task SelectedRemito(RemitoDTO remito)
+    {
+        var res = await DialogService.OpenAsync<RemitoInfo>(
+                $"Remito nro. {remito.NumeroRemito}",
+                new() { { "Remito", remito } });
+
+        if (res != null && (bool)res)
+        {
+            remitos.Remove(remito);
+            await refRemitoListado.ReloadGrid();
+        }
+    }
+}
