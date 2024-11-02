@@ -148,7 +148,7 @@ namespace InvControl.Server.Controllers
                             daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, (int)d.Codigo!, d.NombreSku, (int)d.Cantidad!, transaction);
                         }
 
-                        daAu.Insertar($"Se ingresó el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
+                        daAu.Insertar($"Se ingresï¿½ el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
                             (int)TipoOperacion.Creacion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
                         transaction.Commit();
@@ -185,7 +185,7 @@ namespace InvControl.Server.Controllers
 
                     daRe.ActualizarRemito(remito.IdRemito, remito.IdEstado, remito.IdTransporte, remito.IdChofer, transaction);
 
-                    string accion = remito.IdEstado == (int)RemitoEstado.Aprobado ? "aprobó" : "rechazó";
+                    string accion = remito.IdEstado == (int)RemitoEstado.Aprobado ? "aprobï¿½" : "rechazï¿½";
                     daAu.Insertar($"Se {accion} el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
                             (int)TipoOperacion.Edicion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
@@ -229,7 +229,7 @@ namespace InvControl.Server.Controllers
                             daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, (int)d.Codigo!, d.NombreSku, (int)d.Cantidad!, transaction);
                         }
 
-                        daAu.Insertar($"Se editó el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
+                        daAu.Insertar($"Se editï¿½ el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
                             (int)TipoOperacion.Edicion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
                         transaction.Commit();
@@ -240,6 +240,43 @@ namespace InvControl.Server.Controllers
                 }
 
                 return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpDelete("{idRemito}")]
+        public IActionResult DeleteRemito(int idRemito)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_Remito daRe = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                string numeroRemito = (string)daRe.ObtenerRemitos(idRemito, null, null).Rows[0]["Numero"];
+
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
+
+                    daRe.EliminarRemitoDetalle(idRemito, transaction);
+                    daRe.EliminarRemito(idRemito, transaction);
+
+                    daAu.Insertar($"Se eliminÃ³ el remito {numeroRemito}", DateTime.Now, (int)TipoEntidad.Remito,
+                        (int)TipoOperacion.Borrado, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                    transaction.Commit();
+                    cnn.Close();
+                }
+
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -282,7 +319,7 @@ namespace InvControl.Server.Controllers
 
                             daS.InsertarStock(rd.IdSku, unidades, fecha, transaction);
 
-                            daAu.Insertar($"Se procesó el remito {r.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
+                            daAu.Insertar($"Se procesï¿½ el remito {r.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
                                 (int)TipoOperacion.Edicion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
                         }
                     }

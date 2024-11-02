@@ -31,13 +31,21 @@
                               Size="ButtonSize.Small" Click="(() => SelectedRemito.InvokeAsync(context))" @onclick:stopPropagation="true" />
             </Template>
         </RadzenDataGridColumn>
+        <RadzenDataGridColumn Sortable="false" TextAlign="TextAlign.Center" Width="45px" Visible="PermiteBorrar">
+            <Template>
+                <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="check" Variant="Variant.Flat" Shade="Shade.Lighter"
+                              Size="ButtonSize.Small" Click="(() => DeleteRemito.InvokeAsync(context))" @onclick:stopPropagation="true" />
+            </Template>
+        </RadzenDataGridColumn>
     </Columns>
 </RadzenDataGrid>
 
 
 @code {
     [Parameter] public List<RemitoDTO> Remitos { get; set; }
+    [Parameter] public bool PermiteBorrar { get; set; }
     [Parameter] public EventCallback<RemitoDTO> SelectedRemito { get; set; }
+        [Parameter] public EventCallback<RemitoDTO> DeleteRemito { get; set; }
 
     RadzenDataGrid<RemitoDTO> grid;
 
