@@ -3,7 +3,7 @@
     <Columns>
         <RadzenDataGridColumn Property="@nameof(RemitoDTO.FechaIngreso)" Title="Fecha ingreso" FormatString="{0:dd/MM/yyyy hh:mm}" TextAlign="TextAlign.Center" Width="130px" />
         <RadzenDataGridColumn Property="@nameof(RemitoDTO.NumeroRemito)" Title="Número de remito" Width="150px" />
-        <RadzenDataGridColumn Property="@nameof(RemitoDTO.Fecha)" Title="Fecha remito" FormatString="{0:dd/MM/yyyy}" TextAlign="TextAlign.Center" Width="115px" />
+        <RadzenDataGridColumn Property="@nameof(RemitoDTO.FechaRemito)" Title="Fecha remito" FormatString="{0:dd/MM/yyyy}" TextAlign="TextAlign.Center" Width="115px" />
         <RadzenDataGridColumn Title="Transporte" Width="190px">
             <Template>
                 @if (context.IdTransporte != null)

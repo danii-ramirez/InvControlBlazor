@@ -51,21 +51,21 @@ namespace InvControl.Client.Services
                 return new(false);
         }
 
-        public async ValueTask<Response> PutRemito(Remito remito)
+        public async ValueTask<bool> PutRemitoCabecera(Remito remito)
         {
-            var res = await _httpClient.PutAsJsonAsync(BASE_REQUEST_URI, remito);
+            var res = await _httpClient.PutAsJsonAsync($"{BASE_REQUEST_URI}/cabecera", remito);
+            return res.StatusCode == HttpStatusCode.OK;
+        }
+
+        public async ValueTask<Response> PutRemitoDetalle(Remito remito)
+        {
+            var res = await _httpClient.PutAsJsonAsync($"{BASE_REQUEST_URI}/detalle", remito);
             if (res.StatusCode == HttpStatusCode.OK)
                 return new(true);
             else if (res.StatusCode == HttpStatusCode.BadRequest)
                 return new(false, (await res.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>())!);
             else
                 return new(false);
-        }
-
-        public async ValueTask<bool> PutRemitoEstado(RemitoState remito)
-        {
-            var res = await _httpClient.PutAsJsonAsync($"{BASE_REQUEST_URI}/estado", remito);
-            return res.StatusCode == HttpStatusCode.OK;
         }
 
         public async ValueTask<bool> PutRemitosProcesar(List<RemitoDTO> remitos)

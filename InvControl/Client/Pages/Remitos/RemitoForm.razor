@@ -177,7 +177,7 @@ else
                     if (IdRemito == null)
                         res = await RemitosService.PostRemito(Remito);
                     else
-                        res = await RemitosService.PutRemito(Remito);
+                        res = await RemitosService.PutRemitoDetalle(Remito);
 
                     RadzenCustom.CloseDialog();
 

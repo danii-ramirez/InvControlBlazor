@@ -1,4 +1,5 @@
 using InvControl.Server.Data;
+using InvControl.Server.Helpers;
 using InvControl.Shared.DTO;
 using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
@@ -36,7 +37,7 @@ namespace InvControl.Server.Controllers
                         IdRemito = (int)drR["IdRemito"],
                         NumeroRemito = (string)drR["Numero"],
                         FechaIngreso = (DateTime)drR["FechaIngreso"],
-                        Fecha = (DateTime)drR["Fecha"],
+                        FechaRemito = (DateTime)drR["Fecha"],
                         IdEstado = (int)drR["IdEstado"],
                         DescripcionEstado = (string)drR["DescripcionEstado"],
                         IdUsuario = (int)drR["IdUsuario"],
@@ -147,6 +148,9 @@ namespace InvControl.Server.Controllers
                             daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, (int)d.Codigo!, d.NombreSku, (int)d.Cantidad!, transaction);
                         }
 
+                        daAu.Insertar($"Se ingresó el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
+                            (int)TipoOperacion.Creacion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
                         transaction.Commit();
                         cnn.Close();
                     }
@@ -165,8 +169,43 @@ namespace InvControl.Server.Controllers
             }
         }
 
-        [HttpPut]
-        public IActionResult PutRemito(Remito remito)
+        [HttpPut("cabecera")]
+        public IActionResult PutRemitoCabecera(Remito remito)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_Remito daRe = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
+
+                    daRe.ActualizarRemito(remito.IdRemito, remito.IdEstado, remito.IdTransporte, remito.IdChofer, transaction);
+
+                    string accion = remito.IdEstado == (int)RemitoEstado.Aprobado ? "aprobó" : "rechazó";
+                    daAu.Insertar($"Se {accion} el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
+                            (int)TipoOperacion.Edicion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                    transaction.Commit();
+                    cnn.Close();
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpPut("detalle")]
+        public IActionResult PutRemitoDetalle(Remito remito)
         {
             SqlTransaction transaction = null;
             try
@@ -185,11 +224,13 @@ namespace InvControl.Server.Controllers
                         daRe.ActualziarRemitoEstado(remito.IdRemito, (int)RemitoEstado.Pendiente, transaction);
 
                         daRe.EliminarRemitoDetalle(remito.IdRemito, transaction);
-
                         foreach (var d in remito.Detalle)
                         {
                             daRe.InsertarRemitoDetalle(remito.IdRemito, d.IdSku, (int)d.Codigo!, d.NombreSku, (int)d.Cantidad!, transaction);
                         }
+
+                        daAu.Insertar($"Se editó el remito {remito.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
+                            (int)TipoOperacion.Edicion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
                         transaction.Commit();
                         cnn.Close();
@@ -199,37 +240,6 @@ namespace InvControl.Server.Controllers
                 }
 
                 return BadRequest(ModelState);
-            }
-            catch (Exception ex)
-            {
-                if (transaction != null && transaction.Connection != null)
-                    transaction.Rollback();
-                _logger.LogError(ex, "{msg}", ex.Message);
-                return StatusCode(500, ex);
-            }
-        }
-
-        [HttpPut("estado")]
-        public IActionResult PutRemito(RemitoState remito)
-        {
-            SqlTransaction transaction = null;
-            try
-            {
-                DA_Remito daRe = new(connectionString);
-                DA_Auditoria daAu = new(connectionString);
-
-                using (SqlConnection cnn = new(connectionString))
-                {
-                    cnn.Open();
-                    transaction = cnn.BeginTransaction();
-
-                    daRe.ActualziarRemitoEstado(remito.IdRemito, remito.IdEstado, transaction);
-
-                    transaction.Commit();
-                    cnn.Close();
-                }
-
-                return Ok();
             }
             catch (Exception ex)
             {
@@ -271,6 +281,9 @@ namespace InvControl.Server.Controllers
                                 $"Remito nro.: {r.NumeroRemito}", fecha, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
                             daS.InsertarStock(rd.IdSku, unidades, fecha, transaction);
+
+                            daAu.Insertar($"Se procesó el remito {r.NumeroRemito.Trim()}", DateTime.Now, (int)TipoEntidad.Remito,
+                                (int)TipoOperacion.Edicion, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
                         }
                     }
 

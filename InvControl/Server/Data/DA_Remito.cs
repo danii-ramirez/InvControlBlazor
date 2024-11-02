@@ -1,4 +1,3 @@
-using InvControl.Client.Helpers;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -66,6 +65,20 @@ namespace InvControl.Server.Data
             cmd.ExecuteNonQuery();
             result = (int)returnValue.Value;
             return result;
+        }
+
+        public void ActualizarRemito(int idRemito, int idEstado, int? idTransporte, int? idChofer, SqlTransaction transaction)
+        {
+            var cnn = transaction.Connection;
+            var cmd = cnn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_upd_Remitos";
+            cmd.Parameters.AddWithValue("@pIdRemito", idRemito);
+            cmd.Parameters.AddWithValue("@pIdEstado", idEstado);
+            if (idTransporte != null) cmd.Parameters.AddWithValue("@pIdTransporte", idTransporte);
+            if (idChofer != null) cmd.Parameters.AddWithValue("@pIdChofer", idChofer);
+            cmd.ExecuteNonQuery();
         }
 
         public void InsertarRemitoDetalle(int idRemito, int idSku, int codigoSku, string nombreSku, int cantidad, SqlTransaction transaction)

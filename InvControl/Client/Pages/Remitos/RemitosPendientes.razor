@@ -4,6 +4,8 @@
 
 @inject UsuariosService UsuariosService
 @inject RemitosService RemitosService
+@inject TransportesService TransportesService
+@inject ChoferesService ChoferesService
 @inject DialogService DialogService
 
 @if (showForm)
@@ -18,7 +20,9 @@ else
 }
 
 @code {
-    List<RemitoDTO> remitos = new();
+    List<RemitoDTO> remitos;
+    List<Transporte> transportes;
+    List<Chofer> choferes;
     bool showForm;
     RemitosListado refRemitoListado;
 
@@ -26,6 +30,8 @@ else
     {
         await UsuariosService.GetValidarAcceso();
         remitos = await RemitosService.GetRemitosDTO(null, null, (int)RemitoEstado.Pendiente);
+        transportes = await TransportesService.GetTransportes();
+        choferes = await ChoferesService.GetChoferes();
         showForm = true;
     }
 
@@ -33,7 +39,7 @@ else
     {
         var res = await DialogService.OpenAsync<RemitoInfo>(
                 $"Remito nro. {remito.NumeroRemito}",
-                new() { { "Remito", remito } });
+                new() { { "Remito", remito }, { "Transportes", transportes }, { "Choferes", choferes } });
 
         if (res != null && (bool)res)
         {

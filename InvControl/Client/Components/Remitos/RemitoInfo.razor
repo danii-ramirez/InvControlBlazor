@@ -36,42 +36,26 @@
         <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
             <RadzenLabel Text="Fecha de remito:" />
             <RadzenText TextStyle="TextStyle.Body1">
-                <strong>@Remito.Fecha.ToString("dd/MM/yyyy")</strong>
+                <strong>@Remito.FechaRemito.Value.ToString("dd/MM/yyyy")</strong>
             </RadzenText>
         </RadzenStack>
     </RadzenColumn>
 </RadzenRow>
 
-<RadzenRow Gap="5px" RowGap="5px" class="rz-mb-1">
+<RadzenRow Gap="5px" RowGap="5px" class="rz-mb-3">
     <RadzenColumn Size="12" SizeMD="6">
-        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
-            <RadzenLabel Text="Transporte:" />
-            <RadzenText TextStyle="TextStyle.Body1">
-                @if (Remito.IdTransporte != null)
-                {
-                    <strong>@Remito.NombreTransporte - @Remito.Patente</strong>
-                }
-                else
-                {
-                    <strong>Sin transporte</strong>
-                }
-            </RadzenText>
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Transporte:" Component="transporte" />
+            <RadzenDropDown @bind-Value="Remito.IdTransporte" Data="Transportes" Name="transporte" AllowClear="true" Placeholder="Sin seleccionar"
+                            TextProperty="@nameof(Transporte.NombrePatente)" ValueProperty="@nameof(Transporte.IdTransporte)" Disabled="isBusy" />
         </RadzenStack>
     </RadzenColumn>
 
     <RadzenColumn Size="12" SizeMD="6">
-        <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
-            <RadzenLabel Text="Chofer:" />
-            <RadzenText TextStyle="TextStyle.Body1">
-                @if (Remito.IdChofer != null)
-                {
-                    <strong>@Remito.NombreChofer @Remito.ApellidoChofer</strong>
-                }
-                else
-                {
-                    <strong>Sin chofer</strong>
-                }
-            </RadzenText>
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Chofer:" Component="chofer" />
+            <RadzenDropDown @bind-Value="Remito.IdChofer" Data="Choferes" Name="chofer" AllowClear="true" Placeholder="Sin seleccionar"
+                            TextProperty="@nameof(Chofer.NombreCompleto)" ValueProperty="@nameof(Chofer.IdChofer)" Disabled="isBusy" />
         </RadzenStack>
     </RadzenColumn>
 </RadzenRow>
@@ -95,6 +79,8 @@
 
 @code {
     [Parameter] public RemitoDTO Remito { get; set; }
+    [Parameter] public List<Transporte> Transportes { get; set; }
+    [Parameter] public List<Chofer> Choferes { get; set; }
 
     bool isBusy;
 
@@ -127,10 +113,8 @@
     private async Task Save(RemitoEstado remitoEstado)
     {
         isBusy = true;
-        RemitoState remitoState = new();
-        remitoState.IdRemito = Remito.IdRemito;
-        remitoState.IdEstado = (int)remitoEstado;
-        var res = await RemitosService.PutRemitoEstado(remitoState);
+        Remito.IdEstado = (int)remitoEstado;
+        var res = await RemitosService.PutRemitoCabecera(Remito);
         if (res)
         {
             NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
