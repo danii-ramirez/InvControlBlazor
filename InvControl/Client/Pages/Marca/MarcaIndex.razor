@@ -51,15 +51,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // if ((await UsuariosService.GetValidarAcceso()).Item1)
-        // {
-        //     marcas = await SKUService.GetMarcas();
-        //     showForm = true;
-        // }
-
-
-        marcas = await SKUService.GetMarcas();
-        showForm = true;
+        if ((await UsuariosService.GetValidarAcceso()).Item1)
+        {
+            marcas = await SKUService.GetMarcas();
+            showForm = true;
+        }
     }
 
     private async Task HandleClickAdd()
