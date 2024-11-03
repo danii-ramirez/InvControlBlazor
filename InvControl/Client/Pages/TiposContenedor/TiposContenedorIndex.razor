@@ -1,5 +1,114 @@
-﻿@page "/tipocontenedor"
+﻿@page "/tiposcontenedores"
+@using InvControl.Client.Components.TiposContenedores
+@attribute [Authorize]
+
+@inject UsuariosService UsuariosService
+@inject SKUService SKUService
+@inject DialogService DialogService
+@inject RadzenCustom RadzenCustom
+@inject NotificationService NotificationService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Contenedores" class="rz-mb-3" />
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+        <RadzenDataGrid @ref="grid" TItem="TipoContenedor" Data="tipos" AllowSorting="true" Density="Density.Compact"
+                        EmptyText="" Style="width: 50rem;">
+            <HeaderTemplate>
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                              Icon="add" Text="Agregar contenedor" Click="HandleClickAdd" />
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(TipoContenedor.Nombre)" Title="Descripción" />
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                    <Template>
+                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickEdit(context))" @onclick:stopPropagation="true" title="Editar">
+                        </RadzenButton>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                    <Template>
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickDelete(context))" @onclick:stopPropagation="true" title="Borrar">
+                        </RadzenButton>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+}
+else
+{
+    <Loader />
+}
 
 @code {
+    List<TipoContenedor> tipos;
+    bool showForm;
+    RadzenDataGrid<TipoContenedor> grid;
 
+    protected override async Task OnInitializedAsync()
+    {
+        if ((await UsuariosService.GetValidarAcceso()).Item1)
+        {
+            tipos = await SKUService.GetTiposContenedores();
+            showForm = true;
+        }
+    }
+
+    private async Task HandleClickAdd()
+    {
+        TipoContenedor tipoContenedor = new();
+        var res = await DialogService.OpenAsync<TipoContenedorForm>(
+            "Formulario de contenedores",
+            new() { { "TipoContenedor", tipoContenedor } },
+            new() { ShowClose = false, CloseDialogOnEsc = false });
+
+        if (res != null)
+        {
+            tipos.Add(res);
+            await grid.Reload();
+        }
+    }
+
+    private async Task HandleClickEdit(TipoContenedor tipoContenedor)
+    {
+        var res = await DialogService.OpenAsync<TipoContenedorForm>(
+            "Formulario de contenedores",
+            new() { { "TipoContenedor", tipoContenedor.Clone() } },
+            new() { ShowClose = false, CloseDialogOnEsc = false });
+
+        if (res != null)
+        {
+            var editTipoContenedor = (TipoContenedor)res;
+            tipoContenedor.Nombre = editTipoContenedor.Nombre;
+        }
+    }
+
+    private async Task HandleClickDelete(TipoContenedor tipoContenedor)
+    {
+        var res = await DialogService.Confirm(
+            $"¿Desea borrar el contenedor {tipoContenedor.Nombre.ToUpper()}?",
+            Message.Title,
+            new() { OkButtonText = Message.OkButtonText, CancelButtonText = Message.CancelButtonText });
+
+        if (res != null && (bool)res)
+        {
+            RadzenCustom.OpenBusyWithLoader("Borrando...");
+            var response = await SKUService.DeleteTipoContenedor(tipoContenedor.IdTipoContenedor);
+            RadzenCustom.CloseDialog();
+            if (response.Success)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "El contenedor se borro correctamente");
+                tipos.Remove(tipoContenedor);
+                await grid.Reload();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Info, response.Message);
+            }
+        }
+    }
 }

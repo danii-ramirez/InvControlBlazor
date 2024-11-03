@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_SKU(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerSKU(int? idSku, int? codigo, string nombre, bool? activo, int? idMarca, SqlTransaction transaction = null)
+        public DataTable ObtenerSKU(int? idSku, int? codigo, string nombre, bool? activo, int? idMarca, int? idTipoContenedor, SqlTransaction transaction = null)
         {
             DataTable dt = new();
             SqlConnection cnn;
@@ -32,6 +32,7 @@ namespace InvControl.Server.Data
             if (nombre != null) cmd.Parameters.AddWithValue("@pNombre", nombre);
             if (activo != null) cmd.Parameters.AddWithValue("@pActivo", activo);
             if (idMarca != null) cmd.Parameters.AddWithValue("@pIdMarca", idMarca);
+            if (idTipoContenedor != null) cmd.Parameters.AddWithValue("@pIdTipoContenedor", idTipoContenedor);
             SqlDataAdapter da = new(cmd);
             da.Fill(dt);
             return dt;

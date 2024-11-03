@@ -21,7 +21,10 @@ namespace InvControl.Shared.Helpers
         [Display(Description = "Remito")]
         Remito = 8,
         [Display(Description = "Marca")]
-        Marca = 9
+        Marca = 9,
+        [Display(Description = "Tipo de contenedor")]
+        TipoContenedor = 10
+
     }
 
     public enum RemitoEstado
