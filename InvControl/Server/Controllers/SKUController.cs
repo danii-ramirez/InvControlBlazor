@@ -157,10 +157,10 @@ namespace InvControl.Server.Controllers
         }
 
         [HttpGet("marcas")]
-        public IActionResult GetMarcas()
+        public IActionResult GetMarcas(string descripcion)
         {
             List<Marca> marcas = new();
-            using (DataTable dt = new DA_SKU(connectionString).ObtenerMarcas())
+            using (DataTable dt = new DA_Marca(connectionString).ObtenerMarcas(null, descripcion))
             {
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -173,6 +173,133 @@ namespace InvControl.Server.Controllers
                 }
             }
             return Ok(marcas);
+        }
+
+        [HttpPost("marcas")]
+        public IActionResult PostMarca(Marca marca)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_Marca daM = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                if (daM.ObtenerMarcas(null, marca.Descripcion.Trim()).Rows.Count > 0)
+                    ModelState.AddModelError(nameof(Marca.Descripcion), "Ya existe una marca con el mismo nombre");
+
+                if (ModelState.IsValid)
+                {
+                    using (SqlConnection cnn = new(connectionString))
+                    {
+                        cnn.Open();
+                        transaction = cnn.BeginTransaction();
+
+                        marca.IdMarca = daM.InsertarMarca(marca.Descripcion.Trim(), transaction);
+
+                        daAu.Insertar($"Se creó la marca: {marca.Descripcion.Trim()}", DateTime.Now, (int)TipoEntidad.Marca, (int)TipoOperacion.Creacion,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+
+                    return Ok(marca);
+                }
+
+                return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpPut("marcas")]
+        public IActionResult PutMarca(Marca marca)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_Marca daM = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                using (DataTable dt = daM.ObtenerMarcas(null, marca.Descripcion.Trim()))
+                {
+                    if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdMarca"] != marca.IdMarca)
+                        ModelState.AddModelError(nameof(Marca.Descripcion), "Ya existe una marca con el mismo nombre");
+                }
+
+                if (ModelState.IsValid)
+                {
+                    using (SqlConnection cnn = new(connectionString))
+                    {
+                        cnn.Open();
+                        transaction = cnn.BeginTransaction();
+
+                        daM.ActualziarMarca(marca.IdMarca, marca.Descripcion.Trim(), transaction);
+
+                        daAu.Insertar($"Se editó la marca: {marca.Descripcion.Trim()}", DateTime.Now, (int)TipoEntidad.Marca, (int)TipoOperacion.Edicion,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+
+                    return Ok(marca);
+                }
+
+                return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpDelete("marcas/{idMarca:int}")]
+        public IActionResult DeleteMarca(int idMarca)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_Marca daM = new(connectionString);
+                DA_SKU daS = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                if (daS.ObtenerSKU(null, null, null, null, idMarca, null).Rows.Count > 0)
+                    return BadRequest("No es posbile eliminar la marca porque se escentra asociado a uno o mas SKU");
+
+                string descripcionMarca = (string)daM.ObtenerMarcas(idMarca, null).Rows[0]["Descripcion"];
+
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
+
+                    daM.EliminarMarca(idMarca, transaction);
+
+                    daAu.Insertar($"Se eliminó la marca: {descripcionMarca}", DateTime.Now, (int)TipoEntidad.Marca, (int)TipoOperacion.Borrado,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                    transaction.Commit();
+                    cnn.Close();
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
         }
 
         [HttpGet("tiposcontenedores")]

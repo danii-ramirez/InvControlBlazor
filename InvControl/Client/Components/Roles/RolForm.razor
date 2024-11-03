@@ -19,7 +19,7 @@
             <RadzenDataGrid @ref="grid" TItem="Permiso" Data="@permisosPadre" RowRender="@RowRender"
                             LoadChildData="@LoadChildData" RowClick="RowClick" Density="Density.Compact" Style="height: 20rem;">
                 <Columns>
-                    <RadzenDataGridColumn TextAlign="Radzen.TextAlign.Center" Width="80px">
+                    <RadzenDataGridColumn TextAlign="Radzen.TextAlign.Center" Width="100px">
                         <Template Context="data">
                             <RadzenCheckBox TValue="bool" Value="data.Checked" Disabled="@(data.Descripcion == "Home" || isBusy)" />
                         </Template>
