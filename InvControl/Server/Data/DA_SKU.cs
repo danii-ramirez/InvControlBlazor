@@ -86,20 +86,6 @@ namespace InvControl.Server.Data
             cmd.ExecuteNonQuery();
         }
 
-        public DataTable ObtenerMarcas()
-        {
-            DataTable dt = new();
-            using (SqlConnection cnn = new(connectionString))
-            {
-                var cmd = cnn.CreateCommand();
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.CommandText = "prc_get_Marcas";
-                SqlDataAdapter da = new(cmd);
-                da.Fill(dt);
-            }
-            return dt;
-        }
-
         public DataTable ObtenerTiposContendores()
         {
             DataTable dt = new();

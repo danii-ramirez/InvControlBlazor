@@ -19,7 +19,9 @@ namespace InvControl.Shared.Helpers
         [Display(Description = "Transporte")]
         Transporte = 7,
         [Display(Description = "Remito")]
-        Remito = 8
+        Remito = 8,
+        [Display(Description = "Marca")]
+        Marca = 9
     }
 
     public enum RemitoEstado

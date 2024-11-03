@@ -8,9 +8,9 @@
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Choferes" />
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Choferes" class="rz-mb-3" />
 
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" class="rz-mt-3">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
         <RadzenDataGrid @ref="refData" TItem="Chofer" Data="choferes" AllowSorting="true" Density="Density.Compact"
                         EmptyText="" Style="width: 50rem;">
             <HeaderTemplate>
@@ -34,8 +34,8 @@
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
-                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
-                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true">
+                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                      Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true" title="Editar">
                         </RadzenButton>
                     </Template>
                 </RadzenDataGridColumn>

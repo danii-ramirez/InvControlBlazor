@@ -1,4 +1,4 @@
-﻿@inject ChoferesService ChoferesService
+﻿@inject SKUService SKUService
 @inject DialogService DialogService
 @inject NotificationService NotificationService
 
@@ -7,20 +7,9 @@
     <CustomValidation @ref="customValidation" />
 
     <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-        <RadzenLabel Text="Nombre:" Component="nombre" />
-        <RadzenTextBox @bind-Value="Chofer.Nombre" MaxLength="50" Name="nombre" Disabled="isBusy" />
-        <ValidationMessage For="@(() => Chofer.Nombre)" />
-    </RadzenStack>
-
-    <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
-        <RadzenLabel Text="Apellido:" Component="apellido" />
-        <RadzenTextBox @bind-Value="Chofer.Apellido" MaxLength="50" Name="apellido" Disabled="isBusy" />
-        <ValidationMessage For="@(() => Chofer.Apellido)" />
-    </RadzenStack>
-
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="5px" class="rz-mt-3">
-        <RadzenLabel Text="Activo:" Component="activo" />
-        <RadzenCheckBox @bind-Value=@Chofer.Activo Name="activo" Disabled="isBusy" />
+        <RadzenLabel Text="Descripción:" Component="nombre" />
+        <RadzenTextBox @bind-Value="Marca.Descripcion" MaxLength="50" Name="nombre" Disabled="isBusy" />
+        <ValidationMessage For="@(() => Marca.Descripcion)" />
     </RadzenStack>
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
@@ -30,7 +19,7 @@
 </EditForm>
 
 @code {
-    [Parameter] public Chofer Chofer { get; set; }
+    [Parameter] public Marca Marca { get; set; }
 
     EditContext editContext;
     CustomValidation customValidation;
@@ -39,32 +28,28 @@
 
     protected override void OnInitialized()
     {
-        editContext = new(Chofer);
+        editContext = new(Marca);
     }
 
     private async Task Submit()
     {
         if (editContext.Validate())
         {
-            var result = await DialogService.Confirm(
-                Message.Confirm,
-                Message.Title,
-                new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
-
+            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
             if (result != null && (bool)result)
             {
                 isBusy = true;
                 Response res;
-                if (Chofer.IdChofer == 0)
-                    res = await ChoferesService.PostChoferes(Chofer);
+                if (Marca.IdMarca == 0)
+                    res = await SKUService.PostMarca(Marca);
                 else
-                    res = await ChoferesService.PutChoferes(Chofer);
+                    res = await SKUService.PutMarca(Marca);
                 isBusy = false;
 
                 if (res.Success)
                 {
                     NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
-                    DialogService.Close(Chofer);
+                    DialogService.Close(Marca);
                 }
                 else
                 {

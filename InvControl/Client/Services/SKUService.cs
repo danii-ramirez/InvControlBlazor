@@ -65,6 +65,43 @@ namespace InvControl.Client.Services
             return (await _httpClient.GetFromJsonAsync<List<Marca>>($"{BASE_REQUEST_URI}/marcas"))!;
         }
 
+        public async ValueTask<Response> PostMarca(Marca marca)
+        {
+            var res = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/marcas", marca);
+            if (res.StatusCode == HttpStatusCode.OK)
+            {
+                var newMarca = await res.Content.ReadFromJsonAsync<Marca>();
+                marca.IdMarca = newMarca.IdMarca;
+                return new(true);
+            }
+            else if (res.StatusCode == HttpStatusCode.BadRequest)
+                return new(false, (await res.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>())!);
+            else
+                return new(false);
+        }
+
+        public async ValueTask<Response> PutMarca(Marca marca)
+        {
+            var res = await _httpClient.PutAsJsonAsync($"{BASE_REQUEST_URI}/marcas", marca);
+            if (res.StatusCode == HttpStatusCode.OK)
+                return new(true);
+            else if (res.StatusCode == HttpStatusCode.BadRequest)
+                return new(false, (await res.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>())!);
+            else
+                return new(false);
+        }
+
+        public async ValueTask<Response> DeleteMarca(int idMarca)
+        {
+            var res = await _httpClient.DeleteAsync($"{BASE_REQUEST_URI}/marcas/{idMarca}");
+            if (res.StatusCode == HttpStatusCode.OK)
+                return new(true);
+            else if (res.StatusCode == HttpStatusCode.BadRequest)
+                return new(false, await res.Content.ReadAsStringAsync());
+            else
+                return new(false);
+        }
+
         public async ValueTask<List<TipoContenedor>> GetTiposContenedores()
         {
             return (await _httpClient.GetFromJsonAsync<List<TipoContenedor>>($"{BASE_REQUEST_URI}/tiposcontenedores"))!;
