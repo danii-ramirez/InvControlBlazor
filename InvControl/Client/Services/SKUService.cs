@@ -104,7 +104,44 @@ namespace InvControl.Client.Services
 
         public async ValueTask<List<TipoContenedor>> GetTiposContenedores()
         {
-            return (await _httpClient.GetFromJsonAsync<List<TipoContenedor>>($"{BASE_REQUEST_URI}/tiposcontenedores"))!;
+            return (await _httpClient.GetFromJsonAsync<List<TipoContenedor>>($"{BASE_REQUEST_URI}/tipocontenedor"))!;
+        }
+
+        public async ValueTask<Response> PostTipoContenedor(TipoContenedor tipoContenedor)
+        {
+            var res = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/tipocontenedor", tipoContenedor);
+            if (res.StatusCode == HttpStatusCode.OK)
+            {
+                var newTipoContenedor = await res.Content.ReadFromJsonAsync<TipoContenedor>();
+                tipoContenedor.IdTipoContenedor = newTipoContenedor.IdTipoContenedor;
+                return new(true);
+            }
+            else if (res.StatusCode == HttpStatusCode.BadRequest)
+                return new(false, (await res.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>())!);
+            else
+                return new(false);
+        }
+
+        public async ValueTask<Response> PutTipoContenedor(TipoContenedor tipoContenedor)
+        {
+            var res = await _httpClient.PutAsJsonAsync($"{BASE_REQUEST_URI}/tipocontenedor", tipoContenedor);
+            if (res.StatusCode == HttpStatusCode.OK)
+                return new(true);
+            else if (res.StatusCode == HttpStatusCode.BadRequest)
+                return new(false, (await res.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>())!);
+            else
+                return new(false);
+        }
+
+        public async ValueTask<Response> DeleteTipoContenedor(int idTipoContenedor)
+        {
+            var res = await _httpClient.DeleteAsync($"{BASE_REQUEST_URI}/tipocontenedor/{idTipoContenedor}");
+            if (res.StatusCode == HttpStatusCode.OK)
+                return new(true);
+            else if (res.StatusCode == HttpStatusCode.BadRequest)
+                return new(false, await res.Content.ReadAsStringAsync());
+            else
+                return new(false);
         }
 
         public async ValueTask<List<SKUDTO>> GetSugerencias(string sugerencia)

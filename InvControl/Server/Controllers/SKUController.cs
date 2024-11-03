@@ -29,7 +29,7 @@ namespace InvControl.Server.Controllers
         {
             List<SKU> lst = new();
             DA_SKU da = new(connectionString);
-            using (DataTable dt = da.ObtenerSKU(null, codigo, nombre?.Trim(), activo, idMarca))
+            using (DataTable dt = da.ObtenerSKU(null, codigo, nombre?.Trim(), activo, idMarca, null))
             {
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -65,10 +65,10 @@ namespace InvControl.Server.Controllers
                 DA_Stock daS = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
-                if (daSKU.ObtenerSKU(null, sku.Codigo, null, null, null).Rows.Count > 0)
+                if (daSKU.ObtenerSKU(null, sku.Codigo, null, null, null, null).Rows.Count > 0)
                     ModelState.AddModelError(nameof(SKU.Codigo), "Ya existe un SKU con el mismo código");
 
-                if (daSKU.ObtenerSKU(null, null, sku.Nombre.Trim(), null, null).Rows.Count > 0)
+                if (daSKU.ObtenerSKU(null, null, sku.Nombre.Trim(), null, null, null).Rows.Count > 0)
                     ModelState.AddModelError(nameof(SKU.Nombre), "Ya existe un SKU con el mismo nombre");
 
                 if (ModelState.IsValid)
@@ -113,13 +113,13 @@ namespace InvControl.Server.Controllers
                 DA_SKU daSKU = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
-                using (DataTable dt = daSKU.ObtenerSKU(null, sku.Codigo, null, null, null))
+                using (DataTable dt = daSKU.ObtenerSKU(null, sku.Codigo, null, null, null, null))
                 {
                     if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdSKU"] != sku.IdSKU)
                         ModelState.AddModelError(nameof(SKU.Codigo), "Ya existe un SKU con el mismo código");
                 }
 
-                using (DataTable dt = daSKU.ObtenerSKU(null, null, sku.Nombre.Trim(), null, null))
+                using (DataTable dt = daSKU.ObtenerSKU(null, null, sku.Nombre.Trim(), null, null, null))
                 {
                     if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdSKU"] != sku.IdSKU)
                         ModelState.AddModelError(nameof(SKU.Nombre), "Ya existe un SKU con el mismo nombre");
@@ -273,7 +273,7 @@ namespace InvControl.Server.Controllers
                 DA_Auditoria daAu = new(connectionString);
 
                 if (daS.ObtenerSKU(null, null, null, null, idMarca, null).Rows.Count > 0)
-                    return BadRequest("No es posbile eliminar la marca porque se escentra asociado a uno o mas SKU");
+                    return BadRequest("No es posbile eliminar la marca porque se encuentra asociado a uno o mas SKU");
 
                 string descripcionMarca = (string)daM.ObtenerMarcas(idMarca, null).Rows[0]["Descripcion"];
 
@@ -302,11 +302,11 @@ namespace InvControl.Server.Controllers
             }
         }
 
-        [HttpGet("tiposcontenedores")]
+        [HttpGet("tipocontenedor")]
         public IActionResult GetTiposContenedores()
         {
             List<TipoContenedor> tipos = new();
-            using (DataTable dt = new DA_SKU(connectionString).ObtenerTiposContendores())
+            using (DataTable dt = new DA_TipoContenedor(connectionString).ObtenerTiposContendores(null, null))
             {
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -319,6 +319,133 @@ namespace InvControl.Server.Controllers
                 }
             }
             return Ok(tipos);
+        }
+
+        [HttpPost("tipocontenedor")]
+        public IActionResult PostTipoContenedor(TipoContenedor tipoContenedor)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_TipoContenedor daTC = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                if (daTC.ObtenerTiposContendores(null, tipoContenedor.Nombre.Trim()).Rows.Count > 0)
+                    ModelState.AddModelError(nameof(Marca.Descripcion), "Ya existe un contenedor con el mismo nombre");
+
+                if (ModelState.IsValid)
+                {
+                    using (SqlConnection cnn = new(connectionString))
+                    {
+                        cnn.Open();
+                        transaction = cnn.BeginTransaction();
+
+                        tipoContenedor.IdTipoContenedor = daTC.InsertarTipoContenedor(tipoContenedor.Nombre.Trim(), transaction);
+
+                        daAu.Insertar($"Se creó el contenedor: {tipoContenedor.Nombre.Trim()}", DateTime.Now, (int)TipoEntidad.TipoContenedor, (int)TipoOperacion.Creacion,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+
+                    return Ok(tipoContenedor);
+                }
+
+                return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpPut("tipocontenedor")]
+        public IActionResult PutTipoContenedor(TipoContenedor tipoContenedor)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_TipoContenedor daTC = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                using (DataTable dt = daTC.ObtenerTiposContendores(null, tipoContenedor.Nombre.Trim()))
+                {
+                    if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdTipoContenedor"] != tipoContenedor.IdTipoContenedor)
+                        ModelState.AddModelError(nameof(TipoContenedor.Nombre), "Ya existe un contenedor con el mismo nombre");
+                }
+
+                if (ModelState.IsValid)
+                {
+                    using (SqlConnection cnn = new(connectionString))
+                    {
+                        cnn.Open();
+                        transaction = cnn.BeginTransaction();
+
+                        daTC.ActualziarTipoContenedor(tipoContenedor.IdTipoContenedor, tipoContenedor.Nombre.Trim(), transaction);
+
+                        daAu.Insertar($"Se editó el contenedor: {tipoContenedor.Nombre.Trim()}", DateTime.Now, (int)TipoEntidad.TipoContenedor, (int)TipoOperacion.Edicion,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+
+                    return Ok(tipoContenedor);
+                }
+
+                return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpDelete("tipocontenedor/{idTipoContenedor:int}")]
+        public IActionResult DeleteTipoContenedor(int idTipoContenedor)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_TipoContenedor daTC = new(connectionString);
+                DA_SKU daS = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                if (daS.ObtenerSKU(null, null, null, null, null, idTipoContenedor).Rows.Count > 0)
+                    return BadRequest("No es posbile eliminar el contenedor porque se encuentra asociado a uno o mas SKU");
+
+                string nombreContenedor = (string)daTC.ObtenerTiposContendores(idTipoContenedor, null).Rows[0]["Nombre"];
+
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
+
+                    daTC.EliminarTipoContenedor(idTipoContenedor, transaction);
+
+                    daAu.Insertar($"Se eliminó el contenedor: {nombreContenedor}", DateTime.Now, (int)TipoEntidad.TipoContenedor, (int)TipoOperacion.Borrado,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                    transaction.Commit();
+                    cnn.Close();
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
         }
 
         [HttpGet("sugerencias")]

@@ -311,7 +311,7 @@ namespace InvControl.Server.Controllers
                         foreach (var rd in r.Detalle)
                         {
                             DateTime fecha = DateTime.Now;
-                            int unidadesPorContenedor = (int)daSKU.ObtenerSKU(rd.IdSku, null, null, null, null, transaction).Rows[0]["UnidadesPorContenedor"];
+                            int unidadesPorContenedor = (int)daSKU.ObtenerSKU(rd.IdSku, null, null, null, null, null, transaction).Rows[0]["UnidadesPorContenedor"];
                             int unidades = (int)rd.Cantidad! * unidadesPorContenedor;
 
                             daSM.InsertarStockMovimientos((int)StockMovimientoEstado.Ingreso, rd.IdSku, (int)rd.Codigo!, rd.NombreSku, unidades,
