@@ -1,69 +1,50 @@
-@page "/remitos/ingreso"
-@page "/remitos/ingreso/{idRemito:int}"
+﻿@page "/stock/ajuste"
 
 @attribute [Authorize]
 
 @inject UsuariosService UsuariosService
-@inject RemitosService RemitosService
+@inject StockService StockService
 @inject SKUService SKUService
-@inject TransportesService TransportesService
-@inject ChoferesService ChoferesService
 @inject DialogService DialogService
-@inject RadzenCustom RadzenCustom
 @inject NotificationService NotificationService
-@inject NavigationManager NavigationManager
+@inject RadzenCustom RadzenCustom
 
 @if (showForm)
 {
-    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Ingreso de remito" class="rz-mb-3" />
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Ajuste de stock" class="rz-mb-3" />
 
     <EditForm EditContext="editContext">
         <DataAnnotationsValidator />
-        <CustomValidation @ref="customValidation" />
 
         <RadzenRow class="rz-mb-3">
-            <RadzenColumn Size="12" SizeMD="6">
+            <RadzenColumn Size="12" SizeMD="6" OffsetMD="3">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-                    <RadzenLabel Text="Número de remito:" Component="numero" />
-                    <RadzenTextBox @bind-Value="@Remito.NumeroRemito" Name="numero" Disabled="reingreso" />
-                    <ValidationMessage For="@(() => Remito.NumeroRemito)" />
-                </RadzenStack>
-            </RadzenColumn>
-
-            <RadzenColumn Size="12" SizeMD="6">
-                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-                    <RadzenLabel Text="Fecha de remito:" Component="fecha" />
-                    <RadzenDatePicker @bind-Value="@Remito.FechaRemito" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" Name="fecha" Disabled="reingreso" />
-                    <ValidationMessage For="@(() => Remito.FechaRemito)" />
+                    <RadzenLabel Text="Movimiento de stock:" Component="tipoMovimiento" />
+                    <RadzenDropDown @bind-Value="Stock.IdTipoMovimiento" Data="tiposMovimientos" Name="tipoMovimiento" Style="width: 20rem;"
+                                    TextProperty="@nameof(TipoMovimiento.Nombre)" ValueProperty="@nameof(TipoMovimiento.IdTipoMovimiento)" />
+                    <ValidationMessage For="@(() => Stock.IdTipoMovimiento)" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
 
         <RadzenRow class="rz-mb-3">
-            <RadzenColumn Size="12" SizeMD="6">
+            <RadzenColumn Size="12" SizeMD="6" OffsetMD="3">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-                    <RadzenLabel Text="Chofer:" Component="chofer" />
-                    <RadzenDropDown @bind-Value="Remito.IdChofer" Data="choferes" Name="chofer" AllowClear="true" Placeholder="Sin seleccionar"
-                                    TextProperty="@nameof(Chofer.NombreCompleto)" ValueProperty="@nameof(Chofer.IdChofer)" Disabled="reingreso" />
-                </RadzenStack>
-            </RadzenColumn>
-
-            <RadzenColumn Size="12" SizeMD="6">
-                <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-                    <RadzenLabel Text="Transporte:" Component="transporte" />
-                    <RadzenDropDown @bind-Value="Remito.IdTransporte" Data="transportes" Name="transporte" AllowClear="true" Placeholder="Sin seleccionar"
-                                    TextProperty="@nameof(Transporte.NombrePatente)" ValueProperty="@nameof(Transporte.IdTransporte)" Disabled="reingreso" />
+                    <RadzenLabel Text="Observaciones:" Component="observaciones" />
+                    <RadzenTextArea @bind-Value="Stock.Observaciones" MaxLength="255" Name="observaciones" Style="min-height: 50px; max-height: 100px;" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
 
-        <RadzenStack class="rz-mb-3">
-            <ValidationMessage For="@(() => Remito.Detalle)" />
-        </RadzenStack>
+        <RadzenRow class="rz-mb-1">
+            <RadzenColumn Size="12" SizeMD="6" OffsetMD="3">
+                <ValidationMessage For="@(() => Stock.Detalle)" />
+            </RadzenColumn>
+        </RadzenRow>
 
         <RadzenRow class="rz-mb-3">
-            <RadzenColumn Size="12">
-                <RadzenDataGrid @ref="grid" TItem="RemitoDetalle" Data="Remito.Detalle" Density="Density.Compact"
+            <RadzenColumn Size="12" SizeMD="6" OffsetMD="3">
+                <RadzenDataGrid @ref="grid" TItem="StockAjusteDetalle" Data="Stock.Detalle" Density="Density.Compact"
                                 EmptyText="" Style="height: 25rem;">
                     <HeaderTemplate>
                         <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" Icon="add" Text="Agregar línea" Click="HandleClickAddRow" />
@@ -82,7 +63,7 @@
                                 }
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Cantidad)" Title="Cantidad" Width="100px">
+                        <RadzenDataGridColumn Property="@nameof(RemitoDetalle.Cantidad)" Title="Unidades" Width="100px">
                             <Template Context="data">
                                 <RadzenNumeric @ref="refCantidad" TValue="int?" @bind-Value="data.Cantidad" Min="1" Max="99999" TextAlign="TextAlign.Right" ShowUpDown="false" Style="width: 100%;" />
                             </Template>
@@ -110,46 +91,22 @@ else
 }
 
 @code {
-    [Parameter] public int? IdRemito { get; set; }
-
-    Remito Remito { get; set; } = new();
+    StockAjuste Stock { get; set; } = new();
     EditContext editContext;
-    CustomValidation customValidation;
+
+    List<TipoMovimiento> tiposMovimientos;
+    bool showForm;
 
     List<SKUDTO> skus = new();
-    List<Transporte> transportes = new();
-    List<Chofer> choferes = new();
-    bool showForm, reingreso;
-
-    RadzenDataGrid<RemitoDetalle> grid;
+    RadzenDataGrid<StockAjusteDetalle> grid;
     RadzenAutoComplete refAutoComplete;
     RadzenNumeric<int?> refCantidad;
 
     protected override async Task OnInitializedAsync()
     {
-        if (IdRemito == null)
-            await UsuariosService.GetValidarAcceso();
-        else
-            await UsuariosService.GetValidarAcceso("remitos/rechazados");
-
-        if (IdRemito != null)
-        {
-            var res = await RemitosService.GetRemito((int)IdRemito!, RemitoEstado.Rechazado);
-            if (res == null)
-            {
-                NavigationManager.NavigateTo("/remitos/rechazados");
-            }
-            else
-            {
-                Remito = res;
-            }
-
-            reingreso = true;
-        }
-
-        transportes = await TransportesService.GetTransportes();
-        choferes = await ChoferesService.GetChoferes();
-        editContext = new(Remito);
+        await UsuariosService.GetValidarAcceso();
+        tiposMovimientos = await StockService.GetTiposMovimientos(null, null, false, true);
+        editContext = new(Stock);
         showForm = true;
     }
 
@@ -157,7 +114,7 @@ else
     {
         if (editContext.Validate())
         {
-            if (Remito.Detalle.Where(x => x.IdSku == 0 || x.Cantidad == null || x.Cantidad == 0).Count() > 0)
+            if (Stock.Detalle.Where(x => x.IdSku == 0 || x.Cantidad == null || x.Cantidad == 0).Count() > 0)
             {
                 await DialogService.Alert("Debe completar todas las líneas", Message.Title);
             }
@@ -170,28 +127,17 @@ else
 
                 if (result != null && (bool)result)
                 {
-                    Response res;
+                    Stock.Tipo = tiposMovimientos.Find(x => x.IdTipoMovimiento == Stock.IdTipoMovimiento).Tipo;
 
                     RadzenCustom.OpenBusyWithLoader();
-
-                    if (IdRemito == null)
-                        res = await RemitosService.PostRemito(Remito);
-                    else
-                        res = await RemitosService.PutRemitoDetalle(Remito);
-
+                    var res = await StockService.PostStockAjuste(Stock);
                     RadzenCustom.CloseDialog();
 
-                    if (res.Success)
+                    if (res)
                     {
                         NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
-
-                        if (IdRemito == null)
-                            Clear();
-                        else
-                            NavigationManager.NavigateTo("/remitos/rechazados");
+                        Clear();
                     }
-                    else
-                        customValidation.DisplayErrors(res.Errors!);
                 }
             }
         }
@@ -199,37 +145,24 @@ else
 
     private async Task Cancelar()
     {
-        var result = await DialogService.Confirm(
-            Message.Cancel,
-            Message.Title,
-            new() { OkButtonText = Message.OkButtonText, CancelButtonText = Message.CancelButtonText });
-
+        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
         if (result != null && (bool)result)
         {
-            if (IdRemito == null)
-                Clear();
-            else
-                NavigationManager.NavigateTo("/remitos/rechazados");
+            Clear();
         }
-    }
-
-    private void Clear()
-    {
-        Remito = new();
-        editContext = new(Remito);
     }
 
     private async Task HandleClickAddRow()
     {
-        RemitoDetalle detalle = new();
-        Remito.Detalle.Add(detalle);
+        StockAjusteDetalle detalle = new();
+        Stock.Detalle.Add(detalle);
         await grid.Reload();
-        editContext.NotifyFieldChanged(new FieldIdentifier(Remito, nameof(Remito.Detalle)));
+        editContext.NotifyFieldChanged(new FieldIdentifier(Stock, nameof(StockAjuste.Detalle)));
         await Task.Delay(1);
         await refAutoComplete.FocusAsync();
     }
 
-    private async Task HandleChangeSkuAutoComplete(RemitoDetalle data, dynamic args)
+    private async Task HandleChangeSkuAutoComplete(StockAjusteDetalle data, dynamic args)
     {
         var sku = skus.Find(x => x.CodigoNombre.ToUpper() == args?.Trim().ToUpper());
         if (sku != null)
@@ -251,10 +184,16 @@ else
         }
     }
 
-    private async Task HandleDeleteRow(RemitoDetalle data)
+    private async Task HandleDeleteRow(StockAjusteDetalle data)
     {
-        Remito.Detalle.Remove(data);
+        Stock.Detalle.Remove(data);
         await grid.Reload();
-        editContext.NotifyFieldChanged(new FieldIdentifier(Remito, nameof(Remito.Detalle)));
+        editContext.NotifyFieldChanged(new FieldIdentifier(Stock, nameof(StockAjuste.Detalle)));
+    }
+
+    private void Clear()
+    {
+        Stock = new();
+        editContext = new(Stock);
     }
 }
