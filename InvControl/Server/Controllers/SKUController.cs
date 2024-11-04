@@ -331,7 +331,7 @@ namespace InvControl.Server.Controllers
                 DA_Auditoria daAu = new(connectionString);
 
                 if (daTC.ObtenerTiposContendores(null, tipoContenedor.Nombre.Trim()).Rows.Count > 0)
-                    ModelState.AddModelError(nameof(Marca.Descripcion), "Ya existe un contenedor con el mismo nombre");
+                    ModelState.AddModelError(nameof(TipoContenedor.Nombre), "Ya existe un contenedor con el mismo nombre");
 
                 if (ModelState.IsValid)
                 {
