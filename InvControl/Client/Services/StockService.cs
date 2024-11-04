@@ -1,4 +1,6 @@
-﻿using InvControl.Shared.Models;
+﻿using InvControl.Client.Helpers;
+using InvControl.Shared.Models;
+using System.Net;
 using System.Net.Http.Json;
 
 namespace InvControl.Client.Services
@@ -18,7 +20,6 @@ namespace InvControl.Client.Services
         public async ValueTask<List<Stock>> GetStock(string nombre, int? idMarca, bool? especial, int? cantidadMin, int? cantidadMax, DateTime? fechaMin, DateTime? fechaMax)
         {
             string uri = $"{BASE_REQUEST_URI}/consulta";
-
             Dictionary<string, object> query = new();
             if (nombre != null) query["nombre"] = nombre.Trim();
             if (idMarca != null) query["idMarca"] = idMarca;
@@ -36,7 +37,7 @@ namespace InvControl.Client.Services
 
         public async ValueTask PostExportToExcel(List<Stock> stock)
         {
-            var response = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/ExportToExcel", stock);
+            var response = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/consulta/ExportToExcel", stock);
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsByteArrayAsync();
@@ -46,6 +47,47 @@ namespace InvControl.Client.Services
             {
                 Console.WriteLine(await response.Content.ReadAsStringAsync());
             }
+        }
+
+        public async ValueTask<List<TipoMovimiento>> GetTiposMovimientos(int? idTipoMovimiento, string nombre, bool? soloLectura, bool? interno)
+        {
+            string uri = $"{BASE_REQUEST_URI}/TipoMovimiento";
+            Dictionary<string, object> query = new();
+            if (idTipoMovimiento != null) query["idTipoMovimiento"] = idTipoMovimiento;
+            if (nombre != null) query["nombre"] = nombre;
+            if (soloLectura != null) query["soloLectura"] = soloLectura;
+            if (interno != null) query["interno"] = interno;
+
+            if (query.Count > 0)
+                uri += "?" + string.Join("&", query.Select(x => $"{x.Key}={x.Value}"));
+
+            return (await _httpClient.GetFromJsonAsync<List<TipoMovimiento>>(uri))!;
+        }
+
+        public async ValueTask<Response> PostTipoMovimiento(TipoMovimiento tipoMovimiento)
+        {
+            var res = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/TipoMovimiento", tipoMovimiento);
+            if (res.StatusCode == HttpStatusCode.OK)
+            {
+                var newTipoMovimiento = await res.Content.ReadFromJsonAsync<TipoMovimiento>();
+                tipoMovimiento.IdTipoMovimiento = newTipoMovimiento.IdTipoMovimiento;
+                return new(true);
+            }
+            else if (res.StatusCode == HttpStatusCode.BadRequest)
+                return new(false, (await res.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>())!);
+            else
+                return new(false);
+        }
+
+        public async ValueTask<Response> PutTipoMovimiento(TipoMovimiento tipoMovimiento)
+        {
+            var res = await _httpClient.PutAsJsonAsync($"{BASE_REQUEST_URI}/TipoMovimiento", tipoMovimiento);
+            if (res.StatusCode == HttpStatusCode.OK)
+                return new(true);
+            else if (res.StatusCode == HttpStatusCode.BadRequest)
+                return new(false, (await res.Content.ReadFromJsonAsync<Dictionary<string, List<string>>>())!);
+            else
+                return new(false);
         }
     }
 }

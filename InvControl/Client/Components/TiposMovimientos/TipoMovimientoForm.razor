@@ -1,0 +1,85 @@
+﻿@inject StockService StockService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<EditForm EditContext="editContext" OnSubmit="Submit" autocomplete="off">
+    <DataAnnotationsValidator />
+    <CustomValidation @ref="customValidation" />
+
+    <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+        <RadzenLabel Text="Descripción:" Component="nombre" />
+        <RadzenTextBox @bind-Value="TipoMovimiento.Nombre" MaxLength="50" Name="nombre" Disabled="isBusy" />
+        <ValidationMessage For="@(() => TipoMovimiento.Nombre)" />
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
+        <RadzenLabel Text="Tipo de movimiento:" Component="tipo" />
+        <RadzenDropDown @bind-Value="TipoMovimiento.Tipo" Data="tipos" Name="tipo" Disabled="isBusy" />
+        <ValidationMessage For="@(() => TipoMovimiento.Tipo)" />
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
+
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" Disabled="isBusy" />
+        <RadzenButton ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" IsBusy="isBusy" BusyText="Guardando" />
+    </RadzenStack>
+</EditForm>
+
+@code {
+    [Parameter] public TipoMovimiento TipoMovimiento { get; set; }
+
+    EditContext editContext;
+    CustomValidation customValidation;
+
+    List<string> tipos = new();
+
+    bool isBusy;
+
+    protected override void OnInitialized()
+    {
+        tipos.Add(nameof(Tipo.Entrada));
+        tipos.Add(nameof(Tipo.Salida));
+
+        editContext = new(TipoMovimiento);
+    }
+
+    private async Task Submit()
+    {
+        if (editContext.Validate())
+        {
+            var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+            if (result != null && (bool)result)
+            {
+                isBusy = true;
+                Response res;
+                if (TipoMovimiento.IdTipoMovimiento == 0)
+                    res = await StockService.PostTipoMovimiento(TipoMovimiento);
+                else
+                    res = await StockService.PutTipoMovimiento(TipoMovimiento);
+                isBusy = false;
+
+                if (res.Success)
+                {
+                    NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
+                    DialogService.Close(TipoMovimiento);
+                }
+                else
+                {
+                    customValidation.DisplayErrors(res.Errors!);
+                }
+            }
+        }
+    }
+
+    private async Task Cancelar()
+    {
+        var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
+        if (result != null && (bool)result)
+        {
+            DialogService.Close();
+        }
+    }
+}

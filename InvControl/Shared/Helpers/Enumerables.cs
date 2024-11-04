@@ -37,6 +37,13 @@ namespace InvControl.Shared.Helpers
 
     public enum StockMovimientoEstado
     {
-        Ingreso = 1
+        Ingreso = 1,
+        Salida = 2
+    }
+
+    public enum Tipo
+    {
+        Entrada,
+        Salida
     }
 }

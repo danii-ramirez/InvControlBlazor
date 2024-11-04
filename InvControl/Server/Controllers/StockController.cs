@@ -2,6 +2,7 @@
 using InvControl.Server.Data;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using System.Data;
 
 namespace InvControl.Server.Controllers
@@ -44,7 +45,7 @@ namespace InvControl.Server.Controllers
             return Ok(stock);
         }
 
-        [HttpPost("ExportToExcel")]
+        [HttpPost("consulta/ExportToExcel")]
         public IActionResult PostExportToExcel([FromBody] List<Stock> skus)
         {
             try
@@ -72,6 +73,112 @@ namespace InvControl.Server.Controllers
             }
             catch (Exception ex)
             {
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpGet("TipoMovimiento")]
+        public IActionResult GetTiposMovimientos(int? idTipoMovimiento, string nombre, bool? soloLectura, bool? interno)
+        {
+            List<TipoMovimiento> tiposMovimientos = new();
+
+            using (DataTable dt = new DA_TipoMovimiento(connectionString).ObtenerTipoMovimiento(idTipoMovimiento, nombre, soloLectura, interno))
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    TipoMovimiento tm = new()
+                    {
+                        IdTipoMovimiento = (int)dr["IdTipoMovimiento"],
+                        Nombre = (string)dr["Nombre"],
+                        Tipo = (string)dr["Tipo"],
+                        SoloLectura = (bool)dr["SoloLectura"],
+                        Interno = (bool)dr["Interno"]
+                    };
+
+                    tiposMovimientos.Add(tm);
+                }
+            }
+
+            return Ok(tiposMovimientos);
+        }
+
+        [HttpPost("TipoMovimiento")]
+        public IActionResult PostTipoMovimiento(TipoMovimiento tipoMovimiento)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_TipoMovimiento daTM = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                if (daTM.ObtenerTipoMovimiento(null, tipoMovimiento.Nombre.Trim(), null, null).Rows.Count > 0)
+                    ModelState.AddModelError(nameof(TipoMovimiento.Nombre), "Ya existe movimiento con el mismo nombre");
+
+                if (ModelState.IsValid)
+                {
+                    using (SqlConnection cnn = new(connectionString))
+                    {
+                        cnn.Open();
+                        transaction = cnn.BeginTransaction();
+
+                        tipoMovimiento.IdTipoMovimiento = daTM.InsertarTipoMovimiento(tipoMovimiento.Nombre.Trim(), tipoMovimiento.Tipo, tipoMovimiento.SoloLectura, tipoMovimiento.Interno, transaction);
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+
+                    return Ok(tipoMovimiento);
+                }
+
+                return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpPut("TipoMovimiento")]
+        public IActionResult PutTipoMovimiento(TipoMovimiento tipoMovimiento)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_TipoMovimiento daTM = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                using (DataTable dt = daTM.ObtenerTipoMovimiento(null, tipoMovimiento.Nombre.Trim(), null, null))
+                {
+                    if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdTipoMovimiento"] != tipoMovimiento.IdTipoMovimiento)
+                        ModelState.AddModelError(nameof(TipoMovimiento.Nombre), "Ya existe movimiento con el mismo nombre");
+                }
+
+                if (ModelState.IsValid)
+                {
+                    using (SqlConnection cnn = new(connectionString))
+                    {
+                        cnn.Open();
+                        transaction = cnn.BeginTransaction();
+
+                        daTM.ActualizarTipoMovimiento(tipoMovimiento.IdTipoMovimiento, tipoMovimiento.Nombre.Trim(), tipoMovimiento.Tipo, tipoMovimiento.SoloLectura, tipoMovimiento.Interno, transaction);
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+
+                    return Ok(tipoMovimiento);
+                }
+
+                return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
                 return StatusCode(500, ex);
             }
         }
