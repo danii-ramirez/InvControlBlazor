@@ -22,7 +22,7 @@
         <CustomValidation @ref="customValidation" />
 
         <RadzenRow class="rz-mb-3">
-            <RadzenColumn Size="12" SizeMD="6">
+            <RadzenColumn Size="12" SizeMD="4" OffsetMD="2">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Número de remito:" Component="numero" />
                     <RadzenTextBox @bind-Value="@Remito.NumeroRemito" Name="numero" Disabled="reingreso" />
@@ -30,7 +30,7 @@
                 </RadzenStack>
             </RadzenColumn>
 
-            <RadzenColumn Size="12" SizeMD="6">
+            <RadzenColumn Size="12" SizeMD="4">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Fecha de remito:" Component="fecha" />
                     <RadzenDatePicker @bind-Value="@Remito.FechaRemito" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" Name="fecha" Disabled="reingreso" />
@@ -40,7 +40,7 @@
         </RadzenRow>
 
         <RadzenRow class="rz-mb-3">
-            <RadzenColumn Size="12" SizeMD="6">
+            <RadzenColumn Size="12" SizeMD="4" OffsetMD="2">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Chofer:" Component="chofer" />
                     <RadzenDropDown @bind-Value="Remito.IdChofer" Data="choferes" Name="chofer" AllowClear="true" Placeholder="Sin seleccionar"
@@ -48,7 +48,7 @@
                 </RadzenStack>
             </RadzenColumn>
 
-            <RadzenColumn Size="12" SizeMD="6">
+            <RadzenColumn Size="12" SizeMD="4">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
                     <RadzenLabel Text="Transporte:" Component="transporte" />
                     <RadzenDropDown @bind-Value="Remito.IdTransporte" Data="transportes" Name="transporte" AllowClear="true" Placeholder="Sin seleccionar"
@@ -57,12 +57,14 @@
             </RadzenColumn>
         </RadzenRow>
 
-        <RadzenStack class="rz-mb-3">
-            <ValidationMessage For="@(() => Remito.Detalle)" />
-        </RadzenStack>
+        <RadzenRow class="rz-mb-1">
+            <RadzenColumn Size="12" SizeMD="6" OffsetMD="3">
+                <ValidationMessage For="@(() => Remito.Detalle)" />
+            </RadzenColumn>
+        </RadzenRow>
 
         <RadzenRow class="rz-mb-3">
-            <RadzenColumn Size="12">
+            <RadzenColumn Size="12" SizeMD="8" OffsetMD="2">
                 <RadzenDataGrid @ref="grid" TItem="RemitoDetalle" Data="Remito.Detalle" Density="Density.Compact"
                                 EmptyText="" Style="height: 25rem;">
                     <HeaderTemplate>
