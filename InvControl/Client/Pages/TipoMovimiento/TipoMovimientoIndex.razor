@@ -1,0 +1,86 @@
+﻿@page "/tiposmovimientos"
+@using InvControl.Client.Components.TiposMovimientos
+@attribute [Authorize]
+
+@inject UsuariosService UsuariosService
+@inject StockService StockService
+@inject DialogService DialogService
+@inject RadzenCustom RadzenCustom
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Movimientos de stock" class="rz-mb-3" />
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+        <RadzenDataGrid @ref="grid" TItem="TipoMovimiento" Data="tipos" AllowSorting="true" Density="Density.Compact"
+                        EmptyText="" Style="width: 50rem;">
+            <HeaderTemplate>
+                <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
+                              Icon="add" Text="Agregar movimiento" Click="HandleClickAdd" />
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(TipoMovimiento.Nombre)" Title="Descripción" />
+                <RadzenDataGridColumn Property="@nameof(TipoMovimiento.Tipo)" Title="Tipo de movimiento" />
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                    <Template>
+                        @if (!context.SoloLectura)
+                        {
+                            <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                          Click="@(() => HandleClickEdit(context))" @onclick:stopPropagation="true" title="Editar" />
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<TipoMovimiento> tipos;
+    bool showForm;
+    RadzenDataGrid<TipoMovimiento> grid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if ((await UsuariosService.GetValidarAcceso()).Item1)
+        {
+            tipos = await StockService.GetTiposMovimientos(null, null, null, true);
+            showForm = true;
+        }
+    }
+
+    private async Task HandleClickAdd()
+    {
+        TipoMovimiento tipoMovimiento = new();
+        tipoMovimiento.Interno = true;
+        var res = await DialogService.OpenAsync<TipoMovimientoForm>(
+            "Formulario de movimientos de stock",
+            new() { { "TipoMovimiento", tipoMovimiento } },
+            new() { ShowClose = false, CloseDialogOnEsc = false });
+
+        if (res != null)
+        {
+            tipos.Add(res);
+            await grid.Reload();
+        }
+    }
+
+    private async Task HandleClickEdit(TipoMovimiento tipoMovimiento)
+    {
+        var res = await DialogService.OpenAsync<TipoMovimientoForm>(
+            "Formulario de movimientos de stock",
+            new() { { "TipoMovimiento", tipoMovimiento.Clone() } },
+            new() { ShowClose = false, CloseDialogOnEsc = false });
+
+        if (res != null)
+        {
+            var editTipoMovimiento = (TipoMovimiento)res;
+            tipoMovimiento.Nombre = editTipoMovimiento.Nombre;
+            tipoMovimiento.Tipo = editTipoMovimiento.Tipo;
+        }
+    }
+}
