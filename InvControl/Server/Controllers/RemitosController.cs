@@ -127,7 +127,7 @@ namespace InvControl.Server.Controllers
             try
             {
                 DA_Remito daRe = new(connectionString);
-                DA_StockMovimiento daSM = new();
+                DA_Stock daSM = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
                 if (daRe.ObtenerRemitos(null, remito.NumeroRemito.Trim(), null).Rows.Count > 0)
@@ -211,7 +211,7 @@ namespace InvControl.Server.Controllers
             try
             {
                 DA_Remito daRe = new(connectionString);
-                DA_StockMovimiento daSM = new();
+                DA_Stock daSM = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
                 if (ModelState.IsValid)
@@ -294,7 +294,7 @@ namespace InvControl.Server.Controllers
             try
             {
                 DA_Remito daRe = new(connectionString);
-                DA_StockMovimiento daSM = new();
+                DA_Stock daSM = new(connectionString);
                 DA_SKU daSKU = new(connectionString);
                 DA_Stock daS = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);

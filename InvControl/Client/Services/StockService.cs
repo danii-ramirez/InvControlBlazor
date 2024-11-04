@@ -89,5 +89,11 @@ namespace InvControl.Client.Services
             else
                 return new(false);
         }
+
+        public async ValueTask<bool> PostStockAjuste(StockAjuste stockAjuste)
+        {
+            var res = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/ajuste", stockAjuste);
+            return res.StatusCode == HttpStatusCode.OK;
+        }
     }
 }

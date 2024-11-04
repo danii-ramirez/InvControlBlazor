@@ -1,9 +1,11 @@
 ﻿using ClosedXML.Excel;
 using InvControl.Server.Data;
+using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Security.Claims;
 
 namespace InvControl.Server.Controllers
 {
@@ -18,6 +20,53 @@ namespace InvControl.Server.Controllers
         {
             _logger = logger;
             connectionString = configuration.GetConnectionString("InvControlDB");
+        }
+
+        [HttpPost("ajuste")]
+        public IActionResult PostAjuste(StockAjuste stockAjuste)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_Stock daS = new(connectionString);
+                DA_TipoMovimiento daTM = new(connectionString);
+
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
+
+                    foreach (var s in stockAjuste.Detalle)
+                    {
+                        int cantidad;
+                        if (stockAjuste.Tipo == Tipo.Entrada.ToString())
+                        {
+                            cantidad = (int)s.Cantidad;
+                        }
+                        else
+                        {
+                            cantidad = (int)s.Cantidad * -1;
+                        }
+
+                        daS.InsertarStock(s.IdSku, cantidad, DateTime.Now, transaction);
+
+                        daS.InsertarStockMovimientos(stockAjuste.IdTipoMovimiento, s.IdSku, (int)s.Codigo, s.NombreSku, cantidad, stockAjuste.Observaciones,
+                            DateTime.Now, int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+                    }
+
+                    transaction.Commit();
+                    cnn.Close();
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
         }
 
         [HttpGet("consulta")]
