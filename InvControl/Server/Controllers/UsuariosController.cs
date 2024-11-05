@@ -304,12 +304,13 @@ namespace InvControl.Server.Controllers
             }
         }
 
-        [HttpGet("auditoria")]
-        public IActionResult GetAuditoria(int? idUsuario, int? idTipoEntidad, string fechaDesde, string fechaHasta)
+        [HttpPost("auditoria")]
+        public IActionResult PostAuditoria(AuditoriaRequest auditoriaRQ)
         {
             List<AuditoriaDTO> auditoria = new();
-            using (DataTable dt = new DA_Auditoria(connectionString).Obtener(idUsuario, idTipoEntidad,
-                DateTime.Parse(fechaDesde), DateTime.Parse(fechaHasta).AddHours(23).AddMinutes(59).AddSeconds(59)))
+
+            using (DataTable dt = new DA_Auditoria(connectionString).Obtener(auditoriaRQ.IdUsuario, (int?)auditoriaRQ.TipoEntidad,
+                auditoriaRQ.FechaDesde, auditoriaRQ.FechaHasta.AddHours(23).AddMinutes(59).AddSeconds(59)))
             {
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -322,9 +323,11 @@ namespace InvControl.Server.Controllers
                         DescripcionOperacion = (string)dr["DescripcionTipoOperacion"],
                         Usuario = $"{dr["Nombre"]} {dr["Apellido"]}"
                     };
+
                     auditoria.Add(a);
                 }
             }
+
             return Ok(auditoria);
         }
     }
