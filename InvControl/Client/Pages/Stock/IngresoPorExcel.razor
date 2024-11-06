@@ -1,0 +1,69 @@
+﻿@page "/procesar-excel"
+
+@inject NavigationManager Navigation
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
+
+<InputFile OnChange="SeleccionarArchivo" />
+<button @onclick="EnviarExcel" disabled="@(!archivoSeleccionado)">Enviar Excel</button>
+
+<p>@mensaje</p>
+
+<RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Secondary" Value="lineasProcesadas" Max="total" ShowValue="false" />
+
+@code {
+    private HubConnection hubConnection;
+    private byte[] excelData;
+    private bool archivoSeleccionado = false;
+    private string mensaje;
+    private int lineasProcesadas = 0;
+    private int total = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/procesamientoHub"))
+            .Build();
+
+        hubConnection.On<int, int>("ProgresoActualizado", (lineasProcesadas, total) =>
+        {
+            this.lineasProcesadas = lineasProcesadas;
+            this.total = total;
+            StateHasChanged();
+        });
+
+        hubConnection.On<string>("ProcesamientoCompleto", (resultado) =>
+        {
+            mensaje = resultado;
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task SeleccionarArchivo(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            using var memoryStream = new MemoryStream();
+            await file.OpenReadStream(long.MaxValue).CopyToAsync(memoryStream);
+            excelData = memoryStream.ToArray();
+            archivoSeleccionado = true;
+        }
+    }
+
+    private async Task EnviarExcel()
+    {
+        if (excelData != null)
+        {
+            mensaje = "Procesando...";
+            await hubConnection.SendAsync("ProcesarExcel", excelData);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await hubConnection.DisposeAsync();
+    }
+}
