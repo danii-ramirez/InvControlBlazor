@@ -15,7 +15,28 @@
     <RadzenRow class="rz-mb-3">
         <RadzenColumn Size="12" SizeMD="8" OffsetMD="2">
             <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-                <RadzenLabel Text="Motivos de ajuste" />
+                <RadzenText TagName="TagName.H6" TextStyle="TextStyle.H6" Text="Nombres de las columnas" />
+                <RadzenDataGrid @ref="gridEstoques" TItem="ParametroBimbo" Data="nombres" AllowSorting="true" Density="Density.Compact" Style="height: 20rem;" EmptyText="">
+                    <Columns>
+                        <RadzenDataGridColumn Property="@nameof(ParametroBimbo.Descripcion)" Title="Descripción" />
+                        <RadzenDataGridColumn Property="@nameof(ParametroBimbo.Nombre)" Title="Nombre" Width="250px" />
+                        <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                            <Template>
+                                <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
+                                              Click="(() => HandleClickEdit(context))" @onclick:stopPropagation="true" title="Editar">
+                                </RadzenButton>
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <RadzenRow class="rz-mb-3">
+        <RadzenColumn Size="12" SizeMD="8" OffsetMD="2">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                <RadzenText TagName="TagName.H6" TextStyle="TextStyle.H6" Text="Motivos de ajuste" />
                 <RadzenDataGrid @ref="gridMotivos" TItem="ParametroBimbo" Data="motivos" AllowSorting="true" Density="Density.Compact" Style="height: 20rem;" EmptyText="">
                     <HeaderTemplate>
                         <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
@@ -31,7 +52,6 @@
                                 </RadzenButton>
                             </Template>
                         </RadzenDataGridColumn>
-
                         <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                             <Template>
                                 <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
@@ -45,10 +65,10 @@
         </RadzenColumn>
     </RadzenRow>
 
-    <RadzenRow class="rz-mb-3">
+    <RadzenRow>
         <RadzenColumn Size="12" SizeMD="8" OffsetMD="2">
             <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-                <RadzenLabel Text="Tipos de estoques" />
+                <RadzenText TagName="TagName.H6" TextStyle="TextStyle.H6" Text="Tipos de estoques" />
                 <RadzenDataGrid @ref="gridEstoques" TItem="ParametroBimbo" Data="estoques" AllowSorting="true" Density="Density.Compact" Style="height: 20rem;" EmptyText="">
                     <HeaderTemplate>
                         <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small"
@@ -64,7 +84,6 @@
                                 </RadzenButton>
                             </Template>
                         </RadzenDataGridColumn>
-
                         <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                             <Template>
                                 <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
@@ -87,6 +106,7 @@ else
     bool showForm;
     List<ParametroBimbo> motivos;
     List<ParametroBimbo> estoques;
+    List<ParametroBimbo> nombres;
 
     RadzenDataGrid<ParametroBimbo> gridMotivos;
     RadzenDataGrid<ParametroBimbo> gridEstoques;
@@ -96,8 +116,9 @@ else
         if ((await UsuariosService.GetValidarAcceso()).Item1)
         {
             var parametros = await ParametrosService.GetParametrosBimbo();
-            motivos = parametros.FindAll(x => x.EsMotivoAjuste);
-            estoques = parametros.FindAll(x => !x.EsMotivoAjuste);
+            motivos = parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.MotivoAjuste);
+            estoques = parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.TipoEstoque);
+            nombres = parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.NombreColumna);
 
             showForm = true;
         }
@@ -106,7 +127,7 @@ else
     private async Task HandleClickAddMotivo()
     {
         ParametroBimbo parametro = new();
-        parametro.EsMotivoAjuste = true;
+        parametro.IdTipoBimboConcepto = (int)BimboConcepto.MotivoAjuste;
 
         var res = await DialogService.OpenAsync<ConfiguracionBimboForm>(
            "Motivo de ajuste",
@@ -163,7 +184,7 @@ else
     private async Task HandleClickAddEstoque()
     {
         ParametroBimbo parametro = new();
-        parametro.EsMotivoAjuste = false;
+        parametro.IdTipoBimboConcepto = (int)BimboConcepto.TipoEstoque;
 
         var res = await DialogService.OpenAsync<ConfiguracionBimboForm>(
            "Configuración de Bimbo",

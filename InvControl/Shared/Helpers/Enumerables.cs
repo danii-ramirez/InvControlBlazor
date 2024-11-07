@@ -46,4 +46,11 @@ namespace InvControl.Shared.Helpers
         Entrada,
         Salida
     }
+
+    public enum BimboConcepto
+    {
+        NombreColumna = 1,
+        MotivoAjuste = 2,
+        TipoEstoque = 3,
+    }
 }

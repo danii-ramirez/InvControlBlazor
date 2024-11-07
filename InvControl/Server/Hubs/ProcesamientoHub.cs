@@ -95,27 +95,27 @@ namespace InvControl.Server.Hubs
 
             await Clients.Caller.SendAsync("ProcesamientoCompleto", "Procesamiento terminado");
 
-            var lst = new ParametrosController(connectionString: connectionString).ObtenerParametrosBimbo();
+            //var lst = new ParametrosController(connectionString: connectionString).ObtenerParametrosBimbo();
 
-            List<MovimientoBimbo> movimientos = new();
-            foreach (DataRow dr in dt.Rows)
-            {
-                if (lst.FindAll(x => x.EsMotivoAjuste).Exists(x => x.Nombre.ToUpper() == dr["MOTIVO_AJUSTE"].ToString().Trim().ToUpper())
-                    && lst.FindAll(x => !x.EsMotivoAjuste).Exists(x => x.Nombre.ToUpper() == dr["TIPO_ESTOQUE"].ToString().Trim().ToUpper()))
-                {
-                    MovimientoBimbo mb = new();
-                    if (dr["CANAL"] != DBNull.Value) mb.Canal = dr["CANAL"].ToString();
-                    mb.CodigoSku = dr["COD_PRODUCTO"].ToString();
-                    mb.NombreSku = dr["NOMBRE_PRODUCTO"].ToString();
-                    mb.Cantidad = dr["CANTIDAD"].ToString();
-                    mb.TipoEstoque = dr["TIPO_ESTOQUE"].ToString();
-                    mb.MotivoAjuste = dr["MOTIVO_AJUSTE"].ToString();
+            //List<MovimientoBimbo> movimientos = new();
+            //foreach (DataRow dr in dt.Rows)
+            //{
+            //    //if (lst.FindAll(x => x.IdTipoBimboConcepto).Exists(x => x.Nombre.ToUpper() == dr["MOTIVO_AJUSTE"].ToString().Trim().ToUpper())
+            //    //    && lst.FindAll(x => !x.IdTipoBimboConcepto).Exists(x => x.Nombre.ToUpper() == dr["TIPO_ESTOQUE"].ToString().Trim().ToUpper()))
+            //    //{
+            //    //    MovimientoBimbo mb = new();
+            //    //    if (dr["CANAL"] != DBNull.Value) mb.Canal = dr["CANAL"].ToString();
+            //    //    mb.CodigoSku = dr["COD_PRODUCTO"].ToString();
+            //    //    mb.NombreSku = dr["NOMBRE_PRODUCTO"].ToString();
+            //    //    mb.Cantidad = dr["CANTIDAD"].ToString();
+            //    //    mb.TipoEstoque = dr["TIPO_ESTOQUE"].ToString();
+            //    //    mb.MotivoAjuste = dr["MOTIVO_AJUSTE"].ToString();
 
-                    movimientos.Add(mb);
-                }
-            }
+            //    //    movimientos.Add(mb);
+            //    //}
+            //}
 
-            await Clients.Caller.SendAsync("MostarTabla", movimientos);
+            //await Clients.Caller.SendAsync("MostarTabla", movimientos);
         }
     }
 }

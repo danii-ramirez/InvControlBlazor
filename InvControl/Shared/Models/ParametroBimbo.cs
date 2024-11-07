@@ -13,7 +13,7 @@ namespace InvControl.Shared.Models
         [StringLength(255, ErrorMessage = "Longitud máxima 255 caracteres")]
         public string Descripcion { get; set; } = string.Empty;
 
-        public bool EsMotivoAjuste { get; set; }
+        public int IdTipoBimboConcepto { get; set; }
 
         public object Clone() => MemberwiseClone();
     }

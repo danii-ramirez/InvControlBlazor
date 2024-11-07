@@ -1,8 +1,5 @@
-using System.Data;
-using InvControl.Shared.Models;
-using System.Security.Cryptography.Xml;
-using System.Transactions;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace InvControl.Server.Data
 {
@@ -87,22 +84,6 @@ namespace InvControl.Server.Data
             cmd.Parameters.AddWithValue("@pFechaMovimiento", fechaMovimiento);
             cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
             cmd.ExecuteNonQuery();
-        }
-
-        public void InsertarMovimientoBimbo(int canal, int codigo, string nombre, string estoque, string motivo)
-        {
-            var cnn = new SqlConnection(connectionString);
-            var cmd = cnn.CreateCommand();
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.CommandText = "prc_ins_MovimientosBimbo";
-            cmd.Parameters.AddWithValue("@pCanal", canal);
-            cmd.Parameters.AddWithValue("@pCodigo", codigo);
-            cmd.Parameters.AddWithValue("@pNombre", nombre);
-            cmd.Parameters.AddWithValue("@pTipoEstoque", estoque);
-            cmd.Parameters.AddWithValue("@pMotivoAjuste", motivo);
-            cnn.Open();
-            cmd.ExecuteNonQuery();
-            cnn.Close();
         }
     }
 }
