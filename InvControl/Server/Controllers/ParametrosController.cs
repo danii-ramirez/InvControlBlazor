@@ -135,18 +135,26 @@ namespace InvControl.Server.Controllers
             {
                 DA_Parametro daP = new(connectionString);
 
-                using (SqlConnection cnn = new(connectionString))
+                if (daP.ObtenerParametrosBimbo(null, parametro.Nombre.Trim(), parametro.EsMotivoAjuste).Rows.Count > 0)
+                    ModelState.AddModelError(nameof(ParametroBimbo.Nombre), "El nombre ya se encuentra registrado");
+
+                if (ModelState.IsValid)
                 {
-                    cnn.Open();
-                    transaction = cnn.BeginTransaction();
+                    using (SqlConnection cnn = new(connectionString))
+                    {
+                        cnn.Open();
+                        transaction = cnn.BeginTransaction();
 
-                    parametro.IdParametroBimbo = daP.InsertarParametrosBimbo(parametro.Nombre.Trim(), parametro.Descripcion?.Trim(), parametro.EsMotivoAjuste, transaction);
+                        parametro.IdParametroBimbo = daP.InsertarParametrosBimbo(parametro.Nombre.Trim(), parametro.Descripcion?.Trim(), parametro.EsMotivoAjuste, transaction);
 
-                    transaction.Commit();
-                    cnn.Close();
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+
+                    return Ok(parametro);
                 }
 
-                return Ok(parametro);
+                return BadRequest(ModelState);
             }
             catch (Exception ex)
             {
@@ -165,18 +173,29 @@ namespace InvControl.Server.Controllers
             {
                 DA_Parametro daP = new(connectionString);
 
-                using (SqlConnection cnn = new(connectionString))
+                using (DataTable dt = daP.ObtenerParametrosBimbo(null, parametro.Nombre.Trim(), parametro.EsMotivoAjuste))
                 {
-                    cnn.Open();
-                    transaction = cnn.BeginTransaction();
-
-                    daP.ActualizarParametroBimbo(parametro.IdParametroBimbo, parametro.Nombre.Trim(), parametro.Descripcion?.Trim(), parametro.EsMotivoAjuste, transaction);
-
-                    transaction.Commit();
-                    cnn.Close();
+                    if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdBimboParametro"] != parametro.IdParametroBimbo)
+                        ModelState.AddModelError(nameof(ParametroBimbo.Nombre), "El nombre ya se encuentra registrado");
                 }
 
-                return Ok();
+                if (ModelState.IsValid)
+                {
+                    using (SqlConnection cnn = new(connectionString))
+                    {
+                        cnn.Open();
+                        transaction = cnn.BeginTransaction();
+
+                        daP.ActualizarParametroBimbo(parametro.IdParametroBimbo, parametro.Nombre.Trim(), parametro.Descripcion?.Trim(), parametro.EsMotivoAjuste, transaction);
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+
+                    return Ok();
+                }
+
+                return BadRequest(ModelState);
             }
             catch (Exception ex)
             {
