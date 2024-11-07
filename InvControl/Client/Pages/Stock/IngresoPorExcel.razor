@@ -11,6 +11,20 @@
 
 <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Secondary" Value="lineasProcesadas" Max="total" ShowValue="false" />
 
+@if (lst.Count > 0)
+{
+    <RadzenDataGrid @ref="grid" TItem="MovimientoBimbo" Data="lst" AllowVirtualization="true" Density="Density.Compact" Style="height: 20rem;">
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.Canal)" Title="Canal" />
+            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CodigoSku)" Title="codigo" />
+            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.NombreSku)" Title="nombre" />
+            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.Cantidad)" Title="cantidad" />
+            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.TipoEstoque)" Title="tipo de estoque" />
+            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.MotivoAjuste)" Title="motivo de ajuste" />
+        </Columns>
+    </RadzenDataGrid>
+}
+
 @code {
     private HubConnection hubConnection;
     private byte[] excelData;
@@ -18,6 +32,8 @@
     private string mensaje;
     private int lineasProcesadas = 0;
     private int total = 0;
+    List<MovimientoBimbo> lst = new();
+    RadzenDataGrid<MovimientoBimbo> grid;
 
     protected override async Task OnInitializedAsync()
     {
@@ -36,6 +52,18 @@
         {
             mensaje = resultado;
             StateHasChanged();
+        });
+
+        hubConnection.On<List<MovimientoBimbo>>("MostarTabla", async (resultado) =>
+        {
+            Console.WriteLine(resultado == null);
+            Console.WriteLine(resultado.Count);
+
+            lst = resultado;
+
+
+            StateHasChanged();
+            await grid.Reload();
         });
 
         await hubConnection.StartAsync();
@@ -58,7 +86,7 @@
         if (excelData != null)
         {
             mensaje = "Procesando...";
-            await hubConnection.SendAsync("ProcesarExcel", excelData);
+            await hubConnection.SendAsync("ProcesarMovimientosBimbo", excelData);
         }
     }
 

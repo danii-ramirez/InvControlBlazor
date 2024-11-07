@@ -53,6 +53,27 @@ namespace InvControl.Server.Controllers
             return Ok(ObtenerParametro(nombre));
         }
 
+        internal Parametro ObtenerParametro(string nombre)
+        {
+            Parametro parametro = null;
+            using (DataTable dt = new DA_Parametro(connectionString).ObtenerParametros(null, nombre))
+            {
+                if (dt.Rows.Count > 0)
+                {
+                    DataRow dr = dt.Rows[0];
+
+                    parametro = new()
+                    {
+                        IdParametro = (int)dr["IdParametro"],
+                        Nombre = (string)dr["Nombre"],
+                    };
+                    if (dr["Descripcion"] != DBNull.Value) parametro.Descripcion = (string)dr["Descripcion"];
+                    if (dr["Valor"] != DBNull.Value) parametro.Valor = (string)dr["Valor"];
+                }
+            }
+            return parametro;
+        }
+
         [HttpPut]
         public IActionResult PutParametro(Parametro parametro)
         {
@@ -83,30 +104,13 @@ namespace InvControl.Server.Controllers
             }
         }
 
-        internal Parametro ObtenerParametro(string nombre)
-        {
-            Parametro parametro = null;
-            using (DataTable dt = new DA_Parametro(connectionString).ObtenerParametros(null, nombre))
-            {
-                if (dt.Rows.Count > 0)
-                {
-                    DataRow dr = dt.Rows[0];
-
-                    parametro = new()
-                    {
-                        IdParametro = (int)dr["IdParametro"],
-                        Nombre = (string)dr["Nombre"],
-                    };
-                    if (dr["Descripcion"] != DBNull.Value) parametro.Descripcion = (string)dr["Descripcion"];
-                    if (dr["Valor"] != DBNull.Value) parametro.Valor = (string)dr["Valor"];
-                }
-            }
-
-            return parametro;
-        }
-
         [HttpGet("bimbo")]
         public IActionResult GetParametrosBimbo()
+        {
+            return Ok(ObtenerParametrosBimbo());
+        }
+
+        internal List<ParametroBimbo> ObtenerParametrosBimbo()
         {
             List<ParametroBimbo> parametros = new();
             using (DataTable dt = new DA_Parametro(connectionString).ObtenerParametrosBimbo(null, null, null))
@@ -124,7 +128,7 @@ namespace InvControl.Server.Controllers
                     parametros.Add(parametroBimbo);
                 }
             }
-            return Ok(parametros);
+            return parametros;
         }
 
         [HttpPost("bimbo")]
