@@ -22,7 +22,7 @@
                                       Icon="add" Text="Agregar motivo de ajuste" Click="HandleClickAddMotivo" />
                     </HeaderTemplate>
                     <Columns>
-                        <RadzenDataGridColumn Property="@nameof(ParametroBimbo.Nombre)" Title="Nombre" Width="200px" />
+                        <RadzenDataGridColumn Property="@nameof(ParametroBimbo.Nombre)" Title="Nombre" Width="250px" />
                         <RadzenDataGridColumn Property="@nameof(ParametroBimbo.Descripcion)" Title="Descripción" />
                         <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                             <Template>
@@ -55,7 +55,7 @@
                                       Icon="add" Text="Agregar tipo de estoque" Click="HandleClickAddEstoque" />
                     </HeaderTemplate>
                     <Columns>
-                        <RadzenDataGridColumn Property="@nameof(ParametroBimbo.Nombre)" Title="Nombre" Width="200px" />
+                        <RadzenDataGridColumn Property="@nameof(ParametroBimbo.Nombre)" Title="Nombre" Width="250px" />
                         <RadzenDataGridColumn Property="@nameof(ParametroBimbo.Descripcion)" Title="Descripción" />
                         <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                             <Template>
@@ -109,7 +109,7 @@ else
         parametro.EsMotivoAjuste = true;
 
         var res = await DialogService.OpenAsync<ConfiguracionBimboForm>(
-           "Configuración de Bimbo",
+           "Motivo de ajuste",
            new() { { "ParametroBimbo", parametro } },
            new() { ShowClose = false, CloseDialogOnEsc = false });
 
@@ -123,7 +123,7 @@ else
     private async Task HandleClickEdit(ParametroBimbo parametro)
     {
         var res = await DialogService.OpenAsync<ConfiguracionBimboForm>(
-           "Configuración de Bimbo",
+           "Tipo de estoque",
            new() { { "ParametroBimbo", parametro.Clone() } },
            new() { ShowClose = false, CloseDialogOnEsc = false });
 
