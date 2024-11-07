@@ -9,5 +9,6 @@
         public static string OkButtonText => "Sí";
         public static string CancelButtonText => "No";
         public static string EmptySearch => "¡La búsqueda no ha devuelto resultados!";
+        public static string DeleleteResponse => "¡El registro se borro correctamente!";
     }
 }
