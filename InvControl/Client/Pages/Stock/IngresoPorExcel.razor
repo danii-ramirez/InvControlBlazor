@@ -39,15 +39,15 @@
     }
     else
     {
-        <RadzenDataGrid @ref="grid" TItem="MovimientoBimbo" Data="movimientos" AllowVirtualization="true" AllowSorting="true"
-                        CellRender="CellRender" Density="Density.Compact" Style="height: 20rem;">
+        <RadzenDataGrid @ref="grid" TItem="MovimientoBimbo" Data="movimientos" AllowVirtualization="true" AllowSorting="true" AllowGrouping="true"
+                        AllowFiltering="true" CellRender="CellRender" Density="Density.Compact" Style="height: 20rem;">
             <Columns>
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CanalVenta)" Title="Canal" />
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CodigoSku)" Title="codigo" />
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.NombreSku)" Title="nombre" />
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.Cantidad)" Title="cantidad" />
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.TipoEstoque)" Title="tipo de estoque" />
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.MotivoAjuste)" Title="motivo de ajuste" />
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CanalVenta)" Title="Canal" TextAlign="TextAlign.Right" />
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CodigoSku)" Title="Código" TextAlign="TextAlign.Right" />
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.NombreSku)" Title="Nombre" Groupable="false" />
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.Cantidad)" Title="Cantidad" TextAlign="TextAlign.Right" Groupable="false" />
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.TipoEstoque)" Title="Tipo de estoque" />
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.MotivoAjuste)" Title="Motivo de ajuste" />
             </Columns>
         </RadzenDataGrid>
 
@@ -197,10 +197,13 @@ else
     private void Clear()
     {
         movimientos.Clear();
-        disabledButtons = true;
+        disabledButtons = false;
         showProgessBar = false;
         total = 0;
         porcentaje = 0;
+        selectedFile = null;
+        fileName = null;
+        excelData = null;
         showGrid = false;
     }
 
