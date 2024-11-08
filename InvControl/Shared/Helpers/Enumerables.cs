@@ -53,4 +53,15 @@ namespace InvControl.Shared.Helpers
         MotivoAjuste = 2,
         TipoEstoque = 3,
     }
+
+    public enum BimboNombreColumna
+    {
+        CanalVenta = 1,
+        NroRemito = 2,
+        CodigoSku = 3,
+        NombreSku = 4,
+        Cantidad = 5,
+        TipoEstoque = 6,
+        MotivoAjuste = 7
+    }
 }

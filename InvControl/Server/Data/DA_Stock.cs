@@ -85,5 +85,37 @@ namespace InvControl.Server.Data
             cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
             cmd.ExecuteNonQuery();
         }
+
+        public void InsertarMovimientosBimbo(int idUsuario, int? canalVenta, string numeroRemito, int codigoSku, string nombreSku, int cantidad, string tipoEstoque,
+            string motivoAjuste)
+        {
+            var cnn = new SqlConnection(connectionString);
+            var cmd = cnn.CreateCommand();
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_ins_BimboMovimientos";
+            cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+            if (canalVenta != null) cmd.Parameters.AddWithValue("@pCanalVenta", canalVenta);
+            if (numeroRemito != null) cmd.Parameters.AddWithValue("@pNumeroRemito", numeroRemito);
+            cmd.Parameters.AddWithValue("@pCodigoSKU", codigoSku);
+            cmd.Parameters.AddWithValue("@pNombreSKU", nombreSku);
+            cmd.Parameters.AddWithValue("@pCantidad", cantidad);
+            cmd.Parameters.AddWithValue("@pTipoEstoque", tipoEstoque);
+            cmd.Parameters.AddWithValue("@pMotivoAjuste", motivoAjuste);
+            cnn.Open();
+            cmd.ExecuteNonQuery();
+            cnn.Close();
+        }
+
+        public void EliminarMovimientosBimbo(int idUsuario)
+        {
+            var cnn = new SqlConnection(connectionString);
+            var cmd = cnn.CreateCommand();
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_del_BimboMovimientos";
+            cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+            cnn.Open();
+            cmd.ExecuteNonQuery();
+            cnn.Close();
+        }
     }
 }

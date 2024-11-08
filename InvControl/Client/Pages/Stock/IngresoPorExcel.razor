@@ -1,21 +1,42 @@
 ﻿@page "/procesar-excel"
-
-@inject NavigationManager Navigation
 @using Microsoft.AspNetCore.SignalR.Client
+@attribute [Authorize]
+
 @implements IAsyncDisposable
+@inject ILogger<IngresoPorExcel> Logger
+@inject NavigationManager Navigation
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+@inject RadzenCustom RadzenCustom
 
-<InputFile OnChange="SeleccionarArchivo" />
-<button @onclick="EnviarExcel" disabled="@(!archivoSeleccionado)">Enviar Excel</button>
+<RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Procesar movimientos de Bimbo" class="rz-mb-3" />
 
-<p>@mensaje</p>
+<RadzenRow JustifyContent="JustifyContent.Center" class="rz-mb-3">
+    <RadzenColumn Size="12" SizeMD="4">
+        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="5px" Style="width: 100%;">
+            <RadzenCard Variant="Variant.Outlined" Style="width: 100%;">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 100%;">
+                    <RadzenLabel Text="Seleccione un archivo:" Component="upload" />
+                    <InputFile OnChange="SeleccionarArchivo"
+                               AdditionalAttributes="@(new Dictionary<string, object>(){{"accept", ".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"},{"disabled", selectedFile != null},{"id", "upload"}})" />
+                </RadzenStack>
+            </RadzenCard>
+            <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="upload_file" Text="Procesar" Click="HandleClickProcesar" Style="width: 7rem;" class="rz-mt-5" />
+        </RadzenStack>
+    </RadzenColumn>
+</RadzenRow>
 
-<RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Secondary" Value="lineasProcesadas" Max="total" ShowValue="false" />
-
-@if (lst.Count > 0)
+@if (showProgessBar)
 {
-    <RadzenDataGrid @ref="grid" TItem="MovimientoBimbo" Data="lst" AllowVirtualization="true" Density="Density.Compact" Style="height: 20rem;">
+    <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Secondary" @bind-Value="@porcentaje" />
+}
+
+@if (showGrid)
+{
+    <RadzenDataGrid @ref="grid" TItem="MovimientoBimbo" Data="movimientos" AllowVirtualization="true" AllowSorting="true"
+                    CellRender="CellRender" Density="Density.Compact" Style="height: 20rem;" class="rz-mt-3">
         <Columns>
-            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.Canal)" Title="Canal" />
+            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CanalVenta)" Title="Canal" />
             <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CodigoSku)" Title="codigo" />
             <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.NombreSku)" Title="nombre" />
             <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.Cantidad)" Title="cantidad" />
@@ -26,67 +47,118 @@
 }
 
 @code {
-    private HubConnection hubConnection;
-    private byte[] excelData;
-    private bool archivoSeleccionado = false;
-    private string mensaje;
-    private int lineasProcesadas = 0;
-    private int total = 0;
-    List<MovimientoBimbo> lst = new();
+    HubConnection hubConnection;
+    IBrowserFile selectedFile;
+
+    string fileName;
+    byte[] excelData;
+    Stream stream;
+
+    List<MovimientoBimbo> movimientos = new();
+    int total = 0;
+    double porcentaje;
+    bool showForm, showProgessBar, showGrid;
+
     RadzenDataGrid<MovimientoBimbo> grid;
 
-    protected override async Task OnInitializedAsync()
+    private async Task InicializarHub()
     {
         hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/procesamientoHub"))
             .Build();
 
-        hubConnection.On<int, int>("ProgresoActualizado", (lineasProcesadas, total) =>
+        hubConnection.On<int>("ProcesoInicial", (total) =>
         {
-            this.lineasProcesadas = lineasProcesadas;
             this.total = total;
+            RadzenCustom.CloseDialog();
+            showProgessBar = true;
             StateHasChanged();
         });
 
-        hubConnection.On<string>("ProcesamientoCompleto", (resultado) =>
+        hubConnection.On<int>("ProcesoActualizado", (porcentaje) =>
         {
-            mensaje = resultado;
+            this.porcentaje = Math.Round(((double)porcentaje / total) * 100, 2);
             StateHasChanged();
         });
 
-        hubConnection.On<List<MovimientoBimbo>>("MostarTabla", async (resultado) =>
+        hubConnection.On<MovimientoBimbo>("ActualziarGrid", async (movimiento) =>
         {
-            Console.WriteLine(resultado == null);
-            Console.WriteLine(resultado.Count);
-
-            lst = resultado;
-
+            if (movimientos.Exists(x => x.CanalVenta == movimiento.CanalVenta & x.CodigoSku == movimiento.CodigoSku))
+                movimientos.Find(x => x.CanalVenta == movimiento.CanalVenta & x.CodigoSku == movimiento.CodigoSku).Cantidad += movimiento.Cantidad;
+            else
+                movimientos.Add(movimiento);
 
             StateHasChanged();
             await grid.Reload();
         });
 
+        hubConnection.On("ProcesoTerminado", async () =>
+        {
+            showGrid = true;
+            await CerrarHub();
+            StateHasChanged();
+        });
+
         await hubConnection.StartAsync();
+    }
+
+    private async Task CerrarHub()
+    {
+        await hubConnection.StopAsync();
+        await hubConnection.DisposeAsync();
     }
 
     private async Task SeleccionarArchivo(InputFileChangeEventArgs e)
     {
+        selectedFile = e.File;
+
         var file = e.File;
         if (file != null)
         {
             using var memoryStream = new MemoryStream();
             await file.OpenReadStream(long.MaxValue).CopyToAsync(memoryStream);
             excelData = memoryStream.ToArray();
-            archivoSeleccionado = true;
+            fileName = file.Name;
         }
     }
 
-    private async Task EnviarExcel()
+    private async Task HandleClickProcesar()
     {
-        if (excelData != null)
+        if (selectedFile != null)
         {
-            mensaje = "Procesando...";
-            await hubConnection.SendAsync("ProcesarMovimientosBimbo", excelData);
+            var res = await DialogService.Confirm(
+                $"¿Desea procesar el archivo {fileName}?",
+                Message.Title,
+                new() { OkButtonText = Message.OkButtonText, CancelButtonText = Message.CancelButtonText });
+
+            if (res != null && (bool)res)
+            {
+                try
+                {
+                    RadzenCustom.OpenBusyWithLoader("Cargando...");
+                    await InicializarHub();
+                    await hubConnection.SendAsync("ProcesarMovimientosBimbo", excelData);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "{msg}", ex.Message);
+                }
+            }
+        }
+        else
+            NotificationService.Notify(NotificationSeverity.Info, "Debe seleccionar un archivo");
+    }
+
+    private void CellRender(DataGridCellRenderEventArgs<MovimientoBimbo> args)
+    {
+        if (args.Data.SkuNoEncontrado)
+        {
+            args.Attributes.Add("class", "rz-background-color-danger-lighter");
+        }
+
+        if (args.Column.Property == "CanalVenta" && args.Data.CanalVentaNoEncontrado)
+        {
+            args.Attributes.Add("style", "background-color: var(--rz-warning-lighter) !important;");
         }
     }
 
