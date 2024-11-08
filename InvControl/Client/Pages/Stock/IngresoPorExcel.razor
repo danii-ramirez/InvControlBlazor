@@ -9,41 +9,57 @@
 @inject NotificationService NotificationService
 @inject RadzenCustom RadzenCustom
 
-<RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Procesar movimientos de Bimbo" class="rz-mb-3" />
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Procesar movimientos de Bimbo" class="rz-mb-3" />
 
-<RadzenRow JustifyContent="JustifyContent.Center" class="rz-mb-3">
-    <RadzenColumn Size="12" SizeMD="4">
-        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="5px" Style="width: 100%;">
-            <RadzenCard Variant="Variant.Outlined" Style="width: 100%;">
-                <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 100%;">
-                    <RadzenLabel Text="Seleccione un archivo:" Component="upload" />
-                    <InputFile OnChange="SeleccionarArchivo"
-                               AdditionalAttributes="@(new Dictionary<string, object>(){{"accept", ".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"},{"disabled", selectedFile != null},{"id", "upload"}})" />
+    @if (!showGrid)
+    {
+        <RadzenRow JustifyContent="JustifyContent.Center" class="rz-mb-3">
+            <RadzenColumn Size="12" SizeMD="4">
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="5px" Style="width: 100%;">
+                    <RadzenCard Variant="Variant.Outlined" Style="width: 100%;">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 100%;">
+                            <RadzenLabel Text="Seleccione un archivo:" Component="upload" />
+                            <InputFile OnChange="SeleccionarArchivo" AdditionalAttributes="@(new Dictionary<string, object>(){{"accept", ".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"},{"id", "upload"}, {"disabled", disabledButtons}})" />
+                        </RadzenStack>
+                    </RadzenCard>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="5px" Style="width: 100%;" class="rz-mt-5">
+                        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="upload_file" Text="Procesar" Click="HandleClickProcesar" Style="width: 7rem;" Disabled="disabledButtons" title="Procesar" />
+                    </RadzenStack>
                 </RadzenStack>
-            </RadzenCard>
-            <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="upload_file" Text="Procesar" Click="HandleClickProcesar" Style="width: 7rem;" class="rz-mt-5" />
+            </RadzenColumn>
+        </RadzenRow>
+
+        @if (showProgessBar)
+        {
+            <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Secondary" @bind-Value="@porcentaje" />
+        }
+    }
+    else
+    {
+        <RadzenDataGrid @ref="grid" TItem="MovimientoBimbo" Data="movimientos" AllowVirtualization="true" AllowSorting="true"
+                        CellRender="CellRender" Density="Density.Compact" Style="height: 20rem;">
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CanalVenta)" Title="Canal" />
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CodigoSku)" Title="codigo" />
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.NombreSku)" Title="nombre" />
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.Cantidad)" Title="cantidad" />
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.TipoEstoque)" Title="tipo de estoque" />
+                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.MotivoAjuste)" Title="motivo de ajuste" />
+            </Columns>
+        </RadzenDataGrid>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="HandleClickCancelar" />
+            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" Click="HandleClickGuardar" />
         </RadzenStack>
-    </RadzenColumn>
-</RadzenRow>
-
-@if (showProgessBar)
-{
-    <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Secondary" @bind-Value="@porcentaje" />
+    }
 }
-
-@if (showGrid)
+else
 {
-    <RadzenDataGrid @ref="grid" TItem="MovimientoBimbo" Data="movimientos" AllowVirtualization="true" AllowSorting="true"
-                    CellRender="CellRender" Density="Density.Compact" Style="height: 20rem;" class="rz-mt-3">
-        <Columns>
-            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CanalVenta)" Title="Canal" />
-            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CodigoSku)" Title="codigo" />
-            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.NombreSku)" Title="nombre" />
-            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.Cantidad)" Title="cantidad" />
-            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.TipoEstoque)" Title="tipo de estoque" />
-            <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.MotivoAjuste)" Title="motivo de ajuste" />
-        </Columns>
-    </RadzenDataGrid>
+    <Loader />
 }
 
 @code {
@@ -52,14 +68,19 @@
 
     string fileName;
     byte[] excelData;
-    Stream stream;
 
     List<MovimientoBimbo> movimientos = new();
     int total = 0;
     double porcentaje;
-    bool showForm, showProgessBar, showGrid;
+    bool showForm, showProgessBar, showGrid, disabledButtons;
 
     RadzenDataGrid<MovimientoBimbo> grid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1);
+        showForm = true;
+    }
 
     private async Task InicializarHub()
     {
@@ -135,6 +156,7 @@
             {
                 try
                 {
+                    disabledButtons = true;
                     RadzenCustom.OpenBusyWithLoader("Cargando...");
                     await InicializarHub();
                     await hubConnection.SendAsync("ProcesarMovimientosBimbo", excelData);
@@ -160,6 +182,26 @@
         {
             args.Attributes.Add("style", "background-color: var(--rz-warning-lighter) !important;");
         }
+    }
+
+    private void HandleClickGuardar()
+    {
+        Clear();
+    }
+
+    private void HandleClickCancelar()
+    {
+        Clear();
+    }
+
+    private void Clear()
+    {
+        movimientos.Clear();
+        disabledButtons = true;
+        showProgessBar = false;
+        total = 0;
+        porcentaje = 0;
+        showGrid = false;
     }
 
     public async ValueTask DisposeAsync()
