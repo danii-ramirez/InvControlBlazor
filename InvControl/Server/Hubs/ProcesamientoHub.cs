@@ -33,84 +33,91 @@ namespace InvControl.Server.Hubs
 
         public async Task ProcesarMovimientosBimbo(byte[] excelData)
         {
-            DA_CanalVenta daCV = new(connectionString);
-            DA_SKU daSKU = new(connectionString);
-            DA_Stock daStock = new(connectionString);
-            var parametros = new ParametrosController(connectionString: connectionString).ObtenerParametrosBimbo();
-            List<MovimientoBimbo> movimientos = new();
-
-            DataTable dt = new();
-            using (var stream = new MemoryStream(excelData))
+            try
             {
-                using var workbook = new XLWorkbook(stream);
-                var worksheet = workbook.Worksheets.First();
+                DA_CanalVenta daCV = new(connectionString);
+                DA_SKU daSKU = new(connectionString);
+                DA_Stock daStock = new(connectionString);
+                var parametros = new ParametrosController(connectionString: connectionString).ObtenerParametrosBimbo();
+                List<MovimientoBimbo> movimientos = new();
 
-                foreach (var headerCell in worksheet.Row(1).CellsUsed())
+                DataTable dt = new();
+                using (var stream = new MemoryStream(excelData))
                 {
-                    dt.Columns.Add(headerCell.Value.ToString());
-                }
+                    using var workbook = new XLWorkbook(stream);
+                    var worksheet = workbook.Worksheets.First();
 
-                int r = 0;
-                await Clients.Caller.SendAsync("ProcesoInicial", worksheet.RowsUsed().Skip(1).Count());
-
-                foreach (var row in worksheet.RowsUsed().Skip(1))
-                {
-                    r++;
-
-                    int i = 0;
-                    var dataRow = dt.NewRow();
-
-                    foreach (var cell in row.Cells())
+                    foreach (var headerCell in worksheet.Row(1).CellsUsed())
                     {
-                        dataRow[i] = cell.Value;
-                        i++;
+                        dt.Columns.Add(headerCell.Value.ToString());
                     }
 
-                    //dt.Rows.Add(dataRow);
+                    int r = 0;
+                    await Clients.Caller.SendAsync("ProcesoInicial", worksheet.RowsUsed().Skip(1).Count());
 
-                    if (parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.MotivoAjuste).Exists(x => x.Nombre.ToUpper() == dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.MotivoAjuste).Descripcion].ToString().Trim().ToUpper())
-                        && parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.TipoEstoque).Exists(x => x.Nombre.ToUpper() == dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.TipoEstoque).Descripcion].ToString().Trim().ToUpper()))
+                    foreach (var row in worksheet.RowsUsed().Skip(1))
                     {
-                        MovimientoBimbo mb = new();
+                        r++;
 
-                        if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion] != DBNull.Value)
+                        int i = 0;
+                        var dataRow = dt.NewRow();
+
+                        foreach (var cell in row.Cells())
                         {
-                            if (int.TryParse(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion].ToString(), out int canalVenta))
+                            dataRow[i] = cell.Value;
+                            i++;
+                        }
+
+                        //dt.Rows.Add(dataRow);
+
+                        if (parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.MotivoAjuste).Exists(x => x.Nombre.ToUpper() == dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.MotivoAjuste).Descripcion].ToString().Trim().ToUpper())
+                            && parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.TipoEstoque).Exists(x => x.Nombre.ToUpper() == dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.TipoEstoque).Descripcion].ToString().Trim().ToUpper()))
+                        {
+                            MovimientoBimbo mb = new();
+
+                            if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion] != DBNull.Value)
                             {
-                                mb.CanalVenta = canalVenta;
-                                var dtCV = daCV.ObtenerCanalesVentas(mb.CanalVenta, null);
-                                if (dtCV.Rows.Count > 0)
-                                    mb.IdCanalVenta = (int?)dtCV.Rows[0]["IdCanalVenta"];
+                                if (int.TryParse(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion].ToString(), out int canalVenta))
+                                {
+                                    mb.CanalVenta = canalVenta;
+                                    var dtCV = daCV.ObtenerCanalesVentas(mb.CanalVenta, null);
+                                    if (dtCV.Rows.Count > 0)
+                                        mb.IdCanalVenta = (int?)dtCV.Rows[0]["IdCanalVenta"];
+                                }
                             }
+
+                            if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion] != DBNull.Value)
+                                mb.NumeroRemito = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion].ToString();
+
+                            if (int.TryParse(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CodigoSku).Descripcion].ToString(), out int sku))
+                            {
+                                mb.CodigoSku = sku;
+                                var dtSku = daSKU.ObtenerSKU(null, mb.CodigoSku, null, null, null, null);
+                                if (dtSku.Rows.Count > 0)
+                                    mb.IdSku = (int?)dtSku.Rows[0]["IdSKU"];
+                            }
+
+                            mb.NombreSku = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NombreSku).Descripcion].ToString();
+
+                            if (int.TryParse(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.Cantidad).Descripcion].ToString(), out int cantidad))
+                                mb.Cantidad = cantidad;
+
+                            mb.TipoEstoque = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.TipoEstoque).Descripcion].ToString();
+                            mb.MotivoAjuste = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.MotivoAjuste).Descripcion].ToString();
+
+                            await Clients.Caller.SendAsync("ActualziarGrid", mb);
                         }
 
-                        if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion] != DBNull.Value)
-                            mb.NumeroRemito = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion].ToString();
-
-                        if (int.TryParse(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CodigoSku).Descripcion].ToString(), out int sku))
-                        {
-                            mb.CodigoSku = sku;
-                            var dtSku = daSKU.ObtenerSKU(null, mb.CodigoSku, null, null, null, null);
-                            if (dtSku.Rows.Count > 0)
-                                mb.IdSku = (int?)dtSku.Rows[0]["IdSKU"];
-                        }
-
-                        mb.NombreSku = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NombreSku).Descripcion].ToString();
-
-                        if (int.TryParse(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.Cantidad).Descripcion].ToString(), out int cantidad))
-                            mb.Cantidad = cantidad;
-
-                        mb.TipoEstoque = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.TipoEstoque).Descripcion].ToString();
-                        mb.MotivoAjuste = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.MotivoAjuste).Descripcion].ToString();
-
-                        await Clients.Caller.SendAsync("ActualziarGrid", mb);
+                        await Clients.Caller.SendAsync("ProcesoActualizado", r);
                     }
-
-                    await Clients.Caller.SendAsync("ProcesoActualizado", r);
                 }
-            }
 
-            await Clients.Caller.SendAsync("ProcesoTerminado");
+                await Clients.Caller.SendAsync("ProcesoTerminado");
+            }
+            catch (Exception ex)
+            {
+                await Clients.Caller.SendAsync("ProcesoConError", ex);
+            }
         }
     }
 }
