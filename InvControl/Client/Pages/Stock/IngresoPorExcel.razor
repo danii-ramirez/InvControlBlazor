@@ -1,9 +1,10 @@
-﻿@page "/procesar-excel"
+﻿@page "/stock/movimientos/bimbo"
 @using Microsoft.AspNetCore.SignalR.Client
 @attribute [Authorize]
 
 @implements IAsyncDisposable
 @inject ILogger<IngresoPorExcel> Logger
+@inject UsuariosService UsuariosService
 @inject StockService StockService
 @inject NavigationManager Navigation
 @inject DialogService DialogService
@@ -107,8 +108,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(1);
-
+        await UsuariosService.GetValidarAcceso();
         showForm = true;
     }
 
