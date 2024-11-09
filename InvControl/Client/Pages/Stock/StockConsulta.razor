@@ -102,7 +102,7 @@ else
     private async Task HandleClickExportToExcel()
     {
         RadzenCustom.OpenBusyWithLoader("Generando Excel");
-        await StockService.PostExportToExcel(stock);
+        await StockService.PostStockExportToExcel(stock);
         RadzenCustom.CloseDialog();
     }
 }

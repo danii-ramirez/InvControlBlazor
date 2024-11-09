@@ -231,5 +231,85 @@ namespace InvControl.Server.Controllers
                 return StatusCode(500, ex);
             }
         }
+
+        [HttpPost("movimientosbimbo")]
+        public IActionResult PostMovimientosBimbo(List<MovimientoBimbo> movimientos)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_Stock daStock = new(connectionString);
+
+                int idUsuario = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
+
+                    DateTime fecha = DateTime.Now;
+                    foreach (var m in movimientos)
+                    {
+                        string referencia = null;
+                        if (!string.IsNullOrWhiteSpace(m.NumeroRemito))
+                            referencia += $"Remito: {m.NumeroRemito}";
+
+                        daStock.InsertarMovimientosStaging(idUsuario, m.IdCanalVenta, (int)m.IdSku, m.CodigoSku, m.NombreSku, m.Cantidad, referencia, fecha, transaction);
+                    }
+
+                    transaction.Commit();
+                    cnn.Close();
+                }
+
+                daStock.SincronizarMovimientosStock(idUsuario, 3);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpPost("movimientosbimbo/ExportToExcel")]
+        public IActionResult PostMovimientosBimboExportToExcel(List<MovimientoBimbo> movimientos)
+        {
+            try
+            {
+                using var workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Datos");
+
+                worksheet.Cell(1, 1).Value = "Canal";
+                worksheet.Cell(1, 2).Value = "Nro. de Remito";
+                worksheet.Cell(1, 3).Value = "Código";
+                worksheet.Cell(1, 4).Value = "Nombre";
+                worksheet.Cell(1, 5).Value = "Cantidad";
+                worksheet.Cell(1, 6).Value = "Tipo de estoque";
+                worksheet.Cell(1, 7).Value = "Motivo de ajuste";
+
+                for (int i = 0; i < movimientos.Count; i++)
+                {
+                    worksheet.Cell(i + 2, 1).Value = movimientos[i].CanalVenta;
+                    worksheet.Cell(i + 2, 2).Value = movimientos[i].NumeroRemito;
+                    worksheet.Cell(i + 2, 3).Value = movimientos[i].CodigoSku;
+                    worksheet.Cell(i + 2, 4).Value = movimientos[i].NombreSku;
+                    worksheet.Cell(i + 2, 5).Value = movimientos[i].Cantidad;
+                    worksheet.Cell(i + 2, 6).Value = movimientos[i].TipoEstoque;
+                    worksheet.Cell(i + 2, 7).Value = movimientos[i].MotivoAjuste;
+                }
+
+                using var stream = new MemoryStream();
+                workbook.SaveAs(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ExportedData.xlsx");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
     }
 }

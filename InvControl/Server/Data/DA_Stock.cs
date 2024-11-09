@@ -1,5 +1,6 @@
-using System.Data;
+using InvControl.Shared.Models;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace InvControl.Server.Data
 {
@@ -84,6 +85,49 @@ namespace InvControl.Server.Data
             cmd.Parameters.AddWithValue("@pFechaMovimiento", fechaMovimiento);
             cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
             cmd.ExecuteNonQuery();
+        }
+
+        public void InsertarMovimientosStaging(int idUsuario, int? idCanalVenta, int idSku, int codigoSku, string nombreSku, int cantidad, string referencia, DateTime fecha, SqlTransaction transaction)
+        {
+            var cnn = transaction.Connection;
+            var cmd = cnn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_ins_MovimientosStaging";
+            cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+            if (idCanalVenta != null) cmd.Parameters.AddWithValue("@pIdCanalVenta", idCanalVenta);
+            cmd.Parameters.AddWithValue("@pIdSKU", idSku);
+            cmd.Parameters.AddWithValue("@pCodigoSKU", codigoSku);
+            cmd.Parameters.AddWithValue("@pNombreSKU", nombreSku);
+            cmd.Parameters.AddWithValue("@pCantidad", cantidad);
+            cmd.Parameters.AddWithValue("@pReferencia", referencia);
+            cmd.Parameters.AddWithValue("@pFecha", fecha);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void EliminarMovimientosBimbo(int idUsuario)
+        {
+            var cnn = new SqlConnection(connectionString);
+            var cmd = cnn.CreateCommand();
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_del_MovimientosStaging";
+            cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+            cnn.Open();
+            cmd.ExecuteNonQuery();
+            cnn.Close();
+        }
+
+        public void SincronizarMovimientosStock(int idUsuario, int idTipoMovimiento)
+        {
+            var cnn = new SqlConnection(connectionString);
+            var cmd = cnn.CreateCommand();
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_sync_StockMovimientos";
+            cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+            cmd.Parameters.AddWithValue("@pIdTipoMovimiento", idTipoMovimiento);
+            cnn.Open();
+            cmd.ExecuteNonQuery();
+            cnn.Close();
         }
     }
 }

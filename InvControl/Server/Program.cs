@@ -1,11 +1,11 @@
+using InvControl.Server.Hubs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR(options => options.MaximumReceiveMessageSize = long.MaxValue);
 
 builder.Logging.AddConsole();
 
@@ -54,6 +54,8 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
+app.MapHub<ProcesamientoHub>("/procesamientoHub");
+
 app.MapFallbackToFile("index.html");
 
 app.Run();
