@@ -94,7 +94,10 @@ namespace InvControl.Server.Hubs
                                 mb.CodigoSku = sku;
                                 var dtSku = daSKU.ObtenerSKU(null, mb.CodigoSku, null, null, null, null);
                                 if (dtSku.Rows.Count > 0)
+                                {
                                     mb.IdSku = (int?)dtSku.Rows[0]["IdSKU"];
+                                    mb.NombreSkuOriginal = (string)dtSku.Rows[0]["Nombre"];
+                                }
                             }
 
                             mb.NombreSku = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NombreSku).Descripcion].ToString();
