@@ -4,6 +4,7 @@
 
 @implements IAsyncDisposable
 @inject ILogger<IngresoPorExcel> Logger
+@inject StockService StockService
 @inject NavigationManager Navigation
 @inject DialogService DialogService
 @inject NotificationService NotificationService
@@ -34,22 +35,47 @@
 
         @if (showProgessBar)
         {
-            <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Secondary" @bind-Value="@porcentaje" />
+            <RadzenRow JustifyContent="JustifyContent.Center">
+                <RadzenColumn Size="12" SizeMD="8">
+                    <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Secondary" @bind-Value="@porcentaje" />
+                </RadzenColumn>
+            </RadzenRow>
         }
     }
     else
     {
-        <RadzenDataGrid @ref="grid" TItem="MovimientoBimbo" Data="movimientos" AllowVirtualization="true" AllowSorting="true" AllowGrouping="true"
-                        AllowFiltering="true" CellRender="CellRender" Density="Density.Compact" Style="height: 20rem;">
-            <Columns>
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CanalVenta)" Title="Canal" TextAlign="TextAlign.Right" />
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CodigoSku)" Title="Código" TextAlign="TextAlign.Right" />
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.NombreSku)" Title="Nombre" Groupable="false" />
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.Cantidad)" Title="Cantidad" TextAlign="TextAlign.Right" Groupable="false" />
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.TipoEstoque)" Title="Tipo de estoque" />
-                <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.MotivoAjuste)" Title="Motivo de ajuste" />
-            </Columns>
-        </RadzenDataGrid>
+        <RadzenRow JustifyContent="JustifyContent.Center" class="rz-mb-3">
+            <RadzenColumn Size="12" SizeMD="8">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" Gap="1rem">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+                        <RadzenLabel Text="Estado:" Component="estado" />
+                        <RadzenDropDown Data="@(Enum.GetValues(typeof(BimboOperacion)).Cast<Enum>())" @bind-Value=@bimboOperacion
+                                        Style="width: 20rem;" Name="estado" Change="HandleEstadoChange" />
+                    </RadzenStack>
+
+                    <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small"
+                                  Icon="file_save" Text="Exportar a Excel" Click="HandleClickExportToExcel" Style="height: 2rem;" />
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenRow JustifyContent="JustifyContent.Center">
+            <RadzenColumn Size="12" SizeMD="8">
+                <RadzenDataGrid @ref="grid" TItem="MovimientoBimbo" Data="movimientosGrid" AllowVirtualization="true" AllowSorting="true" AllowGrouping="true"
+                                AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                CellRender="CellRender" Density="Density.Compact" Style="height: 25rem;" GroupPanelText="@RadzenHelper.Traducciones["GroupPanelText"]">
+                    <Columns>
+                        <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CanalVenta)" Title="Canal" TextAlign="TextAlign.Right" Width="90px" />
+                        <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.NumeroRemito)" Title="Nro. de Remito" Width="150px" />
+                        <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.CodigoSku)" Title="Código" TextAlign="TextAlign.Right" Width="100px" />
+                        <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.NombreSku)" Title="Nombre" Groupable="false" />
+                        <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.Cantidad)" Title="Cantidad" TextAlign="TextAlign.Right" Groupable="false" Width="100px" />
+                        <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.TipoEstoque)" Title="Tipo de estoque" Width="150px" />
+                        <RadzenDataGridColumn Property="@nameof(MovimientoBimbo.MotivoAjuste)" Title="Motivo de ajuste" Width="150px" />
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenColumn>
+        </RadzenRow>
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
             <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="HandleClickCancelar" />
@@ -70,15 +96,19 @@ else
     byte[] excelData;
 
     List<MovimientoBimbo> movimientos = new();
+    List<MovimientoBimbo> movimientosGrid = new();
     int total = 0;
     double porcentaje;
     bool showForm, showProgessBar, showGrid, disabledButtons;
 
     RadzenDataGrid<MovimientoBimbo> grid;
 
+    BimboOperacion bimboOperacion;
+
     protected override async Task OnInitializedAsync()
     {
         await Task.Delay(1);
+
         showForm = true;
     }
 
@@ -115,6 +145,7 @@ else
 
         hubConnection.On("ProcesoTerminado", async () =>
         {
+            movimientosGrid = movimientos;
             showGrid = true;
             await CerrarHub();
             StateHasChanged();
@@ -173,25 +204,80 @@ else
 
     private void CellRender(DataGridCellRenderEventArgs<MovimientoBimbo> args)
     {
-        if (args.Data.SkuNoEncontrado)
+        if (args.Data.IdSku == null)
         {
             args.Attributes.Add("class", "rz-background-color-danger-lighter");
         }
 
-        if (args.Column.Property == "CanalVenta" && args.Data.CanalVentaNoEncontrado)
+        if (args.Column.Property == "CanalVenta" && args.Data.IdCanalVenta == null)
         {
             args.Attributes.Add("style", "background-color: var(--rz-warning-lighter) !important;");
         }
     }
 
-    private void HandleClickGuardar()
+    private async Task HandleClickGuardar()
     {
-        Clear();
+        var confirm = await DialogService.Alert(
+              "<p><strong>¡ATENCIÓN!</strong></p><p>Solo se procesaran los que estén en el estado: <strong>Disponible para procesar</strong>.</p>",
+              Message.Title,
+              new() { ShowClose = false, CloseDialogOnEsc = false, OkButtonText = "Confirmar", Width = "fit-content" });
+
+        if ((bool)confirm)
+        {
+            var result = await DialogService.Confirm(
+                    Message.Confirm,
+                    Message.Title,
+                    new() { OkButtonText = Message.OkButtonText, CancelButtonText = Message.CancelButtonText });
+
+            if (result != null && (bool)result)
+            {
+                RadzenCustom.OpenBusyWithLoader();
+                var res = await StockService.PostMovimientosBimbo(movimientos.FindAll(x => x.IdSku != null & x.IdCanalVenta != null));
+                RadzenCustom.CloseDialog();
+                NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
+                Clear();
+            }
+        }
     }
 
-    private void HandleClickCancelar()
+    private async Task HandleClickCancelar()
     {
-        Clear();
+        var result = await DialogService.Confirm(
+            Message.Cancel,
+            Message.Title,
+            new() { OkButtonText = Message.OkButtonText, CancelButtonText = Message.CancelButtonText });
+
+        if (result != null && (bool)result)
+            Clear();
+    }
+
+    private async Task HandleEstadoChange()
+    {
+        if (bimboOperacion == BimboOperacion.Todos)
+        {
+            movimientosGrid = movimientos;
+        }
+        else if (bimboOperacion == BimboOperacion.Disponible)
+        {
+            movimientosGrid = movimientos.FindAll(x => x.IdSku != null & x.IdCanalVenta != null);
+        }
+        else if (bimboOperacion == BimboOperacion.SkuNoEncontrado)
+        {
+            movimientosGrid = movimientos.FindAll(x => x.IdSku == null);
+        }
+        else if (bimboOperacion == BimboOperacion.CanalVentaNoEncontrado)
+        {
+            movimientosGrid = movimientos.FindAll(x => x.IdCanalVenta == null);
+        }
+
+        await grid.Reload();
+    }
+
+    private async Task HandleClickExportToExcel()
+    {
+        RadzenCustom.OpenBusyWithLoader("Generando Excel");
+        await StockService.PostMovimientosBimboExportToExcel(movimientos);
+        RadzenCustom.CloseDialog();
     }
 
     private void Clear()

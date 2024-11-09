@@ -39,8 +39,6 @@ namespace InvControl.Server.Hubs
             var parametros = new ParametrosController(connectionString: connectionString).ObtenerParametrosBimbo();
             List<MovimientoBimbo> movimientos = new();
 
-            //daStock.EliminarMovimientosBimbo(idUsuario);
-
             DataTable dt = new();
             using (var stream = new MemoryStream(excelData))
             {
@@ -80,10 +78,10 @@ namespace InvControl.Server.Hubs
                             if (int.TryParse(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion].ToString(), out int canalVenta))
                             {
                                 mb.CanalVenta = canalVenta;
-                                mb.CanalVentaNoEncontrado = daCV.ObtenerCanalesVentas(mb.CanalVenta, null).Rows.Count == 0;
+                                var dtCV = daCV.ObtenerCanalesVentas(mb.CanalVenta, null);
+                                if (dtCV.Rows.Count > 0)
+                                    mb.IdCanalVenta = (int?)dtCV.Rows[0]["IdCanalVenta"];
                             }
-                            else
-                                mb.CanalVentaNoEncontrado = true;
                         }
 
                         if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion] != DBNull.Value)
@@ -92,10 +90,10 @@ namespace InvControl.Server.Hubs
                         if (int.TryParse(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CodigoSku).Descripcion].ToString(), out int sku))
                         {
                             mb.CodigoSku = sku;
-                            mb.SkuNoEncontrado = daSKU.ObtenerSKU(null, mb.CodigoSku, null, null, null, null).Rows.Count == 0;
+                            var dtSku = daSKU.ObtenerSKU(null, mb.CodigoSku, null, null, null, null);
+                            if (dtSku.Rows.Count > 0)
+                                mb.IdSku = (int?)dtSku.Rows[0]["IdSKU"];
                         }
-                        else
-                            mb.SkuNoEncontrado = true;
 
                         mb.NombreSku = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NombreSku).Descripcion].ToString();
 
@@ -104,8 +102,6 @@ namespace InvControl.Server.Hubs
 
                         mb.TipoEstoque = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.TipoEstoque).Descripcion].ToString();
                         mb.MotivoAjuste = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.MotivoAjuste).Descripcion].ToString();
-
-                        //daStock.InsertarMovimientosBimbo(idUsuario, mb.CanalVenta, mb.NumeroRemito?.Trim(), mb.CodigoSku, mb.NombreSku.Trim(), mb.Cantidad, mb.TipoEstoque, mb.MotivoAjuste);
 
                         await Clients.Caller.SendAsync("ActualziarGrid", mb);
                     }

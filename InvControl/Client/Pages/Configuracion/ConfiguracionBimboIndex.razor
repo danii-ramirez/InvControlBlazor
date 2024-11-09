@@ -18,8 +18,8 @@
                 <RadzenText TagName="TagName.H6" TextStyle="TextStyle.H6" Text="Nombres de las columnas" />
                 <RadzenDataGrid @ref="gridEstoques" TItem="ParametroBimbo" Data="nombres" AllowSorting="true" Density="Density.Compact" Style="height: 20rem;" EmptyText="">
                     <Columns>
-                        <RadzenDataGridColumn Property="@nameof(ParametroBimbo.Descripcion)" Title="Descripción" />
                         <RadzenDataGridColumn Property="@nameof(ParametroBimbo.Nombre)" Title="Nombre" Width="250px" />
+                        <RadzenDataGridColumn Property="@nameof(ParametroBimbo.Descripcion)" Title="Descripción" />
                         <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                             <Template>
                                 <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"

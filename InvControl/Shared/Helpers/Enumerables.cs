@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Reflection.Emit;
 
 namespace InvControl.Shared.Helpers
 {
@@ -63,5 +64,17 @@ namespace InvControl.Shared.Helpers
         Cantidad = 5,
         TipoEstoque = 6,
         MotivoAjuste = 7
+    }
+
+    public enum BimboOperacion
+    {
+        [Display(Description = "Todos")]
+        Todos,
+        [Display(Description = "Disponible para procesar")]
+        Disponible,
+        [Display(Description = "SKU no encontrado")]
+        SkuNoEncontrado,
+        [Display(Description = "Canal de venta no encontrado")]
+        CanalVentaNoEncontrado
     }
 }

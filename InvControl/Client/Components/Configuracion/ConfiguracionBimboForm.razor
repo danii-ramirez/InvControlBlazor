@@ -6,32 +6,16 @@
     <DataAnnotationsValidator />
     <CustomValidation @ref="customValidation" />
 
-    @if (ParametroBimbo.IdTipoBimboConcepto == (int)BimboConcepto.NombreColumna)
-    {
-        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-            <RadzenLabel Text="Descripción:" Component="Descripción" />
-            <RadzenTextArea @bind-Value="ParametroBimbo.Descripcion" Name="Descripción" Style="min-height: 50px; max-height: 100px;" Disabled="true" />
-        </RadzenStack>
+    <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mb-3">
+        <RadzenLabel Text="Nombre:" Component="nombre" />
+        <RadzenTextBox @bind-Value="ParametroBimbo.Nombre" MaxLength="50" Name="nombre" Disabled="(isBusy | ParametroBimbo.IdTipoBimboConcepto == (int)BimboConcepto.NombreColumna)" />
+        <ValidationMessage For="@(() => ParametroBimbo.Nombre)" />
+    </RadzenStack>
 
-        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
-            <RadzenLabel Text="Nombre:" Component="nombre" />
-            <RadzenTextBox @bind-Value="ParametroBimbo.Nombre" MaxLength="50" Name="nombre" Disabled="isBusy" />
-            <ValidationMessage For="@(() => ParametroBimbo.Nombre)" />
-        </RadzenStack>
-    }
-    else
-    {
-        <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mb-3">
-            <RadzenLabel Text="Nombre:" Component="nombre" />
-            <RadzenTextBox @bind-Value="ParametroBimbo.Nombre" MaxLength="50" Name="nombre" Disabled="isBusy" />
-            <ValidationMessage For="@(() => ParametroBimbo.Nombre)" />
-        </RadzenStack>
-
-        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
-            <RadzenLabel Text="Descripción:" Component="Descripción" />
-            <RadzenTextArea @bind-Value="ParametroBimbo.Descripcion" MaxLength="255" Name="Descripción" Style="min-height: 50px; max-height: 100px;" Disabled="isBusy" />
-        </RadzenStack>
-    }
+    <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+        <RadzenLabel Text="Descripción:" Component="Descripción" />
+        <RadzenTextArea @bind-Value="ParametroBimbo.Descripcion" MaxLength="255" Name="Descripción" Style="min-height: 50px; max-height: 100px;" Disabled="isBusy" />
+    </RadzenStack>
 
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
         <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="Cancelar" Disabled="isBusy" />

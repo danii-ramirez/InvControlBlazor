@@ -35,9 +35,9 @@ namespace InvControl.Client.Services
             return (await _httpClient.GetFromJsonAsync<List<Stock>>(uri))!;
         }
 
-        public async ValueTask PostExportToExcel(List<Stock> stock)
+        public async ValueTask PostStockExportToExcel(List<Stock> stock)
         {
-            var response = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/consulta/ExportToExcel", stock);
+            var response = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/consulta/exportToExcel", stock);
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsByteArrayAsync();
@@ -94,6 +94,26 @@ namespace InvControl.Client.Services
         {
             var res = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/ajuste", stockAjuste);
             return res.StatusCode == HttpStatusCode.OK;
+        }
+
+        public async ValueTask<bool> PostMovimientosBimbo(List<MovimientoBimbo> movimientos)
+        {
+            var res = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/movimientosbimbo", movimientos);
+            return res.StatusCode == HttpStatusCode.OK;
+        }
+
+        public async ValueTask PostMovimientosBimboExportToExcel(List<MovimientoBimbo> movimientos)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/movimientosbimbo/ExportToExcel", movimientos);
+            if (response.IsSuccessStatusCode)
+            {
+                var data = await response.Content.ReadAsByteArrayAsync();
+                await _jsFunctions.downloadFileFromStream($"movimientos {DateTime.Now:dd-MM-yyyy}.xlsx", data);
+            }
+            else
+            {
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+            }
         }
     }
 }
