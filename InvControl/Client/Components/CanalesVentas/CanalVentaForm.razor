@@ -10,19 +10,19 @@
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
             <RadzenLabel Text="Código:" Component="codigo" />
-            <RadzenNumeric @bind-Value="CanalVenta.Codigo" TextAlign="TextAlign.Right" Name="codigo" Min="0" Max="999999" ShowUpDown="false" Disabled="isBusy" />
+            <RadzenNumeric @bind-Value="CanalVenta.Codigo" TextAlign="TextAlign.Right" Name="codigo" Min="0" Max="999999" ShowUpDown="false" Disabled="isBusy" AutoCompleteType="AutoCompleteType.Off" />
             <ValidationMessage For="@(() => CanalVenta.Codigo)" />
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
             <RadzenLabel Text="Nombre:" Component="nombre" />
-            <RadzenTextBox @bind-Value="CanalVenta.Nombre" Name="nombre" MaxLength="25" Disabled="isBusy" />
+            <RadzenTextBox @bind-Value="CanalVenta.Nombre" Name="nombre" MaxLength="25" Disabled="isBusy" AutoCompleteType="AutoCompleteType.Off" />
             <ValidationMessage For="@(() => CanalVenta.Nombre)" />
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px" class="rz-mt-3">
             <RadzenLabel Text="Descripción:" Component="descripcion" />
-            <RadzenTextBox @bind-Value="CanalVenta.Descripcion" Name="descripcion" MaxLength="50" Disabled="isBusy" />
+            <RadzenTextBox @bind-Value="CanalVenta.Descripcion" Name="descripcion" MaxLength="50" Disabled="isBusy" AutoCompleteType="AutoCompleteType.Off" />
             <ValidationMessage For="@(() => CanalVenta.Descripcion)" />
         </RadzenStack>
 
@@ -48,6 +48,7 @@
 
     private async Task Submit()
     {
+        isBusy = true;
         if (editContext.Validate())
         {
             var result = await DialogService.Confirm(
@@ -57,15 +58,11 @@
 
             if (result != null && (bool)result)
             {
-                isBusy = true;
-
                 Response res;
                 if (CanalVenta.IdCanalVenta == 0)
                     res = await CanalesVentasService.PostCanalVenta(CanalVenta);
                 else
                     res = await CanalesVentasService.PutCanalVenta(CanalVenta);
-
-                isBusy = false;
 
                 if (res.Success)
                 {
@@ -78,6 +75,7 @@
                 }
             }
         }
+        isBusy = false;
     }
 
     private async Task Cancelar()
