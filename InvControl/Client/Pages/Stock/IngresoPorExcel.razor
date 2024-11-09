@@ -145,10 +145,24 @@ else
 
         hubConnection.On("ProcesoTerminado", async () =>
         {
-            movimientosGrid = movimientos;
-            bimboOperacion = BimboOperacion.Todos;
-            showGrid = true;
+            if (movimientos.Count > 0)
+            {
+                movimientosGrid = movimientos;
+                bimboOperacion = BimboOperacion.Todos;
+                showGrid = true;
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Info, "¡No hay datos disponibles para procesar!");
+            }
+
             await CerrarHub();
+            StateHasChanged();
+        });
+
+        hubConnection.On<Exception>("ProcesoConError", (ex) =>
+        {
+            Logger.LogError(ex, "{msg}", ex.Message);
             StateHasChanged();
         });
 
