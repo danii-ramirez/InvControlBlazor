@@ -4,7 +4,6 @@ using InvControl.Server.Data;
 using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.IdentityModel.Tokens;
 using System.Data;
 
 namespace InvControl.Server.Hubs
