@@ -4,6 +4,7 @@ using InvControl.Server.Data;
 using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.IdentityModel.Tokens;
 using System.Data;
 
 namespace InvControl.Server.Hubs
@@ -77,22 +78,24 @@ namespace InvControl.Server.Hubs
 
                             if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion] != DBNull.Value)
                             {
-                                if (int.TryParse(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion].ToString(), out int canalVenta))
+                                mb.CanalVenta = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion].ToString()?.Trim();
+
+                                if (int.TryParse(mb.CanalVenta, out int canalVenta))
                                 {
-                                    mb.CanalVenta = canalVenta;
-                                    var dtCV = daCV.ObtenerCanalesVentas(mb.CanalVenta, null);
+                                    var dtCV = daCV.ObtenerCanalesVentas(canalVenta, null);
                                     if (dtCV.Rows.Count > 0)
                                         mb.IdCanalVenta = (int?)dtCV.Rows[0]["IdCanalVenta"];
                                 }
                             }
 
-                            if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion] != DBNull.Value)
-                                mb.NumeroRemito = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion].ToString();
+                            if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion] != DBNull.Value
+                                && string.IsNullOrEmpty(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion].ToString()?.Trim()))
+                                mb.NumeroRemito = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion].ToString()?.Trim();
 
-                            if (int.TryParse(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CodigoSku).Descripcion].ToString(), out int sku))
+                            mb.CodigoSku = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CodigoSku).Descripcion].ToString()?.Trim();
+                            if (int.TryParse(mb.CodigoSku, out int sku))
                             {
-                                mb.CodigoSku = sku;
-                                var dtSku = daSKU.ObtenerSKU(null, mb.CodigoSku, null, null, null, null);
+                                var dtSku = daSKU.ObtenerSKU(null, sku, null, null, null, null);
                                 if (dtSku.Rows.Count > 0)
                                 {
                                     mb.IdSku = (int?)dtSku.Rows[0]["IdSKU"];
@@ -101,12 +104,9 @@ namespace InvControl.Server.Hubs
                             }
 
                             mb.NombreSku = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NombreSku).Descripcion].ToString();
-
-                            if (int.TryParse(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.Cantidad).Descripcion].ToString(), out int cantidad))
-                                mb.Cantidad = cantidad;
-
-                            mb.TipoEstoque = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.TipoEstoque).Descripcion].ToString();
-                            mb.MotivoAjuste = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.MotivoAjuste).Descripcion].ToString();
+                            mb.Cantidad = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.Cantidad).Descripcion].ToString()?.Trim();
+                            mb.TipoEstoque = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.TipoEstoque).Descripcion].ToString()?.Trim();
+                            mb.MotivoAjuste = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.MotivoAjuste).Descripcion].ToString()?.Trim();
 
                             await Clients.Caller.SendAsync("ActualziarGrid", mb);
                         }

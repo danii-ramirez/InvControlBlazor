@@ -254,7 +254,7 @@ namespace InvControl.Server.Controllers
                         if (!string.IsNullOrWhiteSpace(m.NumeroRemito))
                             referencia += $"Remito: {m.NumeroRemito}";
 
-                        daStock.InsertarMovimientosStaging(idUsuario, m.IdCanalVenta, (int)m.IdSku, m.CodigoSku, m.NombreSkuOriginal, m.Cantidad, referencia, fecha, transaction);
+                        daStock.InsertarMovimientosStaging(idUsuario, m.IdCanalVenta, (int)m.IdSku, int.Parse(m.CodigoSku.Trim()), m.NombreSkuOriginal, int.Parse(m.Cantidad.Trim()), referencia, fecha, transaction);
                     }
 
                     transaction.Commit();

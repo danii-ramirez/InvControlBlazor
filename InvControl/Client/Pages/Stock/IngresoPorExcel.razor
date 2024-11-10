@@ -80,7 +80,7 @@
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
             <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="cancel" Text="Cancelar" Click="HandleClickCancelar" />
-            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" Click="HandleClickGuardar" />
+            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="save" Text="Guardar" Click="HandleClickGuardar" Disabled="movimientos.FindAll(x => x.IdSku != null & x.IdCanalVenta != null).Count == 0" />
         </RadzenStack>
     }
 }
@@ -135,7 +135,13 @@ else
         hubConnection.On<MovimientoBimbo>("ActualziarGrid", async (movimiento) =>
         {
             if (movimientos.Exists(x => x.CanalVenta == movimiento.CanalVenta & x.CodigoSku == movimiento.CodigoSku))
-                movimientos.Find(x => x.CanalVenta == movimiento.CanalVenta & x.CodigoSku == movimiento.CodigoSku).Cantidad += movimiento.Cantidad;
+            {
+                var m = movimientos.Find(x => x.CanalVenta == movimiento.CanalVenta & x.CodigoSku == movimiento.CodigoSku);
+                if (int.TryParse(movimiento.Cantidad, out int c))
+                    m.Cantidad = (int.Parse(m.Cantidad) + c).ToString();
+                else
+                    movimientos.Add(movimiento);
+            }
             else
                 movimientos.Add(movimiento);
 
@@ -154,6 +160,7 @@ else
             else
             {
                 NotificationService.Notify(NotificationSeverity.Info, "¡No hay datos disponibles para procesar!");
+                Clear();
             }
 
             await CerrarHub();
@@ -219,7 +226,7 @@ else
 
     private void CellRender(DataGridCellRenderEventArgs<MovimientoBimbo> args)
     {
-        if (args.Data.IdSku == null)
+        if (args.Data.IdSku == null || !int.TryParse(args.Data.Cantidad, out int _))
         {
             args.Attributes.Add("class", "rz-background-color-danger-lighter");
         }
