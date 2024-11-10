@@ -72,6 +72,7 @@
 
     private async Task Submit()
     {
+        isBusy = true;
         Rol.Permisos.Clear();
         Rol.Permisos = Permisos.FindAll(x => x.Checked);
 
@@ -84,15 +85,11 @@
 
             if (result != null && (bool)result)
             {
-                isBusy = true;
-
                 Response res;
                 if (Rol.IdRol == 0)
                     res = await RolesService.PostRol(Rol);
                 else
                     res = await RolesService.PutRol(Rol);
-
-                isBusy = false;
 
                 if (res.Success)
                 {
@@ -100,11 +97,10 @@
                     DialogService.Close(Rol);
                 }
                 else
-                {
                     customValidation.DisplayErrors(res.Errors!);
-                }
             }
         }
+        isBusy = false;
     }
 
     private async Task Cancelar()
@@ -115,9 +111,7 @@
             new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
         if (result != null && (bool)result)
-        {
             DialogService.Close();
-        }
     }
 
     private void RowRender(RowRenderEventArgs<Permiso> args)

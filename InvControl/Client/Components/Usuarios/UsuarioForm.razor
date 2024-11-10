@@ -51,8 +51,8 @@
 }
 
 @code {
-    [Parameter] public Usuario Usuario { get; set; } 
-    [Parameter] public List<Rol> Roles { get; set; } 
+    [Parameter] public Usuario Usuario { get; set; }
+    [Parameter] public List<Rol> Roles { get; set; }
 
     EditContext editContext;
     CustomValidation customValidation;
@@ -69,6 +69,7 @@
 
     private async Task Submit()
     {
+        isBusy = true;
         if (editContext.Validate())
         {
             var result = await DialogService.Confirm(
@@ -78,14 +79,11 @@
 
             if (result != null && (bool)result)
             {
-                isBusy = true;
                 Response res;
                 if (Usuario.IdUsuario == 0)
                     res = await UsuariosService.PostUsuario(Usuario);
                 else
                     res = await UsuariosService.PutUsuario(Usuario);
-
-                isBusy = false;
 
                 if (res.Success)
                 {
@@ -93,11 +91,10 @@
                     DialogService.Close(Usuario);
                 }
                 else
-                {
                     customValidation.DisplayErrors(res.Errors!);
-                }
             }
         }
+        isBusy = false;
     }
 
     private async Task Cancelar()
@@ -108,8 +105,6 @@
             new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
         if (result != null && (bool)result)
-        {
             DialogService.Close();
-        }
     }
 }

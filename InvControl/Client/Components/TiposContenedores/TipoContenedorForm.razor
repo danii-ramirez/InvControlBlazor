@@ -33,18 +33,17 @@
 
     private async Task Submit()
     {
+        isBusy = true;
         if (editContext.Validate())
         {
             var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
             if (result != null && (bool)result)
             {
-                isBusy = true;
                 Response res;
                 if (TipoContenedor.IdTipoContenedor == 0)
                     res = await SKUService.PostTipoContenedor(TipoContenedor);
                 else
                     res = await SKUService.PutTipoContenedor(TipoContenedor);
-                isBusy = false;
 
                 if (res.Success)
                 {
@@ -52,19 +51,16 @@
                     DialogService.Close(TipoContenedor);
                 }
                 else
-                {
                     customValidation.DisplayErrors(res.Errors!);
-                }
             }
         }
+        isBusy = false;
     }
 
     private async Task Cancelar()
     {
         var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
         if (result != null && (bool)result)
-        {
             DialogService.Close();
-        }
     }
 }

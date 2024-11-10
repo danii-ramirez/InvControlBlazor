@@ -48,18 +48,17 @@
 
     private async Task Submit()
     {
+        isBusy = true;
         if (editContext.Validate())
         {
             var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
             if (result != null && (bool)result)
             {
-                isBusy = true;
                 Response res;
                 if (TipoMovimiento.IdTipoMovimiento == 0)
                     res = await StockService.PostTipoMovimiento(TipoMovimiento);
                 else
                     res = await StockService.PutTipoMovimiento(TipoMovimiento);
-                isBusy = false;
 
                 if (res.Success)
                 {
@@ -67,19 +66,16 @@
                     DialogService.Close(TipoMovimiento);
                 }
                 else
-                {
                     customValidation.DisplayErrors(res.Errors!);
-                }
             }
         }
+        isBusy = false;
     }
 
     private async Task Cancelar()
     {
         var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
         if (result != null && (bool)result)
-        {
             DialogService.Close();
-        }
     }
 }

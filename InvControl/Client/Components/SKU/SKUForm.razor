@@ -112,7 +112,7 @@
 
     private async Task Submit()
     {
-        await Task.Delay(1);
+        isBusy = true;
 
         if (editContext.Validate())
         {
@@ -123,8 +123,6 @@
 
             if (result != null && (bool)result)
             {
-                isBusy = true;
-
                 Response res;
 
                 if (SKU.IdSKU == 0)
@@ -132,19 +130,16 @@
                 else
                     res = await SKUService.PutSKU(SKU);
 
-                isBusy = false;
-
                 if (res.Success)
                 {
                     NotificationService.Notify(NotificationSeverity.Success, Message.SaveSuccess);
                     DialogService.Close(SKU);
                 }
                 else
-                {
                     customValidation.DisplayErrors(res.Errors!);
-                }
             }
         }
+        isBusy = false;
     }
 
     private async Task Cancelar()
@@ -155,8 +150,6 @@
             new() { OkButtonText = "Sí", CancelButtonText = "No" });
 
         if (result != null && (bool)result)
-        {
             DialogService.Close();
-        }
     }
 }

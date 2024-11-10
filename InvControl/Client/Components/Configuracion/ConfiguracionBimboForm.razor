@@ -38,6 +38,7 @@
 
     private async Task Submit()
     {
+        isBusy = true;
         if (editContext.Validate())
         {
             var result = await DialogService.Confirm(
@@ -47,14 +48,11 @@
 
             if (result != null && (bool)result)
             {
-                isBusy = true;
                 Response res;
                 if (ParametroBimbo.IdParametroBimbo == 0)
                     res = await ParametrosService.PostParametroBimbo(ParametroBimbo);
                 else
                     res = await ParametrosService.PutParametroBimbo(ParametroBimbo);
-
-                isBusy = false;
 
                 if (res.Success)
                 {
@@ -62,19 +60,16 @@
                     DialogService.Close(ParametroBimbo);
                 }
                 else
-                {
                     customValidation.DisplayErrors(res.Errors!);
-                }
             }
         }
+        isBusy = false;
     }
 
     private async Task Cancelar()
     {
         var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
         if (result != null && (bool)result)
-        {
             DialogService.Close();
-        }
     }
 }

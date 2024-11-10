@@ -44,6 +44,7 @@
 
     private async Task Submit()
     {
+        isBusy = true;
         if (editContext.Validate())
         {
             var result = await DialogService.Confirm(
@@ -53,13 +54,11 @@
 
             if (result != null && (bool)result)
             {
-                isBusy = true;
                 Response res;
                 if (Chofer.IdChofer == 0)
                     res = await ChoferesService.PostChoferes(Chofer);
                 else
                     res = await ChoferesService.PutChoferes(Chofer);
-                isBusy = false;
 
                 if (res.Success)
                 {
@@ -67,19 +66,16 @@
                     DialogService.Close(Chofer);
                 }
                 else
-                {
                     customValidation.DisplayErrors(res.Errors!);
-                }
             }
         }
+        isBusy = false;
     }
 
     private async Task Cancelar()
     {
         var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
         if (result != null && (bool)result)
-        {
             DialogService.Close();
-        }
     }
 }

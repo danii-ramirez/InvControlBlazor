@@ -70,9 +70,7 @@
                     DialogService.Close(CanalVenta);
                 }
                 else
-                {
                     customValidation.DisplayErrors(res.Errors!);
-                }
             }
         }
         isBusy = false;
@@ -86,8 +84,6 @@
             new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
 
         if (result != null && (bool)result)
-        {
             DialogService.Close();
-        }
     }
 }

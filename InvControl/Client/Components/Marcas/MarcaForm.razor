@@ -33,18 +33,17 @@
 
     private async Task Submit()
     {
+        isBusy = true;
         if (editContext.Validate())
         {
             var result = await DialogService.Confirm(Message.Confirm, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
             if (result != null && (bool)result)
             {
-                isBusy = true;
                 Response res;
                 if (Marca.IdMarca == 0)
                     res = await SKUService.PostMarca(Marca);
                 else
                     res = await SKUService.PutMarca(Marca);
-                isBusy = false;
 
                 if (res.Success)
                 {
@@ -52,19 +51,16 @@
                     DialogService.Close(Marca);
                 }
                 else
-                {
                     customValidation.DisplayErrors(res.Errors!);
-                }
             }
         }
+        isBusy = false;
     }
 
     private async Task Cancelar()
     {
         var result = await DialogService.Confirm(Message.Cancel, Message.Title, new() { OkButtonText = "Sí", CancelButtonText = "No" });
         if (result != null && (bool)result)
-        {
             DialogService.Close();
-        }
     }
 }
