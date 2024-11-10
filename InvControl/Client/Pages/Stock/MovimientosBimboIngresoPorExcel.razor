@@ -176,6 +176,7 @@ else
         hubConnection.On("ColumnasDuplicadas", () =>
         {
             DialogService.Close();
+            disabledButtons = false;
             NotificationService.Notify(NotificationSeverity.Info, "¡Hay nombres de columnas repetidas!", "Debe cambiar los nombres para poder procesar el Excel");
             StateHasChanged();
         });
@@ -288,11 +289,11 @@ else
         }
         else if (bimboOperacion == BimboOperacion.Disponible)
         {
-            movimientosGrid = movimientos.FindAll(x => x.IdSku != null & x.IdCanalVenta != null);
+            movimientosGrid = movimientos.FindAll(x => x.IdSku != null & x.IdCanalVenta != null & int.TryParse(x.Cantidad, out int _));
         }
-        else if (bimboOperacion == BimboOperacion.SkuNoEncontrado)
+        else if (bimboOperacion == BimboOperacion.ConError)
         {
-            movimientosGrid = movimientos.FindAll(x => x.IdSku == null);
+            movimientosGrid = movimientos.FindAll(x => x.IdSku == null | !int.TryParse(x.Cantidad, out int _));
         }
         else if (bimboOperacion == BimboOperacion.CanalVentaNoEncontrado)
         {

@@ -11,37 +11,27 @@ namespace InvControl.Server.Hubs
     public class ProcesamientoHub : Hub
     {
         private readonly ILogger<ProcesamientoHub> _logger;
-        private readonly string connectionString;
+        private readonly List<ParametroBimbo> parametros;
+        private readonly DA_CanalVenta daCV;
+        private readonly DA_SKU daSKU;
+        private const int batchSize = 10000;
+        private const int maxConcurrentTasks = 4;
+        private readonly SemaphoreSlim semaphore;
 
         public ProcesamientoHub(ILogger<ProcesamientoHub> logger, IConfiguration configuration)
         {
             _logger = logger;
-            connectionString = configuration.GetConnectionString("InvControlDB");
-        }
-
-        public override Task OnConnectedAsync()
-        {
-            _logger.LogInformation("Cliente conectado: {ConnectionId}", Context.ConnectionId);
-            return base.OnConnectedAsync();
-        }
-
-        public override Task OnDisconnectedAsync(Exception exception)
-        {
-            _logger.LogWarning("Cliente desconectado: {ConnectionId}", Context.ConnectionId);
-            return base.OnDisconnectedAsync(exception);
+            var connectionString = configuration.GetConnectionString("InvControlDB");
+            parametros = new ParametrosController(connectionString: connectionString).ObtenerParametrosBimbo();
+            daCV = new(connectionString);
+            daSKU = new(connectionString);
+            semaphore = new SemaphoreSlim(maxConcurrentTasks);
         }
 
         public async Task ProcesarMovimientosBimbo(byte[] excelData)
         {
             try
             {
-                DA_CanalVenta daCV = new(connectionString);
-                DA_SKU daSKU = new(connectionString);
-                DA_Stock daStock = new(connectionString);
-                var parametros = new ParametrosController(connectionString: connectionString).ObtenerParametrosBimbo();
-                List<MovimientoBimbo> movimientos = new();
-
-                DataTable dt = new();
                 using (var stream = new MemoryStream(excelData))
                 {
                     using var workbook = new XLWorkbook(stream);
@@ -49,71 +39,53 @@ namespace InvControl.Server.Hubs
 
                     if (!TieneColumnasDuplicadas(worksheet.Row(1).CellsUsed()))
                     {
-                        foreach (var headerCell in worksheet.Row(1).CellsUsed())
-                        {
-                            dt.Columns.Add(headerCell.Value.ToString());
-                        }
+                        var mapeoColumnas = worksheet.Row(1).CellsUsed()
+                            .Where(cell => parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.NombreColumna).Select(x => x.Descripcion)
+                            .Contains(cell.Value.ToString()))
+                            .ToDictionary(cell => cell.Value.ToString(), cell => cell.Address.ColumnNumber);
 
-                        int r = 0;
                         await Clients.Caller.SendAsync("ProcesoInicial", worksheet.RowsUsed().Skip(1).Count());
 
-                        foreach (var row in worksheet.RowsUsed().Skip(1))
+                        int processedRows = 0;
+                        var tasks = new List<Task>();
+
+                        foreach (var rowBatch in worksheet.RowsUsed().Skip(1).Chunk(batchSize))
                         {
-                            r++;
+                            await semaphore.WaitAsync();
 
-                            int i = 0;
-                            var dataRow = dt.NewRow();
-
-                            foreach (var cell in row.Cells())
+                            var task = Task.Run(async () =>
                             {
-                                dataRow[i] = cell.Value;
-                                i++;
-                            }
-
-                            //dt.Rows.Add(dataRow);
-
-                            if (parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.MotivoAjuste).Exists(x => x.Nombre.ToUpper() == dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.MotivoAjuste).Descripcion].ToString().Trim().ToUpper())
-                                && parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.TipoEstoque).Exists(x => x.Nombre.ToUpper() == dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.TipoEstoque).Descripcion].ToString().Trim().ToUpper()))
-                            {
-                                MovimientoBimbo mb = new();
-
-                                if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion] != DBNull.Value)
+                                try
                                 {
-                                    mb.CanalVenta = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion].ToString()?.Trim();
-
-                                    if (int.TryParse(mb.CanalVenta, out int canalVenta))
+                                    foreach (var row in rowBatch)
                                     {
-                                        var dtCV = daCV.ObtenerCanalesVentas(canalVenta, null);
-                                        if (dtCV.Rows.Count > 0)
-                                            mb.IdCanalVenta = (int?)dtCV.Rows[0]["IdCanalVenta"];
+                                        var dataRow = new Dictionary<string, string>();
+                                        foreach (var columna in mapeoColumnas)
+                                        {
+                                            var cell = row.Cell(columna.Value);
+                                            dataRow[columna.Key] = cell?.GetString()?.Trim();
+                                        }
+
+                                        if (FiltrarMovimiento(dataRow))
+                                        {
+                                            var movimiento = CrearMovimientoBimboAsync(dataRow);
+                                            await Clients.Caller.SendAsync("ActualziarGrid", movimiento);
+                                        }
+
+                                        Interlocked.Increment(ref processedRows);
+                                        await Clients.Caller.SendAsync("ProcesoActualizado", processedRows);
                                     }
                                 }
-
-                                if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion] != DBNull.Value
-                                    && string.IsNullOrEmpty(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion].ToString()?.Trim()))
-                                    mb.NumeroRemito = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion].ToString()?.Trim();
-
-                                mb.CodigoSku = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CodigoSku).Descripcion].ToString()?.Trim();
-                                if (int.TryParse(mb.CodigoSku, out int sku))
+                                finally
                                 {
-                                    var dtSku = daSKU.ObtenerSKU(null, sku, null, null, null, null);
-                                    if (dtSku.Rows.Count > 0)
-                                    {
-                                        mb.IdSku = (int?)dtSku.Rows[0]["IdSKU"];
-                                        mb.NombreSkuOriginal = (string)dtSku.Rows[0]["Nombre"];
-                                    }
+                                    semaphore.Release();
                                 }
+                            });
 
-                                mb.NombreSku = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NombreSku).Descripcion].ToString();
-                                mb.Cantidad = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.Cantidad).Descripcion].ToString()?.Trim();
-                                mb.TipoEstoque = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.TipoEstoque).Descripcion].ToString()?.Trim();
-                                mb.MotivoAjuste = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.MotivoAjuste).Descripcion].ToString()?.Trim();
-
-                                await Clients.Caller.SendAsync("ActualziarGrid", mb);
-                            }
-
-                            await Clients.Caller.SendAsync("ProcesoActualizado", r);
+                            tasks.Add(task);
                         }
+
+                        await Task.WhenAll(tasks);
                     }
                     else
                     {
@@ -128,6 +100,53 @@ namespace InvControl.Server.Hubs
             {
                 await Clients.Caller.SendAsync("ProcesoConError", ex);
             }
+        }
+
+        private MovimientoBimbo CrearMovimientoBimboAsync(Dictionary<string, string> dataRow)
+        {
+            MovimientoBimbo mb = new();
+
+            if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion] != null)
+            {
+                mb.CanalVenta = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CanalVenta).Descripcion].ToString()?.Trim();
+
+                if (int.TryParse(mb.CanalVenta, out int canalVenta))
+                {
+                    var dtCV = daCV.ObtenerCanalesVentas(canalVenta, null);
+                    if (dtCV.Rows.Count > 0)
+                        mb.IdCanalVenta = (int?)dtCV.Rows[0]["IdCanalVenta"];
+                }
+            }
+
+            if (dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion] != null
+                && string.IsNullOrEmpty(dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion].ToString()?.Trim()))
+                mb.NumeroRemito = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NroRemito).Descripcion].ToString()?.Trim();
+
+            mb.CodigoSku = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.CodigoSku).Descripcion].ToString()?.Trim();
+            if (int.TryParse(mb.CodigoSku, out int sku))
+            {
+                var dtSku = daSKU.ObtenerSKU(null, sku, null, null, null, null);
+                if (dtSku.Rows.Count > 0)
+                {
+                    mb.IdSku = (int?)dtSku.Rows[0]["IdSKU"];
+                    mb.NombreSkuOriginal = (string)dtSku.Rows[0]["Nombre"];
+                }
+            }
+
+            mb.NombreSku = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.NombreSku).Descripcion].ToString();
+            mb.Cantidad = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.Cantidad).Descripcion].ToString()?.Trim();
+            mb.TipoEstoque = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.TipoEstoque).Descripcion].ToString()?.Trim();
+            mb.MotivoAjuste = dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.MotivoAjuste).Descripcion].ToString()?.Trim();
+
+            return mb;
+        }
+
+        private bool FiltrarMovimiento(Dictionary<string, string> dataRow)
+        {
+            return parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.MotivoAjuste)
+                             .Exists(x => x.Nombre.ToUpper() == dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.MotivoAjuste).Descripcion].ToString().Trim().ToUpper())
+                && parametros.FindAll(x => x.IdTipoBimboConcepto == (int)BimboConcepto.TipoEstoque)
+                             .Exists(x => x.Nombre.ToUpper() == dataRow[parametros.Find(x => x.IdParametroBimbo == (int)BimboNombreColumna.TipoEstoque).Descripcion].ToString().Trim().ToUpper());
         }
 
         public static bool TieneColumnasDuplicadas(IXLCells cells)
