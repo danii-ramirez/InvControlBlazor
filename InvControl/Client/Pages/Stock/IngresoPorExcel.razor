@@ -173,6 +173,13 @@ else
             StateHasChanged();
         });
 
+        hubConnection.On("ColumnasDuplicadas", () =>
+        {
+            DialogService.Close();
+            NotificationService.Notify(NotificationSeverity.Info, "¡Hay nombres de columnas repetidas!", "Debe cambiar los nombres para poder procesar el Excel");
+            StateHasChanged();
+        });
+
         await hubConnection.StartAsync();
     }
 
