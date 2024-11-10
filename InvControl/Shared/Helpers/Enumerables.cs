@@ -72,8 +72,8 @@ namespace InvControl.Shared.Helpers
         Todos,
         [Display(Description = "Disponible para procesar")]
         Disponible,
-        [Display(Description = "SKU no encontrado")]
-        SkuNoEncontrado,
+        [Display(Description = "Con error")]
+        ConError,
         [Display(Description = "Canal de venta no encontrado")]
         CanalVentaNoEncontrado
     }
