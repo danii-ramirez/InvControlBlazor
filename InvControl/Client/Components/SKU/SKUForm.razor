@@ -48,17 +48,17 @@
                 </RadzenStack>
             </RadzenColumn>
 
-            <RadzenColumn Size="12" SizeMD="3">
-                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Gap="5px" Style="height: 100%;">
-                    <RadzenLabel Text="Activo:" Component="activoModal" />
-                    <RadzenCheckBox @bind-Value=@SKU.Activo Name="activoModal" Disabled="isBusy" />
-                </RadzenStack>
-            </RadzenColumn>
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" Style="height: 100%; width: 100%;">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="5px" Style="width: 50%;">
+                        <RadzenLabel Text="Activo:" Component="activoModal" />
+                        <RadzenCheckBox @bind-Value=@SKU.Activo Name="activoModal" Disabled="isBusy" />
+                    </RadzenStack>
 
-            <RadzenColumn Size="12" SizeMD="3">
-                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Gap="5px" Style="height: 100%;">
-                    <RadzenLabel Text="Especial:" Component="especialModal" />
-                    <RadzenCheckBox @bind-Value=@SKU.Especial Name="especialModal" Disabled="isBusy" />
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="5px" Style="width: 50%;">
+                        <RadzenLabel Text="Especial:" Component="especialModal" />
+                        <RadzenCheckBox @bind-Value=@SKU.Especial Name="especialModal" Disabled="isBusy" />
+                    </RadzenStack>
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
