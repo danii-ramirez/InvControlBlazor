@@ -1,4 +1,5 @@
 ﻿using InvControl.Client.Helpers;
+using InvControl.Shared.Filtros;
 using InvControl.Shared.Models;
 using System.Net;
 using System.Net.Http.Json;
@@ -51,7 +52,7 @@ namespace InvControl.Client.Services
 
         public async ValueTask<List<TipoMovimiento>> GetTiposMovimientos(int? idTipoMovimiento, string nombre, bool? soloLectura, bool? interno)
         {
-            string uri = $"{BASE_REQUEST_URI}/TipoMovimiento";
+            string uri = $"{BASE_REQUEST_URI}/tipoMovimiento";
             Dictionary<string, object> query = new();
             if (idTipoMovimiento != null) query["idTipoMovimiento"] = idTipoMovimiento;
             if (nombre != null) query["nombre"] = nombre;
@@ -66,7 +67,7 @@ namespace InvControl.Client.Services
 
         public async ValueTask<Response> PostTipoMovimiento(TipoMovimiento tipoMovimiento)
         {
-            var res = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/TipoMovimiento", tipoMovimiento);
+            var res = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/tipoMovimiento", tipoMovimiento);
             if (res.StatusCode == HttpStatusCode.OK)
             {
                 var newTipoMovimiento = await res.Content.ReadFromJsonAsync<TipoMovimiento>();
@@ -81,7 +82,7 @@ namespace InvControl.Client.Services
 
         public async ValueTask<Response> PutTipoMovimiento(TipoMovimiento tipoMovimiento)
         {
-            var res = await _httpClient.PutAsJsonAsync($"{BASE_REQUEST_URI}/TipoMovimiento", tipoMovimiento);
+            var res = await _httpClient.PutAsJsonAsync($"{BASE_REQUEST_URI}/tipoMovimiento", tipoMovimiento);
             if (res.StatusCode == HttpStatusCode.OK)
                 return new(true);
             else if (res.StatusCode == HttpStatusCode.BadRequest)
@@ -104,7 +105,27 @@ namespace InvControl.Client.Services
 
         public async ValueTask PostMovimientosBimboExportToExcel(List<MovimientoBimbo> movimientos)
         {
-            var response = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/movimientosbimbo/ExportToExcel", movimientos);
+            var response = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/movimientosbimbo/exportToExcel", movimientos);
+            if (response.IsSuccessStatusCode)
+            {
+                var data = await response.Content.ReadAsByteArrayAsync();
+                await _jsFunctions.downloadFileFromStream($"movimientos {DateTime.Now:dd-MM-yyyy}.xlsx", data);
+            }
+            else
+            {
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        public async ValueTask<List<StockMovimiento>> PostStockMovimientos(StockMovimientoFiltro stockMovimientoFiltro)
+        {
+            var res = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/movimientos", stockMovimientoFiltro);
+            return await res.Content.ReadFromJsonAsync<List<StockMovimiento>>();
+        }
+
+        public async ValueTask PostStockMovimientosExportToExcel(List<StockMovimiento> movimientos)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{BASE_REQUEST_URI}/movimientos/exportToExcel", movimientos);
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsByteArrayAsync();

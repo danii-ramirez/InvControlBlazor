@@ -1,0 +1,117 @@
+﻿@page "/stock/movimientos"
+@using InvControl.Shared.Filtros
+@attribute [Authorize]
+
+@inject UsuariosService UsuariosService
+@inject StockService StockService
+@inject CanalesVentasService CanalesVentasService
+@inject RadzenCustom RadzenCustom
+@inject NotificationService NotificationService
+
+@if (showForm)
+{
+    <RadzenText TagName="TagName.H3" TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Text="Movimientos de stock" class="rz-mb-3" />
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" Gap="5px" Wrap="FlexWrap.Wrap" class="rz-mb-3">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Tipo movimiento:" Component="tipoMovimiento" />
+            <RadzenDropDown Data="tiposMovimientos" @bind-Value="stockMovimientoFiltro.IdTipoMovimiento" TextProperty="@nameof(TipoMovimiento.Nombre)" ValueProperty="@nameof(TipoMovimiento.IdTipoMovimiento)"
+                            Style="width: 15rem;" Name="tipoMovimiento" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Código del SKU:" Component="codigo" />
+            <RadzenNumeric @bind-Value="stockMovimientoFiltro.Codigo" Min="0" Max="999999" ShowUpDown="false" TextAlign="TextAlign.Right" Name="codigo" Style="width: 7rem;" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Nombre del SKU:" Component="nombre" />
+            <RadzenTextBox @bind-Value="@stockMovimientoFiltro.Nombre" MaxLength="50" Name="nombre" AutoCompleteType="AutoCompleteType.Off" Style="width: 15rem;" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Movimiento desde:" Component="desde" />
+            <RadzenDatePicker @bind-Value="@stockMovimientoFiltro.FechaDesde" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" AllowInput="false" Name="fechaDesde" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Movimiento hasta:" Component="hasta" />
+            <RadzenDatePicker @bind-Value="@stockMovimientoFiltro.FechaHasta" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" AllowInput="false" Name="hasta" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
+            <RadzenLabel Text="Canal de venta:" Component="canalVenta" />
+            <RadzenDropDown Data="canalesVentas" @bind-Value="stockMovimientoFiltro.IdCanalVenta" TextProperty="@nameof(CanalVenta.Nombre)" ValueProperty="@nameof(CanalVenta.IdCanalVenta)"
+                            AllowClear="true" Style="width: 15rem;" Name="canalVenta" Disabled="isLoading" />
+        </RadzenStack>
+
+        <RadzenButton ButtonStyle="ButtonStyle.Secondary" Text="Buscar" Icon="search" Click="HandleClickSearch" Style="height: 1rem;" Disabled="isLoading" />
+    </RadzenStack>
+
+    <RadzenButton ButtonType="ButtonType.Button" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Icon="file_save" Text="Exportar a Excel"
+                  Click="HandleClickExportToExcel" Disabled="(stockMovimientos.Count == 0)" class="rz-mb-1" />
+
+    <RadzenDataGrid @ref="grid" Data="stockMovimientos" AllowVirtualization="true" AllowSorting="true" AllowGrouping="true"
+                    AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                    GroupPanelText="@RadzenHelper.Traducciones["GroupPanelText"]" Density="Density.Compact" IsLoading="isLoading"
+                    EmptyText="@string.Empty" Style="height: 65vh;">
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(StockMovimiento.TipoMovimiento)" Title="Movimiento" Width="110px" />
+            <RadzenDataGridColumn Property="@nameof(StockMovimiento.CodigoSku)" Title="Código" TextAlign="TextAlign.Right" Width="100px" />
+            <RadzenDataGridColumn Property="@nameof(StockMovimiento.NombreSku)" Title="Nombre" Groupable="false" Width="350px" />
+            <RadzenDataGridColumn Property="@nameof(StockMovimiento.Cantidad)" Title="Cantidad" TextAlign="TextAlign.Right" Groupable="false" Width="100px" />
+            <RadzenDataGridColumn Property="@nameof(StockMovimiento.FechaMovimiento)" Title="Fecha" FormatString="{0:dd/MM/yyyy HH:mm}" TextAlign="TextAlign.Center" Filterable="false" Width="120px" />
+            <RadzenDataGridColumn Property="@nameof(StockMovimiento.NombreCanalVenta)" Title="Canal de venta" Width="150px" />
+            <RadzenDataGridColumn Property="@nameof(StockMovimiento.Referencia)" Title="Referencia" Groupable="false" Width="150px" />
+            <RadzenDataGridColumn Property="@nameof(StockMovimiento.NombreUsuario)" Title="Usuario" Width="150px" />
+        </Columns>
+    </RadzenDataGrid>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    List<StockMovimiento> stockMovimientos = new();
+    RadzenDataGrid<StockMovimiento> grid;
+
+    //FILTROS
+    List<TipoMovimiento> tiposMovimientos;
+    List<CanalVenta> canalesVentas;
+    StockMovimientoFiltro stockMovimientoFiltro;
+
+    bool showForm, isLoading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UsuariosService.GetValidarAcceso();
+        tiposMovimientos = await StockService.GetTiposMovimientos(null, null, null, null);
+        canalesVentas = await CanalesVentasService.GetCanalesVentas();
+        stockMovimientoFiltro = new();
+        stockMovimientoFiltro.IdTipoMovimiento = tiposMovimientos[0].IdTipoMovimiento;
+        stockMovimientoFiltro.FechaDesde = DateTime.Today;
+        stockMovimientoFiltro.FechaHasta = DateTime.Today.AddHours(23).AddMinutes(59).AddSeconds(59);
+        showForm = true;
+    }
+
+    private async Task HandleClickSearch()
+    {
+        isLoading = true;
+        await Task.Delay(1);
+        stockMovimientos = await StockService.PostStockMovimientos(stockMovimientoFiltro);
+        isLoading = false;
+        if (stockMovimientos.Count == 0)
+        {
+            NotificationService.Notify(summary: Message.EmptySearch);
+        }
+        await grid.Reload();
+    }
+
+    private async Task HandleClickExportToExcel()
+    {
+        RadzenCustom.OpenBusyWithLoader("Generando Excel");
+        await StockService.PostStockMovimientosExportToExcel(stockMovimientos);
+        RadzenCustom.CloseDialog();
+    }
+}

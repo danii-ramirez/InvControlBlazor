@@ -26,12 +26,12 @@
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
             <RadzenLabel Text="Buscar desde:" Component="fechaDesde" />
-            <RadzenDatePicker @bind-Value="@auditoriaRQ.FechaDesde" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" AllowInput="false" Name="fechaDesde" />
+            <RadzenDatePicker @bind-Value="@auditoriaRQ.FechaDesde" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" AllowInput="false" Name="fechaDesde" Disabled="isLoading" />
         </RadzenStack>
 
         <RadzenStack Orientation="Orientation.Vertical" Gap="5px">
             <RadzenLabel Text="Buscar hasta:" Component="fechaDesde" />
-            <RadzenDatePicker @bind-Value="@auditoriaRQ.FechaHasta" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" AllowInput="false" Name="fechaHasta" />
+            <RadzenDatePicker @bind-Value="@auditoriaRQ.FechaHasta" ShowCalendarWeek Max="DateTime.Now" DateFormat="dd/MM/yyyy" ShowTime="false" AllowInput="false" Name="fechaHasta" Disabled="isLoading" />
         </RadzenStack>
 
         <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="search" Click="Buscar" IsBusy="isLoading" />

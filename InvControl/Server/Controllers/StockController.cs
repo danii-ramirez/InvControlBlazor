@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using InvControl.Server.Data;
+using InvControl.Shared.Filtros;
 using InvControl.Shared.Helpers;
 using InvControl.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -73,7 +74,6 @@ namespace InvControl.Server.Controllers
         public IActionResult GetStock(string nombre, int? idMarca, bool? especial, int? cantidadMin, int? cantidadMax, DateTime? fechaMin, DateTime? fechaMax)
         {
             List<Stock> stock = new();
-
             using (DataTable dt = new DA_Stock(connectionString).ObtenerStock(nombre?.Trim(), idMarca, especial, cantidadMin, cantidadMax, fechaMin, fechaMax))
             {
                 foreach (DataRow dr in dt.Rows)
@@ -90,11 +90,10 @@ namespace InvControl.Server.Controllers
                     stock.Add(s);
                 }
             }
-
             return Ok(stock);
         }
 
-        [HttpPost("consulta/ExportToExcel")]
+        [HttpPost("consulta/exportToExcel")]
         public IActionResult PostExportToExcel([FromBody] List<Stock> skus)
         {
             try
@@ -126,7 +125,7 @@ namespace InvControl.Server.Controllers
             }
         }
 
-        [HttpGet("TipoMovimiento")]
+        [HttpGet("tipoMovimiento")]
         public IActionResult GetTiposMovimientos(int? idTipoMovimiento, string nombre, bool? soloLectura, bool? interno)
         {
             List<TipoMovimiento> tiposMovimientos = new();
@@ -151,7 +150,7 @@ namespace InvControl.Server.Controllers
             return Ok(tiposMovimientos);
         }
 
-        [HttpPost("TipoMovimiento")]
+        [HttpPost("tipoMovimiento")]
         public IActionResult PostTipoMovimiento(TipoMovimiento tipoMovimiento)
         {
             SqlTransaction transaction = null;
@@ -190,7 +189,7 @@ namespace InvControl.Server.Controllers
             }
         }
 
-        [HttpPut("TipoMovimiento")]
+        [HttpPut("tipoMovimiento")]
         public IActionResult PutTipoMovimiento(TipoMovimiento tipoMovimiento)
         {
             SqlTransaction transaction = null;
@@ -228,6 +227,72 @@ namespace InvControl.Server.Controllers
                 if (transaction != null && transaction.Connection != null)
                     transaction.Rollback();
                 _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpPost("movimientos")]
+        public IActionResult PostMovimientos(StockMovimientoFiltro stockMovimientoFiltro)
+        {
+            List<StockMovimiento> movimientos = new();
+            using (DataTable dt = new DA_Stock(connectionString).ObtenerStockMovimientos(stockMovimientoFiltro.IdTipoMovimiento, stockMovimientoFiltro.Codigo,
+                stockMovimientoFiltro.Nombre, stockMovimientoFiltro.FechaDesde, stockMovimientoFiltro.FechaHasta, stockMovimientoFiltro.IdCanalVenta))
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    StockMovimiento sm = new()
+                    {
+                        TipoMovimiento = (string)dr["NombreTipoMovimiento"],
+                        CodigoSku = (int)dr["CodigoSKU"],
+                        NombreSku = (string)dr["NombreSKU"],
+                        Cantidad = (int)dr["Cantidad"],
+                        FechaMovimiento = (DateTime)(dr["FechaMovimiento"] = dr["FechaMovimiento"]),
+                        NombreUsuario = $"{dr["NombreUsuario"]} {dr["ApellidoUsuario"]}"
+                    };
+                    if (dr["Referencia"] != DBNull.Value) sm.Referencia = (string)dr["Referencia"];
+                    if (dr["NombreCanalVenta"] != DBNull.Value) sm.NombreCanalVenta = (string)dr["NombreCanalVenta"];
+                    movimientos.Add(sm);
+                }
+            }
+            return Ok(movimientos);
+        }
+
+        [HttpPost("movimientos/exportToExcel")]
+        public IActionResult PostStockMovimientosExportToExcel(List<StockMovimiento> movimientos)
+        {
+            try
+            {
+                using var workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Datos");
+
+                worksheet.Cell(1, 1).Value = "Tipo de movimiento";
+                worksheet.Cell(1, 2).Value = "Código de SKU";
+                worksheet.Cell(1, 3).Value = "Nombre";
+                worksheet.Cell(1, 4).Value = "Cantidad";
+                worksheet.Cell(1, 5).Value = "Fecha de movimiento";
+                worksheet.Cell(1, 6).Value = "Canal de venta";
+                worksheet.Cell(1, 7).Value = "Referencia";
+                worksheet.Cell(1, 8).Value = "Usuario";
+
+                for (int i = 0; i < movimientos.Count; i++)
+                {
+                    worksheet.Cell(i + 2, 1).Value = movimientos[i].TipoMovimiento;
+                    worksheet.Cell(i + 2, 2).Value = movimientos[i].CodigoSku;
+                    worksheet.Cell(i + 2, 3).Value = movimientos[i].NombreSku;
+                    worksheet.Cell(i + 2, 4).Value = movimientos[i].Cantidad;
+                    worksheet.Cell(i + 2, 5).Value = movimientos[i].FechaMovimiento;
+                    worksheet.Cell(i + 2, 6).Value = movimientos[i].NombreCanalVenta;
+                    worksheet.Cell(i + 2, 7).Value = movimientos[i].Referencia;
+                    worksheet.Cell(i + 2, 8).Value = movimientos[i].NombreUsuario;
+                }
+
+                using var stream = new MemoryStream();
+                workbook.SaveAs(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ExportedData.xlsx");
+            }
+            catch (Exception ex)
+            {
                 return StatusCode(500, ex);
             }
         }
@@ -274,7 +339,7 @@ namespace InvControl.Server.Controllers
             }
         }
 
-        [HttpPost("movimientosbimbo/ExportToExcel")]
+        [HttpPost("movimientosbimbo/exportToExcel")]
         public IActionResult PostMovimientosBimboExportToExcel(List<MovimientoBimbo> movimientos)
         {
             try

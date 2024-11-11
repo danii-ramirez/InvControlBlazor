@@ -1,4 +1,3 @@
-using InvControl.Shared.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -128,6 +127,26 @@ namespace InvControl.Server.Data
             cnn.Open();
             cmd.ExecuteNonQuery();
             cnn.Close();
+        }
+
+        public DataTable ObtenerStockMovimientos(int idTipoMovimiento, int? codigo, string nombre, DateTime fechaDesde, DateTime fechaHasta, int? idCanalVenta)
+        {
+            DataTable dt = new();
+            using (SqlConnection cnn = new(connectionString))
+            {
+                var cmd = cnn.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "prc_lst_StockMovimientos";
+                cmd.Parameters.AddWithValue("@pIdTipoMovimiento", idTipoMovimiento);
+                if (codigo != null) cmd.Parameters.AddWithValue("@pCodigoSKU", codigo);
+                if (nombre != null) cmd.Parameters.AddWithValue("@pNombreSKU", nombre);
+                cmd.Parameters.AddWithValue("@pFechaMovimientoDesde", fechaDesde);
+                cmd.Parameters.AddWithValue("@pFechaMovimientoHasta", fechaHasta);
+                if (idCanalVenta != null) cmd.Parameters.AddWithValue("@pIdCanalVenta", idCanalVenta);
+                SqlDataAdapter da = new(cmd);
+                da.Fill(dt);
+            }
+            return dt;
         }
     }
 }
