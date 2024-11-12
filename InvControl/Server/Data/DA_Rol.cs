@@ -56,6 +56,23 @@ namespace InvControl.Server.Data
             cmd.ExecuteNonQuery();
         }
 
+        public bool EliminarRol(int idRol, SqlTransaction transaction)
+        {
+            var cnn = transaction.Connection;
+            var cmd = cnn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_del_Rol";
+            cmd.Parameters.AddWithValue("@pIdRol", idRol);
+            SqlParameter restult = new("@pResult", SqlDbType.Bit)
+            {
+                Direction = ParameterDirection.Output
+            };
+            cmd.Parameters.Add(restult);
+            cmd.ExecuteNonQuery();
+            return bool.Parse(restult.Value.ToString());
+        }
+
         public DataTable ObtenerPermisosPorRol(int idRol)
         {
             DataTable dt = new();

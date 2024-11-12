@@ -146,6 +146,55 @@ namespace InvControl.Server.Controllers
             }
         }
 
+        [HttpDelete("{idRol:int}")]
+        public IActionResult DeleteRol(int idRol)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_Rol daR = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                string rol;
+                using (DataTable dt = daR.ObtenerRoles(idRol, null))
+                {
+                    rol = (string)dt.Rows[0]["Descripcion"];
+                }
+
+                bool result;
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
+
+                    result = daR.EliminarRol(idRol, transaction);
+
+                    if (result)
+                    {
+                        daAu.Insertar($"Se eliminó el rol: {rol}", DateTime.Now, (int)TipoEntidad.Rol, (int)TipoOperacion.Borrado,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+                    else
+                    {
+                        transaction.Rollback();
+                        cnn.Close();
+                    }
+                }
+
+                return result ? Ok() : BadRequest();
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
         [HttpGet("permisos")]
         public IActionResult GetPermisos(bool jerarquico)
         {

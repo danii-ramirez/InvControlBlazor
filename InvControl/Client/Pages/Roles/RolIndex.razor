@@ -5,6 +5,8 @@
 @inject RolesService RolesService
 @inject UsuariosService UsuariosService
 @inject DialogService DialogService
+@inject NotificationService NotificationService
+@inject RadzenCustom RadzenCustom
 
 @if (showForm)
 {
@@ -21,8 +23,15 @@
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
-                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditarRol(context))" @onclick:stopPropagation="true">
-                        </RadzenButton>
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditarRol(context))"
+                                      @onclick:stopPropagation="true" title="Editar" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                    <Template>
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat"
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickBorrar(context))"
+                                      @onclick:stopPropagation="true" title="Borrar" />
                     </Template>
                 </RadzenDataGridColumn>
             </Columns>
@@ -81,6 +90,31 @@ else
             rolOriginal.Descripcion = res.Descripcion;
             rolOriginal.Permisos = res.Permisos;
             await refData.Reload();
+        }
+    }
+
+    private async Task HandleClickBorrar(Rol rol)
+    {
+        var res = await DialogService.Confirm(
+            $"¿Desea borrar el rol {rol.Descripcion.ToUpper()}?",
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+        if (res != null && (bool)res)
+        {
+            RadzenCustom.OpenBusyWithLoader("Borrando...");
+            var result = await RolesService.DeleteRol(rol.IdRol);
+            RadzenCustom.CloseDialog();
+            if (result)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "El rol se borro correctamente");
+                roles.Remove(rol);
+                await refData.Reload();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "No es posible eliminar el rol");
+            }
         }
     }
 }

@@ -156,24 +156,33 @@ namespace InvControl.Server.Controllers
                 string user;
                 using (DataTable dt = da.ObtenerUsuario(idUsuario, null))
                 {
-                    user = $"{dt.Rows[0]["User"]}";
+                    user = (string)dt.Rows[0]["User"];
                 }
 
+                bool result;
                 using (SqlConnection cnn = new(connectionString))
                 {
                     cnn.Open();
                     transaction = cnn.BeginTransaction();
 
-                    da.EliminarUsuario(idUsuario, transaction);
+                    result = da.EliminarUsuario(idUsuario, transaction);
 
-                    daAu.Insertar($"Se eliminó el usuario: {user}", DateTime.Now, (int)TipoEntidad.Usuario, (int)TipoOperacion.Borrado,
+                    if (result)
+                    {
+                        daAu.Insertar($"Se eliminó el usuario: {user}", DateTime.Now, (int)TipoEntidad.Usuario, (int)TipoOperacion.Borrado,
                             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
 
-                    transaction.Commit();
-                    cnn.Close();
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+                    else
+                    {
+                        transaction.Rollback();
+                        cnn.Close();
+                    }
                 }
 
-                return Ok();
+                return result ? Ok() : BadRequest();
             }
             catch (Exception ex)
             {

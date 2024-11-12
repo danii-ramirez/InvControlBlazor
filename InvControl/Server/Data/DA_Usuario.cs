@@ -115,7 +115,7 @@ namespace InvControl.Server.Data
             cmd.ExecuteNonQuery();
         }
 
-        public void EliminarUsuario(int idUsuario, SqlTransaction transaction)
+        public bool EliminarUsuario(int idUsuario, SqlTransaction transaction)
         {
             var cnn = transaction.Connection;
             var cmd = cnn.CreateCommand();
@@ -123,7 +123,13 @@ namespace InvControl.Server.Data
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.CommandText = "prc_del_Usuario";
             cmd.Parameters.AddWithValue("@pIdUsuario", idUsuario);
+            SqlParameter restult = new("@pResult", SqlDbType.Bit)
+            {
+                Direction = ParameterDirection.Output
+            };
+            cmd.Parameters.Add(restult);
             cmd.ExecuteNonQuery();
+            return bool.Parse(restult.Value.ToString());
         }
 
         public void RestablecerPass(int idUsuario, string pass)

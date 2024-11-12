@@ -68,5 +68,11 @@ namespace InvControl.Client.Services
                 return new(false);
             }
         }
+
+        public async ValueTask<bool> DeleteRol(int idRol)
+        {
+            var res = await _httpClient.DeleteAsync($"{BASE_REQUEST_URI}/{idRol}");
+            return res.StatusCode == HttpStatusCode.OK;
+        }
     }
 }
