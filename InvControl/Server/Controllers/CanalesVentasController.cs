@@ -27,7 +27,7 @@ namespace InvControl.Server.Controllers
         {
             List<CanalVenta> canales = new();
             DA_CanalVenta da = new(connectionString);
-            using (DataTable dt = da.ObtenerCanalesVentas(null, null))
+            using (DataTable dt = da.ObtenerCanalesVentas(null, null, null))
             {
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -54,10 +54,10 @@ namespace InvControl.Server.Controllers
                 DA_CanalVenta daC = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
-                if (daC.ObtenerCanalesVentas(canalVenta.Codigo, null).Rows.Count > 0)
+                if (daC.ObtenerCanalesVentas(null, canalVenta.Codigo, null).Rows.Count > 0)
                     ModelState.AddModelError(nameof(CanalVenta.Codigo), "El código ya se encuentra registrado");
 
-                if (daC.ObtenerCanalesVentas(null, canalVenta.Nombre.Trim()).Rows.Count > 0)
+                if (daC.ObtenerCanalesVentas(null, null, canalVenta.Nombre.Trim()).Rows.Count > 0)
                     ModelState.AddModelError(nameof(CanalVenta.Nombre), "Ya existe un canal de venta con la misma descripción");
 
                 if (ModelState.IsValid)
@@ -99,13 +99,13 @@ namespace InvControl.Server.Controllers
                 DA_CanalVenta daC = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
-                using (DataTable dt = daC.ObtenerCanalesVentas(canalVenta.Codigo, null))
+                using (DataTable dt = daC.ObtenerCanalesVentas(null, canalVenta.Codigo, null))
                 {
                     if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdCanalVenta"] != canalVenta.IdCanalVenta)
                         ModelState.AddModelError(nameof(CanalVenta.Codigo), "El código ya se encuentra registrado");
                 }
 
-                using (DataTable dt = daC.ObtenerCanalesVentas(null, canalVenta.Nombre))
+                using (DataTable dt = daC.ObtenerCanalesVentas(null, null, canalVenta.Nombre))
                 {
                     if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdCanalVenta"] != canalVenta.IdCanalVenta)
                         ModelState.AddModelError(nameof(CanalVenta.Nombre), "Ya existe un canal de venta con la misma descripción");
@@ -131,6 +131,55 @@ namespace InvControl.Server.Controllers
                 }
 
                 return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpDelete("{idCanalVenta:int}")]
+        public IActionResult DeleteCanalVenta(int idCanalVenta)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_CanalVenta daC = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                string canalVenta;
+                using (DataTable dt = daC.ObtenerCanalesVentas(idCanalVenta, null, null))
+                {
+                    canalVenta = (string)dt.Rows[0]["Nombre"];
+                }
+
+                bool result;
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
+
+                    result = daC.EliminarCanalesVentas(idCanalVenta, transaction);
+
+                    if (result)
+                    {
+                        daAu.Insertar($"Se eliminó el canal de venta: {canalVenta}", DateTime.Now, (int)TipoEntidad.CanalVenta, (int)TipoOperacion.Borrado,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+                    else
+                    {
+                        transaction.Rollback();
+                        cnn.Close();
+                    }
+                }
+
+                return result ? Ok() : BadRequest();
             }
             catch (Exception ex)
             {

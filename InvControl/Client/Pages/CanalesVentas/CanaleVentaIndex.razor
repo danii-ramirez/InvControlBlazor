@@ -5,6 +5,8 @@
 @inject CanalesVentasService CanalesVentasService
 @inject UsuariosService UsuariosService
 @inject DialogService DialogService
+@inject RadzenCustom RadzenCustom
+@inject NotificationService NotificationService
 
 @if (showForm)
 {
@@ -19,15 +21,20 @@
                               Icon="add" Text="Agregar canal de venta" Click="HandleClickAgregar" />
             </HeaderTemplate>
             <Columns>
-                <RadzenDataGridColumn Property="@nameof(CanalVenta.Codigo)" Title="Código" TextAlign="TextAlign.Right"
-                                      Width="100px" />
+                <RadzenDataGridColumn Property="@nameof(CanalVenta.Codigo)" Title="Código" TextAlign="TextAlign.Right" Width="100px" />
                 <RadzenDataGridColumn Property="@nameof(CanalVenta.Nombre)" Title="Nombre" Width="200px" />
                 <RadzenDataGridColumn Property="@nameof(CanalVenta.Descripcion)" Title="Descripción" />
                 <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
-                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
-                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
-                                      @onclick:stopPropagation="true">
+                        <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                      Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true" title="Editar">
+                        </RadzenButton>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                    <Template>
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                      Size="ButtonSize.Small" Click="@(() => HandleClickBorrar(context))" @onclick:stopPropagation="true" title="Borrar">
                         </RadzenButton>
                     </Template>
                 </RadzenDataGridColumn>
@@ -86,6 +93,31 @@ else
             canalOriginal.Nombre = c.Nombre;
             canalOriginal.Descripcion = c.Descripcion;
             await refData.Reload();
+        }
+    }
+
+    private async Task HandleClickBorrar(CanalVenta canal)
+    {
+        var res = await DialogService.Confirm(
+            $"¿Desea borrar el canal de venta {canal.Nombre.ToUpper()}?",
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+        if (res != null && (bool)res)
+        {
+            RadzenCustom.OpenBusyWithLoader("Borrando...");
+            var result = await CanalesVentasService.DeleteCanalVenta(canal.IdCanalVenta);
+            RadzenCustom.CloseDialog();
+            if (result)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "El canal de venta se borro correctamente");
+                canales.Remove(canal);
+                await refData.Reload();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "No es posible eliminar el canal de venta");
+            }
         }
     }
 }

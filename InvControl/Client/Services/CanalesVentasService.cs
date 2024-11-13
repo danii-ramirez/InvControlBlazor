@@ -42,5 +42,11 @@ namespace InvControl.Client.Services
             else
                 return new(false);
         }
+
+        public async ValueTask<bool> DeleteCanalVenta(int idCanalVenta)
+        {
+            var res = await _httpClient.DeleteAsync($"{BASE_REQUEST_URI}/{idCanalVenta}");
+            return res.StatusCode == HttpStatusCode.OK;
+        }
     }
 }

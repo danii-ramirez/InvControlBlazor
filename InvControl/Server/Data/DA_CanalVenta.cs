@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_CanalVenta(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerCanalesVentas(int? codigo, string nombre)
+        public DataTable ObtenerCanalesVentas(int? idCanalVenta, int? codigo, string nombre)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))
@@ -17,6 +17,7 @@ namespace InvControl.Server.Data
                 var cmd = cnn.CreateCommand();
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.CommandText = "prc_get_CanalesVentas";
+                if (idCanalVenta != null) cmd.Parameters.AddWithValue("@pIdCanalVenta", idCanalVenta);
                 if (codigo != null) cmd.Parameters.AddWithValue("@pCodigo", codigo);
                 if (nombre != null) cmd.Parameters.AddWithValue("@pNombre", nombre);
                 SqlDataAdapter da = new(cmd);
@@ -58,6 +59,23 @@ namespace InvControl.Server.Data
             cmd.Parameters.AddWithValue("@pNombre", nombre);
             if (descripcion != null) cmd.Parameters.AddWithValue("@pDescripcion", descripcion);
             cmd.ExecuteNonQuery();
+        }
+
+        public bool EliminarCanalesVentas(int idCanalVenta, SqlTransaction transaction)
+        {
+            var cnn = transaction.Connection;
+            var cmd = cnn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_del_CanalesVentas";
+            cmd.Parameters.AddWithValue("@pIdCanalVenta", idCanalVenta);
+            SqlParameter restult = new("@pResult", SqlDbType.Bit)
+            {
+                Direction = ParameterDirection.Output
+            };
+            cmd.Parameters.Add(restult);
+            cmd.ExecuteNonQuery();
+            return bool.Parse(restult.Value.ToString());
         }
     }
 }

@@ -112,7 +112,7 @@ namespace InvControl.Server.Hubs
 
                 if (int.TryParse(mb.CanalVenta, out int canalVenta))
                 {
-                    var dtCV = daCV.ObtenerCanalesVentas(canalVenta, null);
+                    var dtCV = daCV.ObtenerCanalesVentas(null, canalVenta, null);
                     if (dtCV.Rows.Count > 0)
                         mb.IdCanalVenta = (int?)dtCV.Rows[0]["IdCanalVenta"];
                 }
