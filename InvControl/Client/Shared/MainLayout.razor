@@ -8,12 +8,17 @@
                      AlignItems="AlignItems.Center">
             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
                 <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-                <RadzenImage Path="img/logo.webp" AlternateText="logo-conurbano" />
+                <RadzenLink Path="/">
+                    <RadzenImage Path="img/logo.webp" AlternateText="logo-conurbano" />
+                </RadzenLink>
             </RadzenStack>
 
             <RadzenProfileMenu class="rz-mr-2">
                 <Template>
-                    @user?.FindFirst(ClaimTypes.Name)?.Value @user?.FindFirst(ClaimTypes.Surname)?.Value
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="5px">
+                        <RadzenIcon Icon="account_box" Style="font-weight: 400;" />
+                        <span class="hide-on-small">@user?.FindFirst(ClaimTypes.Name)?.Value @user?.FindFirst(ClaimTypes.Surname)?.Value</span>
+                    </RadzenStack>
                 </Template>
                 <ChildContent>
                     <RadzenProfileMenuItem Text="Cerrar sesión" Path="authentication/logout" Icon="logout" />
