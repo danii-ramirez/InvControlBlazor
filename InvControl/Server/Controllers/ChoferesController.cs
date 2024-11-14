@@ -28,7 +28,7 @@ namespace InvControl.Server.Controllers
             List<Chofer> choferes = new();
             DA_Chofer da = new(connectionString);
 
-            using (DataTable dt = da.ObtenerChoferes(null, null, null))
+            using (DataTable dt = da.ObtenerChoferes(null, null, null, null))
             {
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -56,7 +56,7 @@ namespace InvControl.Server.Controllers
                 DA_Chofer daC = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
-                if (daC.ObtenerChoferes(chofer.Nombre.Trim(), chofer.Apellido.Trim(), null).Rows.Count > 0)
+                if (daC.ObtenerChoferes(null, chofer.Nombre.Trim(), chofer.Apellido.Trim(), null).Rows.Count > 0)
                     ModelState.AddModelError(nameof(CanalVenta.Codigo), "El chofer ya se encuentra registrado");
 
                 if (ModelState.IsValid)
@@ -98,7 +98,7 @@ namespace InvControl.Server.Controllers
                 DA_Chofer daC = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
-                using (DataTable dt = daC.ObtenerChoferes(chofer.Nombre.Trim(), chofer.Apellido.Trim(), null))
+                using (DataTable dt = daC.ObtenerChoferes(null, chofer.Nombre.Trim(), chofer.Apellido.Trim(), null))
                 {
                     if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdChofer"] != chofer.IdChofer)
                         ModelState.AddModelError(nameof(CanalVenta.Codigo), "El chofer ya se encuentra registrado");
@@ -124,6 +124,55 @@ namespace InvControl.Server.Controllers
                 }
 
                 return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpDelete("{idChofer:int}")]
+        public IActionResult DeleteCanalVenta(int idChofer)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_Chofer daC = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                string chofer;
+                using (DataTable dt = daC.ObtenerChoferes(idChofer, null, null, null))
+                {
+                    chofer = (string)dt.Rows[0]["Nombre"];
+                }
+
+                bool result;
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
+
+                    result = daC.EliminarChofer(idChofer, transaction);
+
+                    if (result)
+                    {
+                        daAu.Insertar($"Se eliminó el chofer: {chofer}", DateTime.Now, (int)TipoEntidad.Chofer, (int)TipoOperacion.Borrado,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+                    else
+                    {
+                        transaction.Rollback();
+                        cnn.Close();
+                    }
+                }
+
+                return result ? Ok() : BadRequest();
             }
             catch (Exception ex)
             {

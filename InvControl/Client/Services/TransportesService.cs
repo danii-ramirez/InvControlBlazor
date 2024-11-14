@@ -42,5 +42,11 @@ namespace InvControl.Client.Services
             else
                 return new(false);
         }
+
+        public async ValueTask<bool> DeleteTransporte(int idTransporte)
+        {
+            var res = await _httpClient.DeleteAsync($"{BASE_REQUEST_URI}/{idTransporte}");
+            return res.StatusCode == HttpStatusCode.OK;
+        }
     }
 }

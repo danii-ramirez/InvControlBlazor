@@ -27,7 +27,7 @@ namespace InvControl.Server.Controllers
         {
             List<Transporte> transportes = new();
             DA_Transporte da = new(connectionString);
-            using (DataTable dt = da.ObtenerTransportes(null, null, null))
+            using (DataTable dt = da.ObtenerTransportes(null, null, null, null))
             {
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -53,7 +53,7 @@ namespace InvControl.Server.Controllers
                 DA_Transporte daT = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
-                if (daT.ObtenerTransportes(null, transporte.Patente.Trim(), null).Rows.Count > 0)
+                if (daT.ObtenerTransportes(null, null, transporte.Patente.Trim(), null).Rows.Count > 0)
                     ModelState.AddModelError(nameof(Transporte.Patente), "La patente ya se encuentra registrado");
 
                 if (ModelState.IsValid)
@@ -63,7 +63,7 @@ namespace InvControl.Server.Controllers
                         cnn.Open();
                         transaction = cnn.BeginTransaction();
 
-                        transporte.IdTransporte = daT.InsertarTransportes(transporte.Nombre.Trim(), transporte.Patente.Trim(), transporte.Activo, transaction);
+                        transporte.IdTransporte = daT.InsertarTransporte(transporte.Nombre.Trim(), transporte.Patente.Trim(), transporte.Activo, transaction);
 
                         daAu.Insertar($"Se creó el transporte {transporte.Patente.Trim()}", DateTime.Now, (int)TipoEntidad.Transporte, (int)TipoOperacion.Creacion,
                             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
@@ -95,7 +95,7 @@ namespace InvControl.Server.Controllers
                 DA_Transporte daT = new(connectionString);
                 DA_Auditoria daAu = new(connectionString);
 
-                using (DataTable dt = daT.ObtenerTransportes(null, transporte.Patente.Trim(), null))
+                using (DataTable dt = daT.ObtenerTransportes(null, null, transporte.Patente.Trim(), null))
                 {
                     if (dt.Rows.Count > 0 && (int)dt.Rows[0]["IdTransporte"] != transporte.IdTransporte)
                         ModelState.AddModelError(nameof(Transporte.Patente), "La patente ya se encuentra registrado");
@@ -108,7 +108,7 @@ namespace InvControl.Server.Controllers
                         cnn.Open();
                         transaction = cnn.BeginTransaction();
 
-                        daT.ModificarTransportes(transporte.IdTransporte, transporte.Nombre.Trim(), transporte.Patente.Trim(), transporte.Activo, transaction);
+                        daT.ModificarTransporte(transporte.IdTransporte, transporte.Nombre.Trim(), transporte.Patente.Trim(), transporte.Activo, transaction);
 
                         daAu.Insertar($"Se editó el transporte {transporte.Patente.Trim()}", DateTime.Now, (int)TipoEntidad.Transporte, (int)TipoOperacion.Edicion,
                             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
@@ -121,6 +121,55 @@ namespace InvControl.Server.Controllers
                 }
 
                 return BadRequest(ModelState);
+            }
+            catch (Exception ex)
+            {
+                if (transaction != null && transaction.Connection != null)
+                    transaction.Rollback();
+                _logger.LogError(ex, "{msg}", ex.Message);
+                return StatusCode(500, ex);
+            }
+        }
+
+        [HttpDelete("{idTransporte:int}")]
+        public IActionResult DeleteCanalVenta(int idTransporte)
+        {
+            SqlTransaction transaction = null;
+            try
+            {
+                DA_Transporte daT = new(connectionString);
+                DA_Auditoria daAu = new(connectionString);
+
+                string transporte;
+                using (DataTable dt = daT.ObtenerTransportes(idTransporte, null, null, null))
+                {
+                    transporte = (string)dt.Rows[0]["Nombre"];
+                }
+
+                bool result;
+                using (SqlConnection cnn = new(connectionString))
+                {
+                    cnn.Open();
+                    transaction = cnn.BeginTransaction();
+
+                    result = daT.EliminarTransporte(idTransporte, transaction);
+
+                    if (result)
+                    {
+                        daAu.Insertar($"Se eliminó el transporte: {transporte}", DateTime.Now, (int)TipoEntidad.Transporte, (int)TipoOperacion.Borrado,
+                            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)), transaction);
+
+                        transaction.Commit();
+                        cnn.Close();
+                    }
+                    else
+                    {
+                        transaction.Rollback();
+                        cnn.Close();
+                    }
+                }
+
+                return result ? Ok() : BadRequest();
             }
             catch (Exception ex)
             {

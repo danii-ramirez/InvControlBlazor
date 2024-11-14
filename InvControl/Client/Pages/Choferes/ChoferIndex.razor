@@ -5,6 +5,8 @@
 @inject ChoferesService ChoferesService
 @inject UsuariosService UsuariosService
 @inject DialogService DialogService
+@inject RadzenCustom RadzenCustom
+@inject NotificationService NotificationService
 
 @if (showForm)
 {
@@ -32,11 +34,18 @@
                         }
                     </Template>
                 </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small"
                                       Click="@(() => HandleClickEditar(context))" @onclick:stopPropagation="true" title="Editar">
                         </RadzenButton>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                    <Template>
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat"
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickBorrar(context))"
+                                      @onclick:stopPropagation="true" title="Borrar" />
                     </Template>
                 </RadzenDataGridColumn>
             </Columns>
@@ -94,6 +103,29 @@ else
             choferOriginal.Apellido = c.Apellido;
             choferOriginal.Activo = c.Activo;
             await refData.Reload();
+        }
+    }
+
+    private async Task HandleClickBorrar(Chofer chofer)
+    {
+        var res = await DialogService.Confirm(
+            $"¿Desea borrar el chofer {chofer.Nombre.ToUpper()}?",
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+        if (res != null && (bool)res)
+        {
+            RadzenCustom.OpenBusyWithLoader("Borrando...");
+            var result = await ChoferesService.DeleteChofer(chofer.IdChofer);
+            RadzenCustom.CloseDialog();
+            if (result)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "El chofer se borro correctamente");
+                choferes.Remove(chofer);
+                await refData.Reload();
+            }
+            else
+                NotificationService.Notify(NotificationSeverity.Error, "No es posible eliminar el chofer");
         }
     }
 }

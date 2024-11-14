@@ -42,5 +42,11 @@ namespace InvControl.Client.Services
             else
                 return new(false);
         }
+
+        public async ValueTask<bool> DeleteChofer(int idChofer)
+        {
+            var res = await _httpClient.DeleteAsync($"{BASE_REQUEST_URI}/{idChofer}");
+            return res.StatusCode == HttpStatusCode.OK;
+        }
     }
 }

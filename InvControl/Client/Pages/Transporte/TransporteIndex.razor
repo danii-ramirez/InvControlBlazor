@@ -5,6 +5,8 @@
 @inject TransportesService TransportesService
 @inject UsuariosService UsuariosService
 @inject DialogService DialogService
+@inject RadzenCustom RadzenCustom
+@inject NotificationService NotificationService
 
 @if (showForm)
 {
@@ -36,8 +38,14 @@
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Warning" Icon="edit" Variant="Variant.Flat"
                                       Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickEditar(context))"
-                                      @onclick:stopPropagation="true">
-                        </RadzenButton>
+                                      @onclick:stopPropagation="true" title="Editar" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false">
+                    <Template>
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat"
+                                      Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickBorrar(context))"
+                                      @onclick:stopPropagation="true" title="Borrar" />
                     </Template>
                 </RadzenDataGridColumn>
             </Columns>
@@ -96,6 +104,29 @@ else
             transporteOriginal.Patente = t.Patente;
             transporteOriginal.Activo = t.Activo;
             await refData.Reload();
+        }
+    }
+
+    private async Task HandleClickBorrar(Transporte transporte)
+    {
+        var res = await DialogService.Confirm(
+            $"¿Desea borrar el transporte {transporte.Nombre.ToUpper()}?",
+            Message.Title,
+            new() { OkButtonText = "Sí", CancelButtonText = "No", ShowClose = false });
+
+        if (res != null && (bool)res)
+        {
+            RadzenCustom.OpenBusyWithLoader("Borrando...");
+            var result = await TransportesService.DeleteTransporte(transporte.IdTransporte);
+            RadzenCustom.CloseDialog();
+            if (result)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "El transporte se borro correctamente");
+                transportes.Remove(transporte);
+                await refData.Reload();
+            }
+            else
+                NotificationService.Notify(NotificationSeverity.Error, "No es posible eliminar el transporte");
         }
     }
 }

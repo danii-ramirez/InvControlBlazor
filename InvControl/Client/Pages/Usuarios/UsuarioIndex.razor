@@ -67,8 +67,7 @@
                                       @onclick:stopPropagation="true" title="Restablecer contraseña" />
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false"
-                                      Visible="acciones.Exists(x => x == Accion.Borrar)">
+                <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="50px" Sortable="false" Visible="acciones.Exists(x => x == Accion.Borrar)">
                     <Template>
                         <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat"
                                       Shade="Shade.Lighter" Size="ButtonSize.Small" Click="@(() => HandleClickBorrar(context))"
@@ -185,9 +184,7 @@ else
                 await refData.Reload();
             }
             else
-            {
                 NotificationService.Notify(NotificationSeverity.Error, "No es posible eliminar el usuario");
-            }
         }
     }
 }

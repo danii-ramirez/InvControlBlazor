@@ -9,7 +9,7 @@ namespace InvControl.Server.Data
 
         public DA_Transporte(string connectionString) => this.connectionString = connectionString;
 
-        public DataTable ObtenerTransportes(string nombre, string patente, bool? activo)
+        public DataTable ObtenerTransportes(int? idTransporte, string nombre, string patente, bool? activo)
         {
             DataTable dt = new();
             using (SqlConnection cnn = new(connectionString))
@@ -17,6 +17,7 @@ namespace InvControl.Server.Data
                 var cmd = cnn.CreateCommand();
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.CommandText = "prc_get_Transportes";
+                if (idTransporte != null) cmd.Parameters.AddWithValue("@pIdTransporte", idTransporte);
                 if (nombre != null) cmd.Parameters.AddWithValue("@pNombre", nombre);
                 if (patente != null) cmd.Parameters.AddWithValue("@pPatente", patente);
                 if (activo != null) cmd.Parameters.AddWithValue("@pActivo", activo);
@@ -26,7 +27,7 @@ namespace InvControl.Server.Data
             return dt;
         }
 
-        public int InsertarTransportes(string nombre, string patente, bool activo, SqlTransaction transaction)
+        public int InsertarTransporte(string nombre, string patente, bool activo, SqlTransaction transaction)
         {
             int result = 0;
             var cnn = transaction.Connection;
@@ -47,7 +48,7 @@ namespace InvControl.Server.Data
             return result;
         }
 
-        public void ModificarTransportes(int idTransporte, string nombre, string patente, bool activo, SqlTransaction transaction)
+        public void ModificarTransporte(int idTransporte, string nombre, string patente, bool activo, SqlTransaction transaction)
         {
             var cnn = transaction.Connection;
             var cmd = cnn.CreateCommand();
@@ -59,6 +60,23 @@ namespace InvControl.Server.Data
             cmd.Parameters.AddWithValue("@pPatente", patente);
             cmd.Parameters.AddWithValue("@pActivo", activo);
             cmd.ExecuteNonQuery();
+        }
+
+        public bool EliminarTransporte(int idTransporte, SqlTransaction transaction)
+        {
+            var cnn = transaction.Connection;
+            var cmd = cnn.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "prc_del_Transportes";
+            cmd.Parameters.AddWithValue("@pIdTransporte", idTransporte);
+            SqlParameter restult = new("@pResult", SqlDbType.Bit)
+            {
+                Direction = ParameterDirection.Output
+            };
+            cmd.Parameters.Add(restult);
+            cmd.ExecuteNonQuery();
+            return bool.Parse(restult.Value.ToString());
         }
     }
 }
