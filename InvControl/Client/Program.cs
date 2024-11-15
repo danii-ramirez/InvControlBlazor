@@ -33,5 +33,6 @@ static void Services(IServiceCollection services)
     services.AddScoped<RemitosService>();
     services.AddScoped<StockService>();
     services.AddScoped<ParametrosService>();
+    services.AddScoped<DashboardService>();
     services.AddScoped<IJSFunctions, JSFunctions>();
 }

@@ -100,6 +100,10 @@ namespace InvControl.Client.Services
         public async ValueTask<(bool, List<string>)> GetValidarAcceso()
         {
             var url = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
+
+            if (url == string.Empty)
+                url = "/";
+
             var response = await _httpClient.GetAsync($"{BASE_REQUEST_URI}/validar/acceso?url={url}");
             if (response.StatusCode == HttpStatusCode.OK)
             {

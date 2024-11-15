@@ -1,2 +1,114 @@
 ﻿@page "/"
+@using System.Timers
 @attribute [Authorize]
+
+@inject UsuariosService UsuariosService
+@inject DashboardService DashboardService
+@implements IDisposable
+
+@if (show)
+{
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" Wrap="FlexWrap.Wrap">
+        @if (acciones.Exists(x => x == Accion.DashboardPendientes))
+        {
+            <RadzenCard Variant="Variant.Filled" Style="width: 25rem;">
+                <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.SpaceBetween">
+                        <RadzenText TextStyle="TextStyle.H6">Pendientes de control:</RadzenText>
+                        <RadzenText TextStyle="TextStyle.H2" class="rz-m-0">@(pendientesControl)</RadzenText>
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenCard>
+        }
+
+        @if (acciones.Exists(x => x == Accion.DashboardRechazados))
+        {
+            <RadzenCard Variant="Variant.Filled" Style="width: 25rem;">
+                <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.SpaceBetween">
+                        <RadzenText TextStyle="TextStyle.H6">Requieren una acción:</RadzenText>
+                        <RadzenText TextStyle="TextStyle.H2" class="rz-m-0">@(rechazados)</RadzenText>
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenCard>
+        }
+
+        @if (acciones.Exists(x => x == Accion.DashboardAprobados))
+        {
+            <RadzenCard Variant="Variant.Filled" Style="width: 25rem;">
+                <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.SpaceBetween">
+                        <RadzenText TextStyle="TextStyle.H6">Pendientes de sumar al stock:</RadzenText>
+                        <RadzenText TextStyle="TextStyle.H2" class="rz-m-0">@(pendientesSumar)</RadzenText>
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenCard>
+        }
+    </RadzenStack>
+}
+else
+{
+    <Loader />
+}
+
+@code {
+    Timer timer;
+    int pendientesControl, rechazados, pendientesSumar;
+    bool show;
+    List<string> acciones = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        acciones = (await UsuariosService.GetValidarAcceso()).Item2;
+        if (acciones.Count != 0)
+        {
+            await FillDashboard();
+            Temporizador();
+        }
+        show = true;
+    }
+
+    private async Task FillDashboard()
+    {
+        var lst = await DashboardService.GetRemitosEstados();
+
+        if (lst.Exists(x => x.IdEstado == (int)RemitoEstado.Pendiente))
+            pendientesControl = lst.Find(x => x.IdEstado == (int)RemitoEstado.Pendiente).Cantidad;
+        else
+            pendientesControl = 0;
+
+        if (lst.Exists(x => x.IdEstado == (int)RemitoEstado.Rechazado))
+            rechazados = lst.Find(x => x.IdEstado == (int)RemitoEstado.Rechazado).Cantidad;
+        else
+            rechazados = 0;
+
+        if (lst.Exists(x => x.IdEstado == (int)RemitoEstado.Aprobado))
+            pendientesSumar = lst.Find(x => x.IdEstado == (int)RemitoEstado.Aprobado).Cantidad;
+        else
+            pendientesSumar = 0;
+    }
+
+    private void Temporizador()
+    {
+        timer = new Timer(TimeSpan.FromMinutes(1).TotalMilliseconds);
+        timer.Elapsed += TimerElapsed;
+        timer.Start();
+    }
+
+    private async void TimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        timer.Stop();
+        await FillDashboard();
+        StateHasChanged();
+        timer.Start();
+    }
+
+    public void Dispose()
+    {
+        if (timer != null)
+        {
+            timer.Stop();
+            timer.Dispose();
+        }
+    }
+}
