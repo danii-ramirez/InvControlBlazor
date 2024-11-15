@@ -4,6 +4,7 @@
 
 @inject UsuariosService UsuariosService
 @inject DashboardService DashboardService
+@inject NavigationManager NavigationManager
 @implements IDisposable
 
 @if (show)
@@ -11,9 +12,9 @@
     <RadzenStack Orientation="Orientation.Horizontal" Gap="5px" Wrap="FlexWrap.Wrap">
         @if (acciones.Exists(x => x == Accion.DashboardPendientes))
         {
-            <RadzenCard Variant="Variant.Filled" Style="width: 25rem;">
+            <RadzenCard Variant="Variant.Filled" Style="width: 25rem; cursor: pointer;" @onclick="@(() => HandleOnClick("/remitos/pendientes"))">
                 <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
-                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.SpaceBetween">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.SpaceBetween" class="dashboardLink">
                         <RadzenText TextStyle="TextStyle.H6">Pendientes de control:</RadzenText>
                         <RadzenText TextStyle="TextStyle.H2" class="rz-m-0">@(pendientesControl)</RadzenText>
                     </RadzenStack>
@@ -23,7 +24,7 @@
 
         @if (acciones.Exists(x => x == Accion.DashboardRechazados))
         {
-            <RadzenCard Variant="Variant.Filled" Style="width: 25rem;">
+            <RadzenCard Variant="Variant.Filled" Style="width: 25rem; cursor: pointer;" @onclick="@(() => HandleOnClick("/remitos/rechazados"))">
                 <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.SpaceBetween">
                         <RadzenText TextStyle="TextStyle.H6">Requieren una acción:</RadzenText>
@@ -35,7 +36,7 @@
 
         @if (acciones.Exists(x => x == Accion.DashboardAprobados))
         {
-            <RadzenCard Variant="Variant.Filled" Style="width: 25rem;">
+            <RadzenCard Variant="Variant.Filled" Style="width: 25rem; cursor: pointer;" @onclick="@(() => HandleOnClick("/remitos/aprobados"))">
                 <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.SpaceBetween">
                         <RadzenText TextStyle="TextStyle.H6">Pendientes de sumar al stock:</RadzenText>
@@ -101,6 +102,11 @@ else
         await FillDashboard();
         StateHasChanged();
         timer.Start();
+    }
+
+    private void HandleOnClick(string uri)
+    {
+        NavigationManager.NavigateTo(uri);
     }
 
     public void Dispose()
