@@ -5,10 +5,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["Server/InvControl.Server.csproj", "InvControl.Server/"]
-COPY ["Client/InvControl.Client.csproj", "InvControl.Client/"]
-COPY ["Shared/InvControl.Shared.csproj", "InvControl.Shared/"]
-RUN dotnet restore "InvControl.Server/InvControl.Server.csproj"
+COPY ["InvControl/Server/InvControl.Server.csproj", "InvControl.Server/"]
+COPY ["InvControl/Client/InvControl.Client.csproj", "InvControl.Client/"]
+COPY ["InvControl/Shared/InvControl.Shared.csproj", "InvControl.Shared/"]
+RUN dotnet restore "InvControl/Server/InvControl.Server.csproj"
 COPY . .
 WORKDIR "/src/Server"
 RUN dotnet publish -c Release -o /app/publish
