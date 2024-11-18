@@ -326,7 +326,7 @@ namespace InvControl.Server.Controllers
                     cnn.Close();
                 }
 
-                daStock.SincronizarMovimientosStock(idUsuario, 3);
+                daStock.SincronizarMovimientosStock(idUsuario, (int)StockMovimientoEstado.Salida);
 
                 return Ok();
             }
