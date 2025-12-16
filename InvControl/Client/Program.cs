@@ -34,5 +34,6 @@ static void Services(IServiceCollection services)
     services.AddScoped<StockService>();
     services.AddScoped<ParametrosService>();
     services.AddScoped<DashboardService>();
+    services.AddScoped<ReporteService>();
     services.AddScoped<IJSFunctions, JSFunctions>();
 }

@@ -23,7 +23,7 @@
                     <RadzenCard Variant="Variant.Outlined" Style="width: 100%;">
                         <RadzenStack Orientation="Orientation.Vertical" Gap="5px" Style="width: 100%;">
                             <RadzenLabel Text="Seleccione un archivo:" Component="upload" />
-                            <InputFile OnChange="SeleccionarArchivo" AdditionalAttributes="@(new Dictionary<string, object>(){{"accept", ".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"},{"id", "upload"}, {"disabled", disabledButtons}})" />
+                            <InputFile OnChange="SeleccionarArchivo" AdditionalAttributes="@(new Dictionary<string, object>() { { "accept", ".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" }, { "id", "upload" }, { "disabled", disabledButtons } })" />
                         </RadzenStack>
                     </RadzenCard>
 
@@ -327,6 +327,7 @@ else
 
     public async ValueTask DisposeAsync()
     {
-        await hubConnection.DisposeAsync();
+        if (hubConnection != null)
+            await hubConnection.DisposeAsync();
     }
 }

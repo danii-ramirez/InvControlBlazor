@@ -90,6 +90,7 @@ namespace InvControl.Server.Controllers
                     stock.Add(s);
                 }
             }
+
             return Ok(stock);
         }
 
@@ -254,6 +255,7 @@ namespace InvControl.Server.Controllers
                     movimientos.Add(sm);
                 }
             }
+
             return Ok(movimientos);
         }
 

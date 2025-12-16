@@ -1,7 +1,10 @@
 using InvControl.Server.Hubs;
+using InvControl.Server.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
+
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -21,6 +24,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.SlidingExpiration = true;
         options.Cookie.Name = "BlazorWasmAuthCookie";
     });
+
+builder.Services.AddScoped<IReporteService, ReporteService>();
 
 var app = builder.Build();
 
